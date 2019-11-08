@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 
 const googleConfig = {
-  clientId: '<GOOGLE_CLIENT_ID>', // e.g. asdfghjkljhgfdsghjk.apps.googleusercontent.com
+  clientId: '114334603691325742495..apps.googleusercontent.com', // e.g. asdfghjkljhgfdsghjk.apps.googleusercontent.com
   clientSecret: '<GOOGLE_CLIENT_SECRET>', // e.g. _ASDFA%DFASDFASDFASD#FAD-
   redirect: 'https://your-website.com/google-auth' // this must match your google api settings
 };
