@@ -8,16 +8,15 @@
 
 </head>
 <body>
-  <p> HEYYY!! </p>
   <section id ="page_title">
     <h1 class="title"> S . F . U </h1>
     <h2 class="title"> Special Fortification Unit</h2>
   </section>
   <section id="login_box">
-  <p id='msg'><%=message%></p>
-  <div class ="imgcontainer">
-    <img src="/image/login_profile2.png" id="log_in_photo" alt="avatar">
-  </div>
+    <p id='msg'><%=message%></p>
+    <div class ="imgcontainer">
+      <img src="/image/login_profile2.png" id="log_in_photo" alt="avatar">
+    </div>
     <form action="/checkAccount" method='post'>
       <input type="text" placeholder="Username" id="username" name="username" required>
       <input type="password" placeholder="Password" id="password" name="password" required>
@@ -25,12 +24,12 @@
     </form>
     <button onclick="window.location.href ='register'"id="sign_up_button">REGISTER </button>
     <div class="sign_in_options_box">
-        <p>Sign In With: </p>
-        <button class="sign_in_options" id="gmail">
-          <img src="/image/gg_login.png" height="100%" width="100%">
-        </button>
+      <p>Sign In With: </p>
+      <button class="sign_in_options" id="gmail">
+        <img src="/image/gg_login.png" height="100%" width="100%">
+      </button>
     </div>
-</section>
+  </section>
 </body>
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 <meta name="google-signin-client_id" content="724640681185-50sh73ojcn61bg4uinoohvhf9s0b73ga.apps.googleusercontent.com">
