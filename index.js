@@ -695,7 +695,7 @@ app.get('/', function(request, response)
        var result = (results.rows == '') ? '':results.rows[0].password;
        if (result == String(pw))
        {
-         response.render('pages/index');
+         response.render('pages/matchmaking');
        }
        else {
          var message ={'message':'Account is not existing'};
