@@ -677,7 +677,7 @@ app.get('/', function(request, response) {
 
 
 //=============================================================================
-/*
+
 // Long Workpace
 //Parse URL-encoded bodies (sent by HTML form)
 app.use(express.urlencoded({extended:false}));
@@ -805,7 +805,7 @@ app.post('/register', (request,response)=>{
        }
      };
    });
-});*/
+});
 //=============================================================================
 
 
@@ -814,8 +814,13 @@ app.post('/register', (request,response)=>{
 //=============================================================================
 // Georges Workpace
 
+// app.use(express.urlencoded({extended:false}));
+// //Parse JSON body( sent by API client)
+// app.use(express.json());
+
 app.post('/gameroom', (request, response)=>{
-  var server = {"server" : request.body.serverName};
+  var server = {"server" : request.body.serverName };
+  console.log("logging results", request.body.serverName)
   response.render('pages/index', server);
 });
 
