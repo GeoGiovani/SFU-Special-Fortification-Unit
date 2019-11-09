@@ -40,6 +40,11 @@ pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
+
+var rooms;
+// var rooms[room];
+// var room[socket.id];
+
 app.use('/static', express.static(__dirname + '/static'));// Ring
 // app.get('/', function(request, response) {
 // response.sendFile(path.join(__dirname, 'index.html'));
@@ -619,6 +624,7 @@ function handleBulletCollisions() {
 
 
 
+
 //=============================================================================
 
 
@@ -707,7 +713,7 @@ app.post('/checkAccount', (request, response)=>{
        var result = (results.rows == '') ? '':results.rows[0].password;
        if (result == String(pw))
        {
-         response.render('pages/index');
+         response.render('pages/matchmaking');
        }
        else {
          var message ={'message':'Account is not existing'};
@@ -789,4 +795,8 @@ app.post('/register', (request,response)=>{
 //=============================================================================
 // Josh Workpace
 
+app.post('/gameroom', (request, response)=>{
+  response.render('pages/index');
+  console.log(request.body.tokiName);
+});
 //=============================================================================
