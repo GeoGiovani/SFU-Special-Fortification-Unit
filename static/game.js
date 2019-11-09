@@ -113,7 +113,7 @@ document.addEventListener('keyup', function(event) {
 socket.on('grid-size', function(gridSize){
   GRID_SIZE = gridSize;
 })
-socket.emit('new player');
+socket.emit('new player', serverName);
 
 setInterval(function() {
   socket.emit('movement', movement);

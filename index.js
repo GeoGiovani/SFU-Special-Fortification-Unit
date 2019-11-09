@@ -85,6 +85,10 @@ var roomData = function() {
 
   this.mapImageSrc = "";
   this.mapData; // 2d array of the map
+
+  // when was the last object spawned
+  this.lastSpawn = -1;
+  this.spawnRate = 2000;
 }
 
 
@@ -96,11 +100,12 @@ io.on('connection', function(socket) {
   socket.on('new player', function(serverName) {
     //client who called the 'new player' joins the server 'serverName'.
     socket.join(serverName);
+    console.log('serverName: ', serverName);
     getRoomBySocketId[socket.id] = serverName;
 
     //if room does not exist, create a room.
     if (rooms[serverName] == undefined) {
-      createRoom(servername); //TODO
+      createRoom(serverName); //TODO
     }
 
     console.log('socket event new player called');
@@ -144,6 +149,9 @@ io.on('connection', function(socket) {
 
   // Responds to a movement event
   socket.on('movement', function(data) {
+    if (getRoomBySocketId == undefined) {
+      return;
+    }
     var player = rooms[getRoomBySocketId[socket.id]].players[socket.id] || {};
     movePlayer(player, data);
   });
@@ -161,7 +169,10 @@ io.on('connection', function(socket) {
   //Removes disconnected player
   socket.on('disconnect', function() {
     console.log('socket event disconnect called');
-    if (rooms[getRoomBySocketId[socket.id]].players[socket.id] == undefined) {
+    if (getRoomBySocketId == undefined
+      || getRoomBySocketId[socket.id] == undefined
+      || rooms[getRoomBySocketId[socket.id]] == undefined
+      || rooms[getRoomBySocketId[socket.id]].players[socket.id] == undefined) {
       //if the socket id is not valid, ignore the disconnect signal
       console.log('invalid disconnect call: ignoring...')
       return;
@@ -181,7 +192,8 @@ setInterval(function() {
         moveEnemies(rm);
         handleBulletCollisions(rm);
         generateEnemies(rm);
-        io.broadcast.to(rm).sockets.emit('state', rooms[rm].players, rooms[rm].projectiles, rooms[rm].enemies);
+        io.broadcast.to(rm).sockets.emit('state', rooms[rm].players,
+          rooms[rm].projectiles, rooms[rm].enemies);
       }
   }
 }, 1000 / 120);
@@ -202,6 +214,11 @@ function createPlayer(id, serverName) {
     damage: 5,
     speed: 3
   };
+}
+
+//Creates a new room
+function createRoom(serverName) {
+  rooms[serverName] = roomData();
 }
 
 //Moves a player in response to keyboard input
@@ -245,44 +262,43 @@ function hasCollision(x, y){
   return false;
 }
 
-///////////----------------------I worked until here - hailey -------//////
 //Generates a projectile on shoot input
 function generateProjectile(id, data) {
   projectiles.numProjectiles++;
 
   mouseX = data.x;
   mouseY = data.y;
-  playerX = players[id].x - data.middleX;
-  playerY = players[id].y - data.middleY;
+  playerX = rooms[getRoomBySocketId[id]].players[id].x - data.middleX;
+  playerY = rooms[getRoomBySocketId[id]].players[id].y - data.middleY;
 
   dx = mouseX - playerX;
   dy = mouseY - playerY;
 
   theta = Math.atan(dx / dy);
 
-  velX = players[id].speed * Math.sin(theta);
-  velY = players[id].speed * Math.cos(theta);
+  velX = rooms[getRoomBySocketId[id]].players[id].speed * Math.sin(theta);
+  velY = rooms[getRoomBySocketId[id]].players[id].speed * Math.cos(theta);
   if (dy < 0) {
     velY *= -1;
     velX *= -1;
   }
 
-  projectiles[bulletCount] = {
-    x: players[id].x + (4 * velX),
-    y: players[id].y + (4 * velY),
+  projectiles[rooms[getRoomBySocketId[id]].bulletCount] = {
+    x: rooms[getRoomBySocketId[id]].players[id].x + (4 * velX),
+    y: rooms[getRoomBySocketId[id]].players[id].y + (4 * velY),
     vx: velX,
     vy: velY
   };
 
-  bulletCount++;
+  rooms[getRoomBySocketId[id]].bulletCount++;
   //reset bullet count
-  if (bulletCount > 100) {
-    bulletCount = 0;
+  if (rooms[getRoomBySocketId[id]].bulletCount > 100) {
+    spawnRandomObjectbulletCount = 0;
   }
 }
 
 //Spawn a random enemy
-function spawnRandomObject() {
+function spawnRandomObject(rm) {
 
   // About Math.random()
   // Math.random() generates a semi-random number
@@ -291,8 +307,8 @@ function spawnRandomObject() {
   // create A and if the random# is .50-1.00 we create B
 
   // add the new object to the objects[] array
-  if (enemies.numEnemies < 10) {
-    enemies[enemyID] = {
+  if (rooms[rm].enemies.numEnemies < 10) {
+    rooms[rm].enemies[enemyID] = {
       // type: t,
       // set x randomly but at least 15px off the canvas edges
       x: Math.random() * 350,
@@ -303,108 +319,108 @@ function spawnRandomObject() {
       speed: .5,
       health: 4
     }
-    enemies.numEnemies++;
-    enemyID++;
+    rooms[rm].enemies.numEnemies++;
+    rooms[rm].enemyID++;
   }
 }
-
+/*
 // when was the last object spawned
 var lastSpawn = -1;
 var spawnRate = 2000;
-
+*/
 //Generate enemies
-function generateEnemies() {
+function generateEnemies(rm) {
 
   // spawn a new object
-  if (spawnRate > 1000) {
-    spawnRate = spawnRate -= 1;
+  if (room[rm].spawnRate > 1000) {
+    room[rm].spawnRate = room[rm].spawnRate -= 1;
   }
 
   // get the elapsed time
   var time = Date.now();
 
   // see if its time to spawn a new object
-  if (time > (lastSpawn + spawnRate)) {
-    lastSpawn = time;
-    spawnRandomObject();
+  if (time > (rooms[rm].lastSpawn + rooms[rm].spawnRate)) {
+    rooms[rm].lastSpawn = time;
+    spawnRandomObject(rm);
     //console.log('emeny spawned. spawnRate: ', spawnRate);
   }
 }
 
 //Move projectiles along the screen
-function moveProjectiles() {
-  for (var id in projectiles) {
-    if (projectiles[id]) {
+function moveProjectiles(rm) {
+  for (var id in rooms[rm].projectiles) {
+    if (rooms[rm].projectiles[id]) {
       var delBullet = false;
-      var originX = projectiles[id].x;
-      var originY = projectiles[id].y;
-      projectiles[id].x += projectiles[id].vx;
-      projectiles[id].y += projectiles[id].vy;
-      if(hasCollision(projectiles[id].x, projectiles[id].y)){
-        projectiles[id].x = originX;
-        projectiles[id].y = originY;
+      var originX = rooms[rm].projectiles[id].x;
+      var originY = rooms[rm].projectiles[id].y;
+      rooms[rm].projectiles[id].x += rooms[rm].projectiles[id].vx;
+      rooms[rm].projectiles[id].y += rooms[rm].projectiles[id].vy;
+      if(hasCollision(rooms[rm].projectiles[id].x, rooms[rm].projectiles[id].y)){
+        rooms[rm].projectiles[id].x = originX;
+        rooms[rm].projectiles[id].y = originY;
         delBullet = true;
         // deleteBullet(id);
       }
       //Delete stale projectiles
-      if ( (projectiles[id].x > 5000) || (projectiles[id].y > 5000) ||
-          (projectiles[id].x < -5000) || (projectiles[id].y < -5000)) {
+      if ( (rooms[rm].projectiles[id].x > 5000) || (rooms[rm].projectiles[id].y > 5000) ||
+          (rooms[rm].projectiles[id].x < -5000) || (rooms[rm].projectiles[id].y < -5000)) {
           delBullet = true;
       }
       if(delBullet == true){
-        deleteBullet(id);
+        deleteBullet(id, rm);
       }
     }
   }
 }
 
-function deleteBullet(id) {
-  var temp = projectiles[bulletCount -= 1];
-  projectiles[bulletCount] = projectiles[id];
-  projectiles[id] = temp;
-  projectiles[bulletCount] = 0;
-  projectiles.numProjectiles -= 1;
+function deleteBullet(id, rm) {
+  var temp = rooms[rm].projectiles[bulletCount -= 1];
+  rooms[rm].projectiles[bulletCount] = rooms[rm].projectiles[id];
+  rooms[rm].projectiles[id] = temp;
+  rooms[rm].projectiles[bulletCount] = 0;
+  rooms[rm].projectiles.numProjectiles -= 1;
 }
 
 //Move enemies towards the nearest player
-function moveEnemies() {
+function moveEnemies(rm) {
    //Enemy movement handler
    for (var id in enemies) {
     //Find closest players
-    if ( players.numPlayers > 0 ) {
+    if ( rooms[rm].players.numPlayers > 0 ) {
     // if ( (players.numPlayers > 0) && (enemies.numEnemies > 0) ) {
       var closestPlayer;
       var closestPlayerDistance = Infinity;
-      for (var player in players) {
-        var distX = players[player].x - enemies[id].x;
-        var distY = players[player].y - enemies[id].y;
+      for (var player in rooms[rm].players) {
+        var distX = rooms[rm].players[player].x - rooms[rm].enemies[id].x;
+        var distY = rooms[rm].players[player].y - rooms[rm].enemies[id].y;
         var distance = Math.sqrt( distX * distX + distY * distY );
         if (distance < closestPlayerDistance) {
           closestPlayer = player;
           closestPlayerDistance = distance;
         }
       }
-      if (players[closestPlayer] == undefined) {
+      if (rooms[rm].players[closestPlayer] == undefined) {
         console.log("players[closestPlayer] is undefined. Ignoring",
           "moveEnemies() logic instead of letting program crash.",
           "Please check the logic.");
         return;
       }
       //Move to closest player
-      distX = enemies[id].x - players[closestPlayer].x;
-      distY = enemies[id].y - players[closestPlayer].y;
+      distX = rooms[rm].enemies[id].x - rooms[rm].players[closestPlayer].x;
+      distY = rooms[rm].enemies[id].y - rooms[rm].players[closestPlayer].y;
 
       var attackTheta = Math.atan(distX / distY);
 
       var sign = -1;
-      if (enemies[id].y < players[closestPlayer].y) {
+      if (rooms[rm].enemies[id].y < rooms[rm].players[closestPlayer].y) {
         sign = 1;
       }
 
       if ( Math.abs(distX) < 12 && Math.abs(distY) < 12 ) {
         // console.log("distX ", distX, "distY, ", distY);
         //Deplete health
-        players[closestPlayer].health -= .05;
+        rooms[rm].players[closestPlayer].health -= .05;
         //Kill player
         // if (players[closestPlayer].health < 0) {
         //   players[closestPlayer] = 0;
@@ -415,29 +431,29 @@ function moveEnemies() {
         sign = 0;
       }
 
-      enemies[id].vx =  enemies[id].speed * Math.sin(attackTheta) * sign;
-      enemies[id].vy =  enemies[id].speed * Math.cos(attackTheta) * sign;
-      var originX = enemies[id].x;
-      var originY = enemies[id].y;
-      enemies[id].x += enemies[id].vx;
-      enemies[id].y += enemies[id].vy;
-      if(hasCollision(enemies[id].x, enemies[id].y)){
-        enemies[id].x = originX;
-        enemies[id].y = originY;
+      rooms[rm].enemies[id].vx =  rooms[rm].enemies[id].speed * Math.sin(attackTheta) * sign;
+      rooms[rm].enemies[id].vy =  rooms[rm].enemies[id].speed * Math.cos(attackTheta) * sign;
+      var originX = rooms[rm].enemies[id].x;
+      var originY = rooms[rm].enemies[id].y;
+      rooms[rm].enemies[id].x += rooms[rm].enemies[id].vx;
+      rooms[rm].enemies[id].y += rooms[rm].enemies[id].vy;
+      if(hasCollision(rooms[rm].enemies[id].x, rooms[rm].enemies[id].y)){
+        rooms[rm].enemies[id].x = originX;
+        rooms[rm].enemies[id].y = originY;
       }
     }
   }
 }
 
 //Handles bullet collisions
-function handleBulletCollisions() {
+function handleBulletCollisions(rm) {
   //Player-projectile collision handler
-  for (var player in players) {
-    for (var id in projectiles) {
-      if (projectiles[id]) {
-        if ( (Math.abs(players[player].x - projectiles[id].x) < 2) &&
-            (Math.abs(players[player].y - projectiles[id].y) < 2) ) {
-          players[player].health -= 1;
+  for (var player in rooms[rm].players) {
+    for (var id in rooms[rm].projectiles) {
+      if (rooms[rm].projectiles[id]) {
+        if ( (Math.abs(rooms[rm].players[player].x - rooms[rm].projectiles[id].x) < 2) &&
+            (Math.abs(rooms[rm].players[player].y - rooms[rm].projectiles[id].y) < 2) ) {
+          rooms[rm].players[player].health -= 1;
           // if (players[player].health < 0) {
           //   players[player] = 0;
           //   players.numPlayers -= 1;
@@ -447,18 +463,18 @@ function handleBulletCollisions() {
     }
   }
   //Enemy-projectile collision handler
-  for (var enemy in enemies) {
-    for (var id in projectiles) {
-      if (projectiles[id]) {
-        if ( (Math.abs(enemies[enemy].x - projectiles[id].x) < 5) &&
-            (Math.abs(enemies[enemy].y - projectiles[id].y) < 5) ) {
-              enemies[enemy].health -= 1;
-              if (enemies[enemy].health < 0) {
-                var temp = enemies[enemyID -= 1];
-                enemies[enemyID] = enemies[enemy];
-                enemies[enemy] = temp;
-                enemies[enemyID] = 0;
-                enemies.numEnemies -= 1;
+  for (var enemy in rooms[rm].enemies) {
+    for (var id in rooms[rm].projectiles) {
+      if (rooms[rm].projectiles[id]) {
+        if ( (Math.abs(rooms[rm].enemies[enemy].x - rooms[rm].projectiles[id].x) < 5) &&
+            (Math.abs(rooms[rm].enemies[enemy].y - rooms[rm].projectiles[id].y) < 5) ) {
+              rooms[rm].enemies[enemy].health -= 1;
+              if (rooms[rm].enemies[enemy].health < 0) {
+                var temp = rooms[rm].enemies[enemyID -= 1];
+                rooms[rm].enemies[enemyID] = rooms[rm].enemies[enemy];
+                rooms[rm].enemies[enemy] = temp;
+                rooms[rm].enemies[enemyID] = 0;
+                rooms[rm].enemies.numEnemies -= 1;
               }
         }
       }
@@ -650,28 +666,10 @@ function handleBulletCollisions() {
 
 //=============================================================================
 // Hailey Workpace
-/*Guide to accessing map data:
-1. Walls: objects that has x, y, width, height, texture.
-2. Furnitures: objects that has names, x, y, direction.
-3. Enemies, bullets, players: will think about this tomorrow
 
-console.log( mapData.walls[2].x );
--->prints the x-axis of mapData's wall's 3rd element.
-
-console.log(mapData.furnitures[4].name );
--->prints the x-axis of mapData's wall's 5th element.
-*/
-
-//
-// var mapDataFromFile = JSON.parse(fs.readFileSync('static/objects/testMap.json', 'utf8'));
-// var processor = require('./static/objects/mapProcessor.js');
-// mapData = processor.constructFromData(mapDataFromFile);
-// console.log(JSON.stringify(mapData));
-
-
-
-
-// processor.constructFromData(initialData);
+app.get('/', function(request, response) {
+  response.render('pages/matchmaking');
+});
 
 //=============================================================================
 
@@ -679,6 +677,7 @@ console.log(mapData.furnitures[4].name );
 
 
 //=============================================================================
+/*
 // Long Workpace
 //Parse URL-encoded bodies (sent by HTML form)
 app.use(express.urlencoded({extended:false}));
@@ -806,7 +805,7 @@ app.post('/register', (request,response)=>{
        }
      };
    });
-});
+});*/
 //=============================================================================
 
 
