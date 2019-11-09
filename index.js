@@ -66,6 +66,17 @@ var players = {
   numPlayers: 0
 };
 
+// var rooms = {
+//   numRooms: 0
+// }
+
+// var room = {
+//   numPlayers: 0
+// };
+
+
+
+
 //Projectiles object will keep track of active projectiles
 var projectiles = {
   numProjectiles: 0
@@ -796,7 +807,7 @@ app.post('/register', (request,response)=>{
 // Georges Workpace
 
 app.post('/gameroom', (request, response)=>{
+  var server = request.body.serverName;
   response.render('pages/index');
-  console.log(request.body.serverName);
 });
 //=============================================================================
