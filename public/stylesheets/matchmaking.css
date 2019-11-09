@@ -9,11 +9,11 @@ body {
     display: none;
   }
   
-  #tokiTitle {
+  #pageTitle {
     text-align: center;
   }
 
-  #tokiTitle2 {
+  #pageTitle2 {
     margin-top: -6.5%;
     margin-bottom: 6%;
 
@@ -59,9 +59,8 @@ body {
     border-radius: 12px;
     text-align: center;
 
-    font-family: 'pokemon-font', monospace; 
+    font-family: monospace; 
     font-size: 18px;
-    /* font source: https://github.com/Superpencil/pokemon-font */
 
     background-color: rgba(15, 14, 14, 0.842);
     color: rgb(66, 196, 236);
@@ -74,8 +73,7 @@ body {
     padding: 5% 3%;
 
     font-size: 18px;
-    font-family: 'pokemon-font', monospace; 
-    /* font source: https://github.com/Superpencil/pokemon-font */
+    font-family: monospace; 
 
     background-color: rgba(15, 14, 14, 0.842);
     color: rgb(66, 196, 236);
@@ -93,8 +91,7 @@ body {
   padding: 5% 3%;
   
   font-size: 18px;
-  font-family: 'pokemon-font', monospace; 
-  /* font source: https://github.com/Superpencil/pokemon-font */
+  font-family: monospace; 
   
   background-color: rgba(15, 14, 14, 0.842);
   color: rgb(66, 196, 236);

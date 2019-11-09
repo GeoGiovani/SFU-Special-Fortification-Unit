@@ -793,10 +793,10 @@ app.post('/register', (request,response)=>{
 
 
 //=============================================================================
-// Josh Workpace
+// Georges Workpace
 
 app.post('/gameroom', (request, response)=>{
   response.render('pages/index');
-  console.log(request.body.tokiName);
+  console.log(request.body.serverName);
 });
 //=============================================================================
