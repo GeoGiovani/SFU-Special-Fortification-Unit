@@ -60,85 +60,91 @@ app.set('view engine', 'ejs');
 //Looking for static files in public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-//Players object will contain all information about each player's position,
-//health, etc.
-var players = {
-  numPlayers: 0
-};
+var getRoomBySocketId;
 
-// var rooms = {
-//   numRooms: 0
-// }
+var rooms;
 
-// var room = {
-//   numPlayers: 0
-// };
+var roomData = function() {
+  //Players object will contain all information about each player's position,
+  //health, etc.
+  this.players = {
+    numPlayers: 0
+  };
 
+  //Projectiles object will keep track of active projectiles
+  this.projectiles = {
+    numProjectiles: 0
+  }
+  this.bulletCount = 0;
 
+  //Enemies
+  this.enemies = {
+    numEnemies: 0
+  }
+  this.enemyID = 0;
 
-
-//Projectiles object will keep track of active projectiles
-var projectiles = {
-  numProjectiles: 0
+  this.mapImageSrc = "";
+  this.mapData; // 2d array of the map
 }
-var bulletCount = 0;
 
-//Enemies
-var enemies = {
-  numEnemies: 0
-}
-enemyID = 0;
 
-var mapImageSrc = "";
-var mapData; // 2d array of the map
 const GRID_SIZE = 10; // each grid size for map
 
 //Creates a new player
 io.on('connection', function(socket) {
   socket.emit('grid-size', GRID_SIZE);
-  socket.on('new player', function() {
+  socket.on('new player', function(serverName) {
+    //client who called the 'new player' joins the server 'serverName'.
+    socket.join(serverName);
+    getRoomBySocketId[socket.id] = serverName;
+
+    //if room does not exist, create a room.
+    if (rooms[serverName] == undefined) {
+      createRoom(servername); //TODO
+    }
+
     console.log('socket event new player called');
     //This condition is commented out because the 'disconnect' event is
     //commented out too. 'disconnect' is having multiple-call problem and
     //causing error for map-loading.
     //if (players.numPlayers < 4) {
-    createPlayer(socket.id);
+    createPlayer(socket.id, serverName);
     socket.emit("passId", socket.id);
 
     //constructs the very initial map for the game.
     //'disconnect' seems to have some problems. I'm fixing it to:
     //create map WHENever
-    if (players.numPlayers <= 1) {
+    if (rooms[serverName].players.numPlayers <= 1) {
       var mapDataFromFile = JSON.parse(fs.readFileSync('static/objects/testMap2.json', 'utf8'));
       var processor = require('./static/objects/mapProcessor.js');
-      mapData = processor.constructFromData(mapDataFromFile);
+      rooms[serverName].mapData = processor.constructFromData(mapDataFromFile);
       //console.log(mapData);///////*******
-      socket.emit('create map', mapData);
-      console.log('players.numPlayers: ', players.numPlayers, ', create map called');
+      socket.broadcast.to(serverName).emit('create map', rooms[serverName].mapData);
+      console.log('players.numPlayers: ', rooms[serverName].players.numPlayers, ', create map called');
     }
     else {
-      console.log('players.numPlayers: ', players.numPlayers);
-      socket.emit("deliverMapImageSrcToClient", mapImageSrc);
+      console.log('players.numPlayers: ', rooms[serverName].players.numPlayers);
+      socket.broadcast.to(serverName).emit("deliverMapImageSrcToClient", mapImageSrc);
     }
   });
 
   //socket on functions for ID, Map, etc.
   socket.on('requestPassId', function(){
-    socket.emit("passId", socket.id);
+    socket.broadcast.to(socket.id).emit("passId", socket.id);
   });
   socket.on("deliverMapImageSrcToServer", function(imageSrc){
     //console.log('deliverMapImageSrcToServer called');
-    mapImageSrc = imageSrc;
+    rooms[getRoomBySocketId[socket.id]].mapImageSrc = imageSrc;
   });
   socket.on("requestMapImageSrcFromServer", function(){
     // console.log('imageSrc returned for request:', mapImageSrc);
     // console.log('requestMapImageSrcFromServer called');
-    socket.emit("deliverMapImageSrcToClient", mapImageSrc);
+    socket.broadcast.to(socket.id).emit("deliverMapImageSrcToClient", rooms[getRoomBySocketId[socket.id]].mapImageSrc);
   });
 
   // Responds to a movement event
   socket.on('movement', function(data) {
-    var player = players[socket.id] || {};
+    var player = rooms[getRoomBySocketId[socket.id]].players[socket.id] || {};
     movePlayer(player, data);
   });
 
@@ -155,26 +161,28 @@ io.on('connection', function(socket) {
   //Removes disconnected player
   socket.on('disconnect', function() {
     console.log('socket event disconnect called');
-    if (players[socket.id] == undefined) {
+    if (rooms[getRoomBySocketId[socket.id]].players[socket.id] == undefined) {
       //if the socket id is not valid, ignore the disconnect signal
       console.log('invalid disconnect call: ignoring...')
       return;
     }
     //players[socket.id] = 0;
-    delete players[socket.id];
-    players.numPlayers -= 1;
+    delete rooms[getRoomBySocketId[socket.id]].players[socket.id];
+    rooms[getRoomBySocketId[socket.id]].players.numPlayers -= 1;
   });
 //Collects client data at 60 events/second
 });
 
 setInterval(function() {
-  if(players.numPlayers > 0){
-  //  console.log("interval player")
-    moveProjectiles();
-    moveEnemies();
-    handleBulletCollisions();
-    generateEnemies();
-    io.sockets.emit('state', players, projectiles, enemies);
+  for (var rm in rooms) {
+    if(rooms[rm].players.numPlayers > 0){
+      //  console.log("interval player")
+        moveProjectiles(rm);
+        moveEnemies(rm);
+        handleBulletCollisions(rm);
+        generateEnemies(rm);
+        io.broadcast.to(rm).sockets.emit('state', rooms[rm].players, rooms[rm].projectiles, rooms[rm].enemies);
+      }
   }
 }, 1000 / 120);
 
@@ -183,9 +191,9 @@ setInterval(function() {
 //Functions
 
 //Creates a new player
-function createPlayer(id) {
-  players.numPlayers += 1;
-  players[id] = {
+function createPlayer(id, serverName) {
+  rooms[serverName].players.numPlayers += 1;
+  rooms[serverName].players[id] = {
     playerID: players.numPlayers,
     x: 160 * GRID_SIZE,
     y: 59 * GRID_SIZE,
@@ -237,6 +245,7 @@ function hasCollision(x, y){
   return false;
 }
 
+///////////----------------------I worked until here - hailey -------//////
 //Generates a projectile on shoot input
 function generateProjectile(id, data) {
   projectiles.numProjectiles++;
