@@ -27,6 +27,9 @@ var shoot = {
     middleY: 0
 }
 
+var serverName = document.querySelector("#servername");
+console.log("LOGGING SERVER NAME", serverName.innerHTML);
+
 var hit = new Audio("HITMARKER.mp3");
 var bang = new Audio("batman punch.wav")
 hit.type = 'audio/mp3';

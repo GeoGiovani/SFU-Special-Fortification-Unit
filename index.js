@@ -807,7 +807,8 @@ app.post('/register', (request,response)=>{
 // Georges Workpace
 
 app.post('/gameroom', (request, response)=>{
-  var server = request.body.serverName;
-  response.render('pages/index');
+  var server = {"server" : request.body.serverName};
+  response.render('pages/index', server);
 });
+
 //=============================================================================
