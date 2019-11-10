@@ -32,6 +32,11 @@
     <p>Sign In With: </p>
     <p class="g-signin2" data-onsuccess="onSignIn"></p>
     <a href="#" onclick="signOut();">Sign out</a>
+    <form action="/checkAccount" method='post'>
+      <input type="text" placeholder="gmail" id="gmail_login" name="gmail" hidden>
+      <input type="submit" id="gmail_button" value="Google Login" hidden>
+
+    </form>
   </section>
 </body>
 
@@ -52,18 +57,18 @@ if (msg.innerHTML !='')
 //     console.log('User signed out.');
 //   });
 // };
-// //Google authentification
-// function onSignIn(googleUser) {
-//   // var profile = googleUser.getBasicProfile();
-//   //
-//   // console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-//   // console.log('Name: ' + profile.getName());
-//   // console.log('Image URL: ' + profile.getImageUrl());
-//   // console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-//   //
-//   // if (profile!=null)
-//   //   sendProfile(profile);  //send profile to server to check with DB
-// };
+//Google authentification
+function onSignIn(googleUser) {
+  var profile = googleUser.getBasicProfile();
+  
+  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+  console.log('Name: ' + profile.getName());
+  console.log('Image URL: ' + profile.getImageUrl());
+  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+  
+  if (profile!=null)
+    sendProfile(profile);  //send profile to server to check with DB
+};
 //
 // //Sending
 // function sendProfile(profile) {
@@ -71,7 +76,7 @@ if (msg.innerHTML !='')
 //     "username":profile.getName(),
 //     "gmail":profile.getEmail()
 //   }
-//
+
 //   if (profile!=null)
 //   {
 //     var request = new XMLHttpRequest();
@@ -97,7 +102,8 @@ function testRequest(){
     },
     body: JSON.stringify(data)
   }
-  fetch('/gglogin',options);
+  fetch('/gglogin', options);
+
 };
 
 var btn =document.querySelector('#test_btn');

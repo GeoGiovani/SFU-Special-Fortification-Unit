@@ -745,12 +745,11 @@ app.post('/gglogin', (request, response)=>{
       if (error)
         throw(error);
     }
-    // response.render('pages/index',uname);
   });
   console.log('Ready to response')
   var user = {'username':uname};
   // response.render('pages/index', user);
-  render('pages/index', user);
+  response.render('pages/index', user);
 });
 
 //sign-up page
