@@ -430,7 +430,6 @@ function handleBulletCollisions() {
 
 //=============================================================================
 // Fazal Workspace
-// --------------------------------------------------- partial implementation ends for enemy move to player
 // // Enemy moves towards player while avoiding an obstacle
 // // Calculate vector between player and target
 
@@ -464,7 +463,6 @@ function handleBulletCollisions() {
 // enemyPosX -= toMouseX * (speed * 0.4);
 // enemyPosY -= toMouseY * (speed * 0.4);
 
-// --------------------------------------------------- partial implementation ends for enemy move to player
 
 //Function to return a vector from one point to the next
 // Code is in ES6(a js framework)
