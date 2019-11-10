@@ -5,8 +5,13 @@
     <meta charset="utf-8" />
     <title> Login </title>
     <link rel ="stylesheet" href ="/stylesheets/login_page.css" />
-
+    <meta name="google-signin-client_id"
+      content="628959293347-sp89cfrqn74mo2m0gmukaqbbmdugmgbt.apps.googleusercontent.com">
+    <!-- <srcipt src="/js/login.js" defer> </script> -->
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 </head>
+
 <body>
   <section id ="page_title">
     <h1 class="title"> S . F . U </h1>
@@ -22,42 +27,81 @@
       <input type="password" placeholder="Password" id="password" name="password" required>
       <input type="submit" id="sign_in_button" value="JOIN US" />
     </form>
-    <button onclick="window.location.href ='register'"id="sign_up_button">REGISTER </button>
-    <div class="sign_in_options_box">
-      <p>Sign In With: </p>
-      <button class="sign_in_options" id="gmail">
-        <img src="/image/gg_login.png" height="100%" width="100%">
-      </button>
-    </div>
+    <button onclick="window.location.href ='register'" id="sign_up_button">REGISTER </button>
+    <button id="test_btn">Testing</button>
+    <p>Sign In With: </p>
+    <p class="g-signin2" data-onsuccess="onSignIn"></p>
+    <a href="#" onclick="signOut();">Sign out</a>
   </section>
 </body>
 
-<script src="https://apis.google.com/js/platform.js" async defer></script>
-<meta name="google-signin-client_id"
-  content="628959293347-el329gcibeqdddpskn328jrakb7e8bn4.apps.googleusercontent.com">
-<div class="g-signin2" data-onsuccess="onSignIn"></div>
-<a href="#" onclick="signOut();">Sign out</a>
-<script>
-  function signOut() {
-    var auth2 = gapi.auth2.getAuthInstance();
-    auth2.signOut().then(function () {
-      console.log('User signed out.');
-    });
-  }
-</script>
-</html>
+
 
 <script>
-  var msg = document.querySelector('#msg');
-  if (msg.innerHTML !='')
+//Call a popup alert for failure in sign-up or sign-in
+var msg = document.querySelector('#msg');
+if (msg.innerHTML !='')
+  {
+    alert(msg.innerHTML);
+  };
+
+// //Google sign out function
+// function signOut() {
+//   var auth2 = gapi.auth2.getAuthInstance();
+//   auth2.signOut().then(function () {
+//     console.log('User signed out.');
+//   });
+// };
+// //Google authentification
+// function onSignIn(googleUser) {
+//   // var profile = googleUser.getBasicProfile();
+//   //
+//   // console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+//   // console.log('Name: ' + profile.getName());
+//   // console.log('Image URL: ' + profile.getImageUrl());
+//   // console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+//   //
+//   // if (profile!=null)
+//   //   sendProfile(profile);  //send profile to server to check with DB
+// };
+//
+// //Sending
+// function sendProfile(profile) {
+//   var data = {
+//     "username":profile.getName(),
+//     "gmail":profile.getEmail()
+//   }
+//
+//   if (profile!=null)
+//   {
+//     var request = new XMLHttpRequest();
+//     var url ="https://ggtest213.herokuapp.com/";
+//     request.open('POST',url,true);
+//     request.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+//     request.send(JSON.stringify(data));
+//   };
+// };
+
+function testRequest(){
+  console.log('testRequest() evoked');
+  var data = {
+    'username':'long3',
+    'password':'123456',
+    'gmail':'long3@gmail.com'
+  };
+  const options ={
+    method: 'POST',
+    headers:
     {
-      alert(msg.innerHTML);
-    };
-  function onSignIn(googleUser) {
-    var profile = googleUser.getBasicProfile();
-    console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-    console.log('Name: ' + profile.getName());
-    console.log('Image URL: ' + profile.getImageUrl());
-    console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify(data)
   }
+  fetch('/gglogin',options);
+};
+
+var btn =document.querySelector('#test_btn');
+btn.addEventListener('click',testRequest);
+
 </script>
+</html>
