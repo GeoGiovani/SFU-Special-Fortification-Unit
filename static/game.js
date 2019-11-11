@@ -28,8 +28,6 @@ var shoot = {
 }
 
 var serverName = document.querySelector("#servername");
-console.log("LOGGING SERVER NAME", serverName.innerHTML);
-
 var hit = new Audio("HITMARKER.mp3");
 var bang = new Audio("batman punch.wav")
 hit.type = 'audio/mp3';
@@ -113,7 +111,8 @@ document.addEventListener('keyup', function(event) {
 socket.on('grid-size', function(gridSize){
   GRID_SIZE = gridSize;
 })
-socket.emit('new player', serverName);
+
+socket.emit('new player', serverName.innerHTML);
 
 setInterval(function() {
   socket.emit('movement', movement);
@@ -133,8 +132,6 @@ setInterval(function() {
 window.addEventListener('mousemove', function (e) {
   xPos = e.pageX;
   yPos = e.pageY;
-  // console.log(xPos);
-  // console.log(yPos);
 });
 
   var context = canvas.getContext('2d');

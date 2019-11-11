@@ -97,11 +97,10 @@ const GRID_SIZE = 10; // each grid size for map
 //Creates a new player
 io.on('connection', function(socket) {
   socket.emit('grid-size', GRID_SIZE);
-  socket.on('new player', function(serverName) {
+  socket.on('new player', function(data) {
     //client who called the 'new player' joins the server 'serverName'.
     socket.join(serverName);
-    console.log('serverName: ', serverName);
-    getRoomBySocketId[socket.id] = serverName;
+    // getRoomBySocketId[socket.id] = serverName;
 
     //if room does not exist, create a room.
     if (rooms[serverName] == undefined) {
