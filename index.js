@@ -101,6 +101,7 @@ io.on('connection', function(socket) {
       serverName = "STUB";
     }
     //client who called the 'new player' joins the server 'serverName'.
+    console.log("LOGGING NAME", serverName)
     socket.join(serverName);
     // getRoomBySocketId[socket.id] = serverName;
 
@@ -669,9 +670,9 @@ function handleBulletCollisions(rm) {
 //=============================================================================
 // Hailey Workpace
 //
-// app.get('/', function(request, response) {
-//   response.render('pages/matchmaking');
-// });
+app.get('/', function(request, response) {
+  response.render('pages/matchmaking');
+});
 
 //=============================================================================
 
