@@ -141,7 +141,7 @@ window.addEventListener('mousemove', function (e) {
       socket.emit('requestPassId');
       return;
     }
-    if (mapImage.src == "") {
+    if (!mapImageLoaded) {
       socket.emit("requestMapImageSrcFromServer");
       return;
     }
