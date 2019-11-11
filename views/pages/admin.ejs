@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title> Login </title>
+    <link rel ="stylesheet" href ="/stylesheets/admin.css" />
+</head>
+<body>
+  <section id ="page_title">
+    <h1 class="title"> S . F . U </h1>
+    <h2 class="title"> Special Fortification Unit</h2>
+  </section>
+  <section id="login_box">
+
+    <!-- display table(s) -->
+    <div id="Datatable">
+            <table class="dataTable">
+                <% rows.forEach((r) => { %> 
+                <tbody>
+                    <tr class="row">
+                        <td>user_id</td><td id="idOut"><%=r.user_id%></td>
+                        <td>username</td><td id="usernameOut"><%=r.username%></td>
+                    </tr>
+        
+                    <tr class="row">
+                        <td>score</td><td id="scoreOut"><%=r.score%></td>
+                        <td>gmail</td><td id="gmailOut"><%=r.gmail%></td>
+                    </tr>
+                </tbody>
+                <% }); %>
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>
+
+<script>
+  var msg = document.querySelector('#msg');
+  if (msg.innerHTML !='')
+    {
+      alert(msg.innerHTML);
+    };
+</script>
+

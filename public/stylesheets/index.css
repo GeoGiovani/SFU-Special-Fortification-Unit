@@ -10,6 +10,6 @@ body{
     margin-left: auto;
     display: block;
     width: 800px; */
-    background-color: aqua;
-    /*background-image: url('../image/aq.jpeg');*/
+    background-color: white;
+    background-image: url(../image/darkbackground.jpg);
 }

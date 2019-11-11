@@ -1,13 +1,15 @@
 @font-face{
   font-family:pacfont;
-  src:url("/font/pac-font.ttf");
+  src:url("../font/pac-font.ttf");
 }
-{
+
+/* {
   margin: 0px;
   padding: 0px;
   height: 100%;
   width: 100%;
-}
+} */
+
 ::placeholder {
   color: black;
 }
