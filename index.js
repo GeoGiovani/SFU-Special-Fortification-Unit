@@ -466,7 +466,7 @@ function moveEnemies(rm) {
       var originY = rooms[rm].enemies[id].y;
       rooms[rm].enemies[id].x += rooms[rm].enemies[id].vx;
       rooms[rm].enemies[id].y += rooms[rm].enemies[id].vy;
-      if(hasCollision(rooms[rm].enemies[id].x, rooms[rm].enemies[id].y)){
+      if(hasCollision(rooms[rm].enemies[id].x, rooms[rm].enemies[id].y, rm)){
         rooms[rm].enemies[id].x = originX;
         rooms[rm].enemies[id].y = originY;
       }
