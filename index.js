@@ -92,18 +92,18 @@ io.on('connection', function(socket) {
     //constructs the very initial map for the game.
     //'disconnect' seems to have some problems. I'm fixing it to:
     //create map WHENever
-    if (rooms[serverName].players.numPlayers <= 1) {
-      var mapDataFromFile = JSON.parse(fs.readFileSync('static/objects/testMap2.json', 'utf8'));
-      var processor = require('./static/objects/mapProcessor.js');
-      rooms[serverName].mapData = processor.constructFromData(mapDataFromFile);
-      //console.log(mapData);///////*******
-      socket.broadcast.to(serverName).emit('create map', rooms[serverName].mapData);
-      console.log('players.numPlayers: ', rooms[serverName].players.numPlayers, ', create map called');
-    }
-    else {
-      console.log('players.numPlayers: ', rooms[serverName].players.numPlayers);
-      socket.broadcast.to(serverName).emit("deliverMapImageSrcToClient", mapImageSrc);
-    }
+    // if (rooms[serverName].players.numPlayers <= 1) {
+    //   var mapDataFromFile = JSON.parse(fs.readFileSync('static/objects/testMap2.json', 'utf8'));
+    //   var processor = require('./static/objects/mapProcessor.js');
+    //   rooms[serverName].mapData = processor.constructFromData(mapDataFromFile);
+    //   //console.log(mapData);///////*******
+    //   socket.broadcast.to(serverName).emit('create map', rooms[serverName].mapData);
+    //   console.log('players.numPlayers: ', rooms[serverName].players.numPlayers, ', create map called');
+    // }
+    // else {
+    //   console.log('players.numPlayers: ', rooms[serverName].players.numPlayers);
+    //   socket.broadcast.to(serverName).emit("deliverMapImageSrcToClient", mapImageSrc);
+    // }
   });
 
   //socket on functions for ID, Map, etc.
@@ -111,7 +111,7 @@ io.on('connection', function(socket) {
     socket.broadcast.to(socket.id).emit("passId", socket.id);
   });
   socket.on("deliverMapImageSrcToServer", function(imageSrc){
-    //console.log('deliverMapImageSrcToServer called');
+    //console.losg('deliverMapImageSrcToServer called');
     rooms[getRoomBySocketId[socket.id]].mapImageSrc = imageSrc;
   });
   socket.on("requestMapImageSrcFromServer", function(){
@@ -127,7 +127,7 @@ io.on('connection', function(socket) {
       return;
     }
     var player = rooms[getRoomBySocketId[socket.id]].players[socket.id] || {};
-    movePlayer(player, data);
+    movePlayer(player, data, getRoomBySocketId[socket.id]);
   });
 
   //Code block to respond to shooting
@@ -136,7 +136,7 @@ io.on('connection', function(socket) {
       // console.log("emit sound");
       // var sound = "bang";
       // socket.emit('sound', sound);
-      generateProjectile(socket.id, data);
+      generateProjectile(socket.id, data, getRoomBySocketId[socket.id]);
     }
   });
 
@@ -156,22 +156,36 @@ io.on('connection', function(socket) {
     rooms[getRoomBySocketId[socket.id]].players.numPlayers -= 1;
   });
 //Collects client data at 60 events/second
+
+  setInterval(function() {
+    for (var rm in rooms) {
+      if(rooms[rm].players.numPlayers > 0){
+        //  console.log("interval player")
+          moveProjectiles(rm);
+          moveEnemies(rm);
+          handleBulletCollisions(rm);
+          generateEnemies(rm);
+          socket.broadcast.to(rm).emit('state', rooms[rm].players,
+            rooms[rm].projectiles, rooms[rm].enemies);
+        }
+    }
+  }, 1000 / 120);
 });
 
-setInterval(function() {
-  for (var rm in rooms) {
-    if(rooms[rm].players.numPlayers > 0){
-      //  console.log("interval player")
-        moveProjectiles(rm);
-        moveEnemies(rm);
-        handleBulletCollisions(rm);
-        generateEnemies(rm);
-        console.log("LOGGING rm", rm);
-        io.broadcast.to(rm).sockets.emit('state', rooms[rm].players,
-          rooms[rm].projectiles, rooms[rm].enemies);
-      }
-  }
-}, 1000 / 120);
+// setInterval(function() {
+//   for (var rm in rooms) {
+//     if(rooms[rm].players.numPlayers > 0){
+//       //  console.log("interval player")
+//         moveProjectiles(rm);
+//         moveEnemies(rm);
+//         handleBulletCollisions(rm);
+//         generateEnemies(rm);
+//         console.log("LOGGING rm", rm);
+//         io.sockets.broadcast.to(rm).emit('state', rooms[rm].players,
+//           rooms[rm].projectiles, rooms[rm].enemies);
+//       }
+//   }
+// }, 1000 / 120);
 
 
 //=============================================================================
@@ -226,10 +240,17 @@ function roomData(serverName) {
 function createRoom(serverName) {
   rooms[serverName] = roomData(serverName);
   console.log("LOGGING ROOMS", rooms[serverName]);
+
+  var mapDataFromFile = JSON.parse(fs.readFileSync('static/objects/testMap2.json', 'utf8'));
+  var processor = require('./static/objects/mapProcessor.js');
+  rooms[serverName].mapData = processor.constructFromData(mapDataFromFile);
+  //console.log(mapData);///////*******
+  io.sockets.to(serverName).emit('create map', rooms[serverName].mapData);
+  console.log('players.numPlayers: ', rooms[serverName].players.numPlayers, ', create map called');
 }
 
 //Moves a player in response to keyboard input
-function movePlayer(player, data) {
+function movePlayer(player, data, rm) {
   //Modified the values here to reflect player speed - GG 2019.10.26 17:30
   var originX = player.x;
   var originY = player.y;
@@ -247,7 +268,7 @@ function movePlayer(player, data) {
     player.y += player.speed;
   }
   if(player != undefined){
-    if(hasCollision(player.x, player.y)){
+    if(hasCollision(player.x, player.y, rm)){
       player.x = originX;
       player.y = originY
     }
@@ -255,14 +276,15 @@ function movePlayer(player, data) {
 }
 
 //check if there is collision  at direction
-function hasCollision(x, y){
+function hasCollision(x, y, rm){
   var gridX = Math.floor(x / GRID_SIZE);
   var gridY = Math.floor(y / GRID_SIZE);
-  if(mapData == undefined || mapData[gridX] == undefined
-    || mapData[gridX][gridY] == undefined){
+  if(rooms[rm] == undefined || rooms[rm].mapData == undefined
+    || rooms[rm].mapData[gridX] == undefined
+    || rooms[rm].mapData[gridX][gridY] == undefined){
     // console.log("collision " + gridX + ", " + gridY)
     return false;
-  }else if(mapData[gridX][gridY].collision == true){
+  }else if(rooms[rm].mapData[gridX][gridY].collision == true){
     // console.log("collision " + gridX + ", " + gridY)
     return true;
   }
@@ -270,36 +292,36 @@ function hasCollision(x, y){
 }
 
 //Generates a projectile on shoot input
-function generateProjectile(id, data) {
-  projectiles.numProjectiles++;
+function generateProjectile(id, data, rm) {
+  rooms[rm].projectiles.numProjectiles++;
 
   mouseX = data.x;
   mouseY = data.y;
-  playerX = rooms[getRoomBySocketId[id]].players[id].x - data.middleX;
-  playerY = rooms[getRoomBySocketId[id]].players[id].y - data.middleY;
+  playerX = rooms[rm].players[id].x - data.middleX;
+  playerY = rooms[rm].players[id].y - data.middleY;
 
   dx = mouseX - playerX;
   dy = mouseY - playerY;
 
   theta = Math.atan(dx / dy);
 
-  velX = rooms[getRoomBySocketId[id]].players[id].speed * Math.sin(theta);
-  velY = rooms[getRoomBySocketId[id]].players[id].speed * Math.cos(theta);
+  velX = rooms[rm].players[id].speed * Math.sin(theta);
+  velY = rooms[rm].players[id].speed * Math.cos(theta);
   if (dy < 0) {
     velY *= -1;
     velX *= -1;
   }
 
-  projectiles[rooms[getRoomBySocketId[id]].bulletCount] = {
-    x: rooms[getRoomBySocketId[id]].players[id].x + (4 * velX),
-    y: rooms[getRoomBySocketId[id]].players[id].y + (4 * velY),
+  rooms[rm].projectiles[rooms[rm].bulletCount] = {
+    x: rooms[rm].players[id].x + (4 * velX),
+    y: rooms[rm].players[id].y + (4 * velY),
     vx: velX,
     vy: velY
   };
 
-  rooms[getRoomBySocketId[id]].bulletCount++;
+  rooms[rm].bulletCount++;
   //reset bullet count
-  if (rooms[getRoomBySocketId[id]].bulletCount > 100) {
+  if (rooms[rm].bulletCount > 100) {
     spawnRandomObjectbulletCount = 0;
   }
 }
@@ -382,10 +404,10 @@ function moveProjectiles(rm) {
 }
 
 function deleteBullet(id, rm) {
-  var temp = rooms[rm].projectiles[bulletCount -= 1];
-  rooms[rm].projectiles[bulletCount] = rooms[rm].projectiles[id];
+  var temp = rooms[rm].projectiles[rooms[rm].bulletCount -= 1];
+  rooms[rm].projectiles[rooms[rm].bulletCount] = rooms[rm].projectiles[id];
   rooms[rm].projectiles[id] = temp;
-  rooms[rm].projectiles[bulletCount] = 0;
+  rooms[rm].projectiles[rooms[rm].bulletCount] = 0;
   rooms[rm].projectiles.numProjectiles -= 1;
 }
 
