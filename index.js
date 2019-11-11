@@ -103,7 +103,7 @@ io.on('connection', function(socket) {
     //client who called the 'new player' joins the server 'serverName'.
     console.log("LOGGING NAME", serverName)
     socket.join(serverName);
-    // getRoomBySocketId[socket.id] = serverName;
+    getRoomBySocketId[socket.id] = serverName;
 
     //if room does not exist, create a room.
     if (rooms[serverName] == undefined) {
@@ -151,7 +151,8 @@ io.on('connection', function(socket) {
 
   // Responds to a movement event
   socket.on('movement', function(data) {
-    if (getRoomBySocketId == undefined) {
+    if (getRoomBySocketId == undefined
+      || getRoomBySocketId[socket.id] == undefined) {
       return;
     }
     var player = rooms[getRoomBySocketId[socket.id]].players[socket.id] || {};
@@ -221,7 +222,7 @@ function createPlayer(id, serverName) {
 //Creates a new room
 function createRoom(serverName) {
   rooms[serverName] = roomData();
-  console.log(room[serverName]);
+  console.log(rooms[serverName]);
 }
 
 //Moves a player in response to keyboard input
