@@ -699,7 +699,7 @@ app.post('/checkAccount', (request, response)=>{
   }
   else {
    pool.query(
-     'SELECT password FROM account WHERE username=$1',[uname], (error,results)=>{
+     'SELECT password, online FROM account WHERE username=$1',[uname], (error,results)=>{
        if (error)
        {
          throw(error);
@@ -708,12 +708,27 @@ app.post('/checkAccount', (request, response)=>{
        var result = (results.rows == '') ? '':results.rows[0].password;
        if (result == String(pw))
        {
+         //If user already online, reject login attempt
+         if (results.rows[0].online) {
+          console.log("Redundant login attempt for user $1", [uname]);
+          var message ={'message':'Account is already logged in!'};
+          response.render('pages/login',message);
+         }
          var user = {'username':uname};
-         response.render('pages/index',user);
+
+        //Upade online status
+        pool.query(
+          'UPDATE account SET online = false WHERE username=$1',[uname], (error,results)=>{
+            if (error)
+            {
+              throw(error);
+            }
+        });
+        response.render('pages/index',user);
        }
        else {
-         var message ={'message':'Account is not existing'};
-         response.render('pages/login',message);
+        var message ={'message':'Account is not existing'};
+        response.render('pages/login',message);
        }
      });
   }
