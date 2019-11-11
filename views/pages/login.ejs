@@ -22,16 +22,22 @@
     <div class ="imgcontainer">
       <img src="/image/login_profile2.png" id="log_in_photo" alt="avatar">
     </div>
-    <form action="/checkAccount" method='post'>
-      <input type="text" placeholder="Username" id="username" name="username" required>
+    <form action="/checkAccount" method='post' id =convention_login>
+      <input type="text" placeholder="Username" class="username" name="username" required>
       <input type="password" placeholder="Password" id="password" name="password" required>
-      <input type="submit" id="sign_in_button" value="JOIN US" />
+      <input type="submit" class="sign_in_button" value="JOIN US" />
+    </form>
+
+    <form action="/ggAccount" method='post' id =google_login>
+      <input type="text" placeholder="Username" class="username" name="username" id="username" required>
+      <input type="gmail" placeholder="Gmail" id="gmail" name="gmail" required>
+      <input type="submit" class="sign_in_button" value="JOIN US" />
     </form>
     <button onclick="window.location.href ='register'" id="sign_up_button">REGISTER </button>
     <button id="test_btn">Testing</button>
     <p>Sign In With: </p>
-    <p class="g-signin2" data-onsuccess="onSignIn"></p>
-    <a href="#" onclick="signOut();">Sign out</a>
+    <p class="g-signin2" data-onsuccess="onSignIn" id="gg_sign_in"></p>
+    <a href="#" onclick="signOut();" id=sign_out_btn>Sign out</a>
   </section>
 </body>
 
@@ -64,29 +70,11 @@ if (msg.innerHTML !='')
 //   // if (profile!=null)
 //   //   sendProfile(profile);  //send profile to server to check with DB
 // };
-//
-// //Sending
-// function sendProfile(profile) {
-//   var data = {
-//     "username":profile.getName(),
-//     "gmail":profile.getEmail()
-//   }
-//
-//   if (profile!=null)
-//   {
-//     var request = new XMLHttpRequest();
-//     var url ="https://ggtest213.herokuapp.com/";
-//     request.open('POST',url,true);
-//     request.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-//     request.send(JSON.stringify(data));
-//   };
-// };
 
 function testRequest(){
   console.log('testRequest() evoked');
   var data = {
     'username':'long3',
-    'password':'123456',
     'gmail':'long3@gmail.com'
   };
   const options ={
@@ -97,7 +85,14 @@ function testRequest(){
     },
     body: JSON.stringify(data)
   }
-  fetch('/gglogin',options);
+  fetch('/gglogin',options).then(response=>{
+    document.querySelector('#convention_login').style.display = "none";
+    document.querySelector('#gg_sign_in').style.display = "none";
+    document.querySelector('#google_login').style.display = "block";
+    document.querySelector('#sign_out_btn').style.display = "block";
+    document.querySelector('#username').value =String(data.username);
+    document.querySelector('#gmail').value=String(data.gmail);
+  });
 };
 
 var btn =document.querySelector('#test_btn');

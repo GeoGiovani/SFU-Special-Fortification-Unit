@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tokidex</title>
+    <link rel="stylesheet" href="/stylesheets/searcher.css">
+
+<body>
+    <div id="mainCard">
+        <h1 id="tokiTitle">Search for Server</h1>
+
+        <div id="searchBar">
+            <form class="innerSearchBar" action="/results" method="post">
+                <input id="searchInput" name="tokiName" input type="string"
+                    input type="string"
+                    pattern="^[a-zA-Z0-9]*$"
+                    maxlength="12"
+                    oninvalid="this.setCustomValidity('Use alphanumerals only')"
+                    onchange="try{setCustomValidity('')}catch(e){}"
+                    oninput="setCustomValidity(' ')"
+                    placeholder="PLEASE ENTER TOKIMON NAME"
+                    onfocus="this.placeholder = ''"
+                    onblur="this.placeholder = 'PLEASE ENTER TOKIMON NAME'" >
+
+                <input id="searchButton" type="submit" name="" value="SUBMIT">
+            </form>
+        </div>
+    </div>
+</body>
+</html>

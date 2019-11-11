@@ -719,38 +719,34 @@ app.post('/checkAccount', (request, response)=>{
   }
 });
 
-//login with google
+//Cheking gmail data with database
 app.post('/gglogin', (request, response)=>{
-  console.log('Got a request');
-  console.log(request.body);
   const uname = request.body.username;
-  const password = request.body.password;
   const gmail=request.body.gmail;
   const searchQuery = "SELECT * FROM account WHERE gmail=$1";
   pool.query(searchQuery,[gmail], (error,results) =>{
     if (error){
       throw(error);
     }
-    console.log('Check with Database');
-    if (results.rows!='')
-    {
-      console.log('User exists')
-      console.log(results.rows[0])
-    }
     if (results.rows=='')
     {
       console.log('Creating new account with Google');
-      const createQuery = "INSERT INTO account (username,password,gmail) VALUES($1,$2,$3)";
-      pool.query(createQuery,[uname,password,gmail], (error,results));
+      const createQuery = "INSERT INTO account (username,gmail) VALUES($1,$2)";
+      pool.query(createQuery,[uname,gmail], (error,results));
       if (error)
         throw(error);
     }
-    // response.render('pages/index',uname);
   });
-  console.log('Ready to response')
-  var user = {'username':uname};
-  // response.render('pages/index', user);
-  render('pages/index', user);
+  response.end();
+});
+//Login with gmail
+app.post('/ggAccount',(request,response)=>
+{
+  const uname = request.body.username;
+  const user = {
+    'username':uname
+  };
+  response.render('pages/index',user);
 });
 
 //sign-up page

@@ -56,7 +56,7 @@ h2{
   margin:auto;
   }
 
-#username{
+.username{
   margin:auto;
   margin-top:2vh;
   width: 60%;
@@ -79,7 +79,19 @@ h2{
   border:none;
 }
 
-#sign_in_button{
+#gmail{
+  margin:auto;
+  width:60%;
+  height: 8%;
+  display:block;
+  overflow:auto;
+  margin-top:2vh;
+  margin-bottom:2vh;
+  background:transparent;
+  border:none;
+}
+
+.sign_in_button{
   display:block;
   margin:auto;
   margin-bottom:3vh;
@@ -91,13 +103,10 @@ h2{
 }
 
 
-.sign_in_options_box{
-  margin: auto;
-  border-radius: 1%;
+#google_login{
+  display:none;
 }
 
-#gmail{
-  width:3vw;
-  height:4vh;
-  text-align:center;
+#sign_out_btn{
+  display:none;
 }
