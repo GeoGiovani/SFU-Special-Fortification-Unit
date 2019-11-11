@@ -60,13 +60,12 @@ app.set('view engine', 'ejs');
 //Looking for static files in public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-var getRoomBySocketId;
+var getRoomBySocketId = {};
 
-var rooms;
+var rooms = {};
 
 var roomData = function() {
   //Players object will contain all information about each player's position,
-  //health, etc.
   this.players = {
     numPlayers: 0
   };
@@ -98,6 +97,9 @@ const GRID_SIZE = 10; // each grid size for map
 io.on('connection', function(socket) {
   socket.emit('grid-size', GRID_SIZE);
   socket.on('new player', function(serverName) {
+    if (serverName == undefined) {
+      serverName = "STUB";
+    }
     //client who called the 'new player' joins the server 'serverName'.
     socket.join(serverName);
     console.log('serverName: ', serverName);
@@ -219,6 +221,7 @@ function createPlayer(id, serverName) {
 //Creates a new room
 function createRoom(serverName) {
   rooms[serverName] = roomData();
+  console.log(room[serverName]);
 }
 
 //Moves a player in response to keyboard input
@@ -666,10 +669,10 @@ function handleBulletCollisions(rm) {
 
 //=============================================================================
 // Hailey Workpace
-
-app.get('/', function(request, response) {
-  response.render('pages/matchmaking');
-});
+//
+// app.get('/', function(request, response) {
+//   response.render('pages/matchmaking');
+// });
 
 //=============================================================================
 
