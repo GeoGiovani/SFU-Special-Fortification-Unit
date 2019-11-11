@@ -41,7 +41,7 @@ pool = new Pool({
 });
 
 
-var rooms;
+var rooms = {};
 // var rooms[room];
 // var room[socket.id];
 
@@ -61,35 +61,6 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
 var getRoomBySocketId = {};
-
-var rooms = {};
-
-var roomData = function() {
-  //Players object will contain all information about each player's position,
-  this.players = {
-    numPlayers: 0
-  };
-
-  //Projectiles object will keep track of active projectiles
-  this.projectiles = {
-    numProjectiles: 0
-  }
-  this.bulletCount = 0;
-
-  //Enemies
-  this.enemies = {
-    numEnemies: 0
-  }
-  this.enemyID = 0;
-
-  this.mapImageSrc = "";
-  this.mapData; // 2d array of the map
-
-  // when was the last object spawned
-  this.lastSpawn = -1;
-  this.spawnRate = 2000;
-}
-
 
 const GRID_SIZE = 10; // each grid size for map
 
@@ -195,6 +166,7 @@ setInterval(function() {
         moveEnemies(rm);
         handleBulletCollisions(rm);
         generateEnemies(rm);
+        console.log("LOGGING rm", rm);
         io.broadcast.to(rm).sockets.emit('state', rooms[rm].players,
           rooms[rm].projectiles, rooms[rm].enemies);
       }
@@ -209,7 +181,7 @@ setInterval(function() {
 function createPlayer(id, serverName) {
   rooms[serverName].players.numPlayers += 1;
   rooms[serverName].players[id] = {
-    playerID: players.numPlayers,
+    playerID: rooms[serverName].players.numPlayers,
     x: 160 * GRID_SIZE,
     y: 59 * GRID_SIZE,
     healsth: 4.33,
@@ -219,10 +191,41 @@ function createPlayer(id, serverName) {
   };
 }
 
+function roomData(serverName) {
+  //Players object will contain all information about each player's position,
+  var room = {}
+
+
+  room.players = {
+    numPlayers: 0
+  };
+
+  //Projectiles object will keep track of active projectiles
+  room.projectiles = {
+    numProjectiles: 0
+  }
+  room.bulletCount = 0;
+
+  //Enemies
+  room.enemies = {
+    numEnemies: 0
+  }
+  room.enemyID = 0;
+
+  room.mapImageSrc = "";
+  room.mapData; // 2d array of the map
+
+  // when was the last object spawned
+  room.lastSpawn = -1;
+  room.spawnRate = 2000;
+
+  return room
+}
+
 //Creates a new room
 function createRoom(serverName) {
-  rooms[serverName] = roomData();
-  console.log(rooms[serverName]);
+  rooms[serverName] = roomData(serverName);
+  console.log("LOGGING ROOMS", rooms[serverName]);
 }
 
 //Moves a player in response to keyboard input
@@ -312,7 +315,7 @@ function spawnRandomObject(rm) {
 
   // add the new object to the objects[] array
   if (rooms[rm].enemies.numEnemies < 10) {
-    rooms[rm].enemies[enemyID] = {
+    rooms[rm].enemies[rooms[rm].enemyID] = {
       // type: t,
       // set x randomly but at least 15px off the canvas edges
       x: Math.random() * 350,
@@ -336,8 +339,8 @@ var spawnRate = 2000;
 function generateEnemies(rm) {
 
   // spawn a new object
-  if (room[rm].spawnRate > 1000) {
-    room[rm].spawnRate = room[rm].spawnRate -= 1;
+  if (rooms[rm].spawnRate > 1000) {
+    rooms[rm].spawnRate = rooms[rm].spawnRate -= 1;
   }
 
   // get the elapsed time
@@ -389,7 +392,7 @@ function deleteBullet(id, rm) {
 //Move enemies towards the nearest player
 function moveEnemies(rm) {
    //Enemy movement handler
-   for (var id in enemies) {
+   for (var id in rooms[rm].enemies) {
     //Find closest players
     if ( rooms[rm].players.numPlayers > 0 ) {
     // if ( (players.numPlayers > 0) && (enemies.numEnemies > 0) ) {
