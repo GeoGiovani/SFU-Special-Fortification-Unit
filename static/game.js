@@ -142,7 +142,7 @@ window.addEventListener('mousemove', function (e) {
       return;
     }
     if (!mapImageLoaded) {
-      console.log("requesting map image to server...");
+      //console.log("requesting map image to server...");
       socket.emit("requestMapImageSrcFromServer");
       return;
     }
