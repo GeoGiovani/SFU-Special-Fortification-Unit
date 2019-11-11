@@ -724,11 +724,11 @@ app.post('/checkAccount', (request, response)=>{
               throw(error);
             }
         });
-        response.render('pages/index',user);
+        response.render('pages/index', user);
        }
        else {
         var message ={'message':'Account is not existing'};
-        response.render('pages/login',message);
+        response.render('pages/login', message);
        }
      });
   }
