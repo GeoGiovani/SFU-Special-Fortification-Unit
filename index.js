@@ -102,8 +102,7 @@ io.on('connection', function(socket) {
     }
     //client who called the 'new player' joins the server 'serverName'.
     socket.join(serverName);
-    console.log('serverName: ', serverName);
-    getRoomBySocketId[socket.id] = serverName;
+    // getRoomBySocketId[socket.id] = serverName;
 
     //if room does not exist, create a room.
     if (rooms[serverName] == undefined) {
