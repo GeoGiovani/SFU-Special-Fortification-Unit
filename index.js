@@ -176,7 +176,7 @@ function createPlayer(id) {
     healsth: 4.33,
     level: 1,
     damage: 5,
-    speed: 3,
+    speed: 15,
     score: 0
   };
 }
