@@ -724,6 +724,7 @@ app.post('/checkAccount', (request, response)=>{
               throw(error);
             }
         });
+        //Log in user
         response.render('pages/index', user);
        }
        else {

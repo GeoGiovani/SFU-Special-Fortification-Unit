@@ -1,4 +1,6 @@
-console.log(user);
+var username = document.getElementById('username');
+username = username.innerHTML;
+console.log("Logging username", username);
 
 var socket = io();
 socket.on('message', function(data) {
