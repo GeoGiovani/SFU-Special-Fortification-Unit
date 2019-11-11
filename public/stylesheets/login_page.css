@@ -110,3 +110,7 @@ h2{
 #sign_out_btn{
   display:none;
 }
+
+#gmail_button {
+  display: hidden;
+}

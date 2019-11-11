@@ -737,6 +737,7 @@ app.post('/gglogin', (request, response)=>{
         throw(error);
     }
   });
+<<<<<<< HEAD
   response.end();
 });
 //Login with gmail
@@ -747,6 +748,12 @@ app.post('/ggAccount',(request,response)=>
     'username':uname
   };
   response.render('pages/index',user);
+=======
+  console.log('Ready to response')
+  var user = {'username':uname};
+  // response.render('pages/index', user);
+  response.render('pages/index', user);
+>>>>>>> c27b6abfb231010b32a627400eeb89df55cd491c
 });
 
 //sign-up page

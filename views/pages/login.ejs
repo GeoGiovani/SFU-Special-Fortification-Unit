@@ -36,8 +36,18 @@
     <button onclick="window.location.href ='register'" id="sign_up_button">REGISTER </button>
     <button id="test_btn">Testing</button>
     <p>Sign In With: </p>
+<<<<<<< HEAD
     <p class="g-signin2" data-onsuccess="onSignIn" id="gg_sign_in"></p>
     <a href="#" onclick="signOut();" id=sign_out_btn>Sign out</a>
+=======
+    <p class="g-signin2" data-onsuccess="onSignIn"></p>
+    <a href="#" onclick="signOut();">Sign out</a>
+    <form action="/checkAccount" method='post'>
+      <input type="text" placeholder="gmail" id="gmail_login" name="gmail" hidden>
+      <input type="submit" id="gmail_button" value="Google Login" hidden>
+
+    </form>
+>>>>>>> c27b6abfb231010b32a627400eeb89df55cd491c
   </section>
 </body>
 
@@ -58,6 +68,7 @@ if (msg.innerHTML !='')
 //     console.log('User signed out.');
 //   });
 // };
+<<<<<<< HEAD
 // //Google authentification
 // function onSignIn(googleUser) {
 //   // var profile = googleUser.getBasicProfile();
@@ -69,6 +80,36 @@ if (msg.innerHTML !='')
 //   //
 //   // if (profile!=null)
 //   //   sendProfile(profile);  //send profile to server to check with DB
+=======
+//Google authentification
+function onSignIn(googleUser) {
+  var profile = googleUser.getBasicProfile();
+  
+  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+  console.log('Name: ' + profile.getName());
+  console.log('Image URL: ' + profile.getImageUrl());
+  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+  
+  if (profile!=null)
+    sendProfile(profile);  //send profile to server to check with DB
+};
+//
+// //Sending
+// function sendProfile(profile) {
+//   var data = {
+//     "username":profile.getName(),
+//     "gmail":profile.getEmail()
+//   }
+
+//   if (profile!=null)
+//   {
+//     var request = new XMLHttpRequest();
+//     var url ="https://ggtest213.herokuapp.com/";
+//     request.open('POST',url,true);
+//     request.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+//     request.send(JSON.stringify(data));
+//   };
+>>>>>>> c27b6abfb231010b32a627400eeb89df55cd491c
 // };
 
 function testRequest(){
@@ -85,6 +126,7 @@ function testRequest(){
     },
     body: JSON.stringify(data)
   }
+<<<<<<< HEAD
   fetch('/gglogin',options).then(response=>{
     document.querySelector('#convention_login').style.display = "none";
     document.querySelector('#gg_sign_in').style.display = "none";
@@ -93,6 +135,10 @@ function testRequest(){
     document.querySelector('#username').value =String(data.username);
     document.querySelector('#gmail').value=String(data.gmail);
   });
+=======
+  fetch('/gglogin', options);
+
+>>>>>>> c27b6abfb231010b32a627400eeb89df55cd491c
 };
 
 var btn =document.querySelector('#test_btn');
