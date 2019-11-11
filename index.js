@@ -157,35 +157,35 @@ io.on('connection', function(socket) {
   });
 //Collects client data at 60 events/second
 
-  setInterval(function() {
-    for (var rm in rooms) {
-      if(rooms[rm].players.numPlayers > 0){
-        //  console.log("interval player")
-          moveProjectiles(rm);
-          moveEnemies(rm);
-          handleBulletCollisions(rm);
-          generateEnemies(rm);
-          socket.broadcast.to(rm).emit('state', rooms[rm].players,
-            rooms[rm].projectiles, rooms[rm].enemies);
-        }
-    }
-  }, 1000 / 120);
+  // setInterval(function() {
+  //   for (var rm in rooms) {
+  //     if(rooms[rm].players.numPlayers > 0){
+  //       //  console.log("interval player")
+  //         moveProjectiles(rm);
+  //         moveEnemies(rm);
+  //         handleBulletCollisions(rm);
+  //         generateEnemies(rm);
+  //         socket.broadcast.to(rm).emit('state', rooms[rm].players,
+  //           rooms[rm].projectiles, rooms[rm].enemies);
+  //       }
+  //   }
+  // }, 1000 / 120);
 });
 
-// setInterval(function() {
-//   for (var rm in rooms) {
-//     if(rooms[rm].players.numPlayers > 0){
-//       //  console.log("interval player")
-//         moveProjectiles(rm);
-//         moveEnemies(rm);
-//         handleBulletCollisions(rm);
-//         generateEnemies(rm);
-//         console.log("LOGGING rm", rm);
-//         io.sockets.broadcast.to(rm).emit('state', rooms[rm].players,
-//           rooms[rm].projectiles, rooms[rm].enemies);
-//       }
-//   }
-// }, 1000 / 120);
+setInterval(function() {
+  for (var rm in rooms) {
+    if(rooms[rm].players.numPlayers > 0){
+      //  console.log("interval player")
+        moveProjectiles(rm);
+        moveEnemies(rm);
+        handleBulletCollisions(rm);
+        generateEnemies(rm);
+        //console.log("LOGGING rm", rm);
+        io.sockets.to(rm).emit('state', rooms[rm].players,
+          rooms[rm].projectiles, rooms[rm].enemies);
+      }
+  }
+}, 1000 / 120);
 
 
 //=============================================================================
@@ -499,10 +499,10 @@ function handleBulletCollisions(rm) {
             (Math.abs(rooms[rm].enemies[enemy].y - rooms[rm].projectiles[id].y) < 5) ) {
               rooms[rm].enemies[enemy].health -= 1;
               if (rooms[rm].enemies[enemy].health < 0) {
-                var temp = rooms[rm].enemies[enemyID -= 1];
-                rooms[rm].enemies[enemyID] = rooms[rm].enemies[enemy];
+                var temp = rooms[rm].enemies[rooms[rm].enemyID -= 1];
+                rooms[rm].enemies[rooms[rm].enemyID] = rooms[rm].enemies[enemy];
                 rooms[rm].enemies[enemy] = temp;
-                rooms[rm].enemies[enemyID] = 0;
+                rooms[rm].enemies[rooms[rm].enemyID] = 0;
                 rooms[rm].enemies.numEnemies -= 1;
               }
         }
@@ -696,9 +696,9 @@ function handleBulletCollisions(rm) {
 //=============================================================================
 // Hailey Workpace
 //
-app.get('/', function(request, response) {
-  response.render('pages/matchmaking');
-});
+// app.get('/', function(request, response) {
+//   response.render('pages/matchmaking');
+// });
 
 //=============================================================================
 
