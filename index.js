@@ -732,13 +732,14 @@ app.post('/gglogin', (request, response)=>{
     {
       console.log('Creating new account with Google');
       const createQuery = "INSERT INTO account (username,gmail) VALUES($1,$2)";
-      pool.query(createQuery,[uname,gmail], (error,results));
+      pool.query(createQuery,[uname,gmail], (error,results)=>{
       if (error)
         throw(error);
+      });
     }
+    response.end();
   });
-<<<<<<< HEAD
-  response.end();
+
 });
 //Login with gmail
 app.post('/ggAccount',(request,response)=>
@@ -748,12 +749,6 @@ app.post('/ggAccount',(request,response)=>
     'username':uname
   };
   response.render('pages/index',user);
-=======
-  console.log('Ready to response')
-  var user = {'username':uname};
-  // response.render('pages/index', user);
-  response.render('pages/index', user);
->>>>>>> c27b6abfb231010b32a627400eeb89df55cd491c
 });
 
 //sign-up page

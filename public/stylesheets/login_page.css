@@ -114,3 +114,7 @@ h2{
 #gmail_button {
   display: hidden;
 }
+
+.g-signin2{
+  margin:0 6vw;
+}
