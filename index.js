@@ -116,8 +116,8 @@ io.on('connection', function(socket) {
   });
   socket.on("requestMapImageSrcFromServer", function(){
     // console.log('imageSrc returned for request:', mapImageSrc);
-    // console.log('requestMapImageSrcFromServer called');
-    socket.broadcast.to(socket.id).emit("deliverMapImageSrcToClient", rooms[getRoomBySocketId[socket.id]].mapImageSrc);
+    //console.log('requestMapImageSrcFromServer called', rooms[getRoomBySocketId[socket.id]].mapImageSrc, "--");
+    socket.emit("deliverMapImageSrcToClient", rooms[getRoomBySocketId[socket.id]].mapImageSrc);
   });
 
   // Responds to a movement event

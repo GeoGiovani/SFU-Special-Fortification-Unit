@@ -41,7 +41,7 @@ var mapImage = new Image();
 mapImage.src = "";
 var mapImageLoaded = false;
 socket.on("deliverMapImageSrcToClient", function(imageSrc){
-  // console.log('deliverMapImageSrcToClient called');
+  console.log('deliverMapImageSrcToClient called');
   if (!mapImageLoaded && imageSrc != "") {
     mapImage.src = imageSrc;
     mapImageLoaded = true;
@@ -141,7 +141,8 @@ window.addEventListener('mousemove', function (e) {
       socket.emit('requestPassId');
       return;
     }
-    if (mapImage.src == "") {
+    if (!mapImageLoaded) {
+      console.log("requesting map image to server...");
       socket.emit("requestMapImageSrcFromServer");
       return;
     }
@@ -202,6 +203,7 @@ window.addEventListener('mousemove', function (e) {
 
 // Support Functions ------------------------------------
 function processMapDrawing(mapData){
+  mapImageLoaded = true;
   //called ONLY when numPlayers: 0 -> 1.
   //draws the whole canvas, and saves to images file.
   /*
