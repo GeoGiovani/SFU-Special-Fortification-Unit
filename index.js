@@ -281,10 +281,11 @@ function hasCollision(x, y, rm){
   var gridY = Math.floor(y / GRID_SIZE);
   if(rooms[rm] == undefined || rooms[rm].mapData == undefined
     || rooms[rm].mapData[gridX] == undefined
-    || rooms[rm].mapData[gridX][gridY] == undefined){
+    || rooms[rm].mapData[gridX][gridY] == undefined) {
     // console.log("collision " + gridX + ", " + gridY)
+    // console.log("RETURNING FALSE, ROOM MAPDATA PROBLEM");
     return false;
-  }else if(rooms[rm].mapData[gridX][gridY].collision == true){
+  } else if(rooms[rm].mapData[gridX][gridY].collision == true){
     // console.log("collision " + gridX + ", " + gridY)
     return true;
   }
@@ -385,7 +386,7 @@ function moveProjectiles(rm) {
       var originY = rooms[rm].projectiles[id].y;
       rooms[rm].projectiles[id].x += rooms[rm].projectiles[id].vx;
       rooms[rm].projectiles[id].y += rooms[rm].projectiles[id].vy;
-      if(hasCollision(rooms[rm].projectiles[id].x, rooms[rm].projectiles[id].y)){
+      if(hasCollision(rooms[rm].projectiles[id].x, rooms[rm].projectiles[id].y, rm)){
         rooms[rm].projectiles[id].x = originX;
         rooms[rm].projectiles[id].y = originY;
         delBullet = true;
