@@ -298,6 +298,20 @@
         "memo": "TASC, upper thrid right 1, |"
       },
       {
+        "x": 237,
+        "y": 115,
+        "width": 2,
+        "height": 17,
+        "memo": "SCK upper left 1"
+      },
+      {
+        "x": 260,
+        "y": 115,
+        "width": 2,
+        "height": 17,
+        "memo": "SCK upper right 1"
+      },
+      {
         "x": 216,
         "y": 104,
         "width": 75,
@@ -307,9 +321,16 @@
       {
         "x": 226,
         "y": 115,
-        "width": 56,
+        "width": 20,
         "height": 2,
-        "memo": "AQ to ASB hallway, bottom"
+        "memo": "AQ to ASB hallway, bottom 1"
+      },
+      {
+        "x": 255,
+        "y": 115,
+        "width": 27,
+        "height": 2,
+        "memo": "AQ to ASB hallway, bottom 2"
       },
       {
         "x": 291,
