@@ -1,7 +1,6 @@
-
 var socket = io();
-var menuUIs = [];
-var gameUIs = [];
+var gameState = "room"; //determine the listUI elements
+var listUI = []; //reset every change in gameState
 
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
@@ -12,19 +11,19 @@ var canvasH = 600;
 canvas.width = canvasW;
 canvas.height = canvasH;
 
-window.addEventListener('mousemove', function (e) {
+window.addEventListener('click', function (e) {
   mouseX = e.pageX;
   mouseY = e.pageY;
+  console.log("x: " + e.pageX + ", y: " + e.pageY);
   processClick(mouseX, mouseY);
 });
 
-updateRoom("something");
-socket.on('main menu', function(){
+updateRoom("something");/// temporary
 
+socket.on('main menu', function(){
   socket.on('lobby', function(data){
     updateRoom(data);
   });
-
   socket.on('global', function(data){
     updateGlobal(data);
   });
@@ -51,18 +50,24 @@ function gameLoop(){
 
 ///// Support functions
 function updateRoomData(data){
-  //hardcoded for
+  //temporary hardcoded for testing
+  console.log("empty listUI: " + listUI)
   var player1 = new PlayerBox("shisata", 100, 100, 300, 300, 'red');
   var player2 = new PlayerBox("satoshi", 400, 100, 300, 300, 'black');
   var ready = new Ready(400, 400, 100, 100, 'red');
-  menuUIs.push(player1);
-  menuUIs.push(player2);
-  menuUIs.push(ready);
+  listUI.push(player1);
+  listUI.push(player2);
+  listUI.push(ready);
+  console.log(listUI[0])
+  console.log(listUI[1])
+  console.log(listUI[2])
+  //hardcoded for testing
 }
 
 function updateRoomDrawing(){
-  for (var i = 0; i < menuUIs.length; i++) {
-    var element = menuUIs[i];
+  for (var i = 0; i < listUI.length; i++) {
+    var element = listUI[i];
+    // if(element.name == something that is from room)
     drawUIElement(element)
   }
 }
@@ -102,45 +107,53 @@ function drawUIElement(element){
   context.beginPath();
   context.rect(element.x, element.y, element.width, element.height);
   context.fill();
-  context.fillStyle = "#CCCCCC"; ///hardcoded
+  context.fillStyle = "white"; ///temp hardcoded
   context.fillText(element.name, element.x + (element.width / 2), element.y + (element.height / 2));
 }
 
 //process if clicked on an UI element
 function processClick(mouseX, mouseY){
-  
+  var index = giveIndexCLickableUI(mouseX, mouseY);
+  // console.log(this.listUI[0]);
+  if(index != -1){
+    console.log("Found clickable index: " + index)
+    this.listUI[index].interaction();
+  }else if(index == -1){
+    console.log("No clickable")
+  }else{
+    console.log("Error finding element. Index: " + index)
+  }
 }
+
+//find index of a clickable UI element, return -1 if none
+function giveIndexCLickableUI(mouseX, mouseY){
+  for(var i = 0; i < listUI.length; i++){
+    if(hasClickableUI(mouseX, mouseY, listUI[i])){
+      return i;
+    }
+  }
+  return -1;
+}
+
+
+//search UI element with a simple array because there aren't many elements -> wont impact performance much
+function hasClickableUI(mouseX, mouseY, element){
+  if(mouseX >= element.x && mouseY >= element.y){
+    if(mouseX <= (element.x + element.width) && mouseY < (element.y + element.height)){
+      if(element.clickable == true){
+        return true;
+      }else if(element.clickable == undefined || element.clickable == null){
+        console.log("Error in clickable element: " + element);
+      }
+    }
+  }
+  return false;
+}
+
 
 //gameState used to know whether game is in main menu or in-game
-//search UI element with a simple array because there aren't many elements -> wont impact performance much
-function hasUIElement(x, y, gameState){
-  if(gameState == "room"){
-    return hasMenuUI(x, y);
-  }else if(gameState == "game"){
-    return hasGameUI(x, y);
-  }
+function hasUIElement(x, y){
+
   console.log("wrong gameState");
-  return false;
-}
-
-function hasMenuUI(x, y){
-  for (var i = 0; i < menuUIs.length; i++){
-    var rangeX = x - menuUIs[i].x;
-    var rangeY = y - menuUIs[i].y;
-    if(rangeX <= menuUIs[i].x && rangeY <= menuUIs[i].y){
-      return true;
-    }
-  }
-  return false;
-}
-
-function hasGameUI(x, y){
-  for (var i = 0; i < menuUIs.length; i++){
-    var rangeX = x - gameUIs[i].x;
-    var rangeY = y - gameUIs[i].y;
-    if(rangeX <= gameUIs.x && rangeY <= gameUIs.y){
-      return true;
-    }
-  }
   return false;
 }

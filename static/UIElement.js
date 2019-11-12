@@ -17,7 +17,7 @@ class Ready extends UIElement{
     super(x, y, width, height, false, null, color, "READY", true);
     this.ready = false;
   }
-  interaction(){
+  interaction(){//temporary
     if(!this.ready){
       this.ready = true
       alert("player ready")
@@ -34,6 +34,6 @@ class PlayerBox extends UIElement{
     this.userName = userName;
   }
   interaction(){
-    alert("Player: " + this.name)
+    alert("Player: " + this.userName)//temporary
   }
 }
