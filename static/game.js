@@ -1,5 +1,5 @@
 var socket = io();
-var gameState = "room"; //determine the listUI elements
+var gameState = "menu"; //determine the listUI elements
 var listUI = []; //reset every change in gameState
 
 var canvas = document.getElementById('canvas');
@@ -14,14 +14,21 @@ canvas.height = canvasH;
 window.addEventListener('click', function (e) {
   mouseX = e.pageX;
   mouseY = e.pageY;
-  console.log("x: " + e.pageX + ", y: " + e.pageY);
-  processClick(mouseX, mouseY);
+  //only process when click is inside canvas
+  if(mouseX >= startX && mouseY >= startY){
+    if(mouseX <= canvasW && mouseY <= canvasH){
+      console.log("x: " + e.pageX + ", y: " + e.pageY);
+      processClick(mouseX, mouseY);
+    }
+  }
 });
 
-updateRoom("something");/// temporary
+// updateRoom("just a placeholder");/// temporary
 
-socket.on('main menu', function(){
-  socket.on('lobby', function(data){
+socket.on('main menu', function(data){
+  console.log("main menu called");
+  this.gameState = "menu";
+  socket.on('room', function(data){
     updateRoom(data);
   });
   socket.on('global', function(data){
@@ -30,11 +37,14 @@ socket.on('main menu', function(){
 });
 
 socket.on('start game', function(){
+  this.gameState = "game"
   gameLoop();
 });
 
-//update lobby UI menu
+//update room UI menu
 function updateRoom(data){
+  console.log("room called")
+  console.log("\tdata: " + data)
   updateRoomData();
   updateRoomDrawing();
 }
@@ -150,10 +160,10 @@ function hasClickableUI(mouseX, mouseY, element){
   return false;
 }
 
-
-//gameState used to know whether game is in main menu or in-game
-function hasUIElement(x, y){
-
-  console.log("wrong gameState");
-  return false;
-}
+//
+// //gameState used to know whether game is in main menu or in-game
+// function hasUIElement(x, y){
+//
+//   console.log("wrong gameState");
+//   return false;
+// }

@@ -37,8 +37,10 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-io.on('connection', function(){
-
+io.on('connection', function(socket){
+  var data = "testdata"
+  socket.emit('main menu', data);
+  socket.emit('room', data);
 });
 
 
