@@ -207,6 +207,62 @@
         "memo": "TASC, upper first right, _"
       },
       {
+        "x": 143,
+        "y": 133,
+        "width": 5,
+        "height": 2,
+        "memo": "TASC, lower first left 1, _"
+      },
+      {
+        "x": 147,
+        "y": 133,
+        "width": 2,
+        "height": 25,
+        "memo": "TASC, lower first left 2, |"
+      },
+      {
+        "x": 140,
+        "y": 157,
+        "width": 9,
+        "height": 2,
+        "memo": "TASC, lower first left 3, _"
+      },
+      {
+        "x": 140,
+        "y": 157,
+        "width": 2,
+        "height": 7,
+        "memo": "TASC, lower first left 4, |"
+      },
+      {
+        "x": 140,
+        "y": 164,
+        "width": 17,
+        "height": 2,
+        "memo": "TASC, lower first bottom 1"
+      },
+      {
+        "x": 164,
+        "y": 164,
+        "width": 15,
+        "height": 2,
+        "memo": "TASC, lower first bottom 2"
+      },
+      {
+        "x": 169,
+        "y": 134,
+        "width": 2,
+        "height": 24,
+        "memo": "TASC, lower first right 1, |"
+      },
+      {
+        "x": 169,
+        "y": 134,
+        "width": 7,
+        "height": 2,
+        "memo": "TASC, lower first right 2, _"
+      },
+      {
         "x": 178,
         "y": 106,
         "width": 2,
@@ -256,6 +312,62 @@
         "memo": "TASC, upper second hall, _"
       },
       {
+        "x": 175,
+        "y": 134,
+        "width": 2,
+        "height": 17,
+        "memo": "TASC, lower second left 1, |"
+      },
+      {
+        "x": 173,
+        "y": 150,
+        "width": 4,
+        "height": 2,
+        "memo": "TASC, lower second left 2, _"
+      },
+      {
+        "x": 173,
+        "y": 150,
+        "width": 2,
+        "height": 8,
+        "memo": "TASC, lower second left 3, |"
+      },
+      {
+        "x": 169,
+        "y": 157,
+        "width": 6,
+        "height": 2,
+        "memo": "TASC, lower second left 4, _"
+      },
+      {
+        "x": 190,
+        "y": 134,
+        "width": 2,
+        "height": 24,
+        "memo": "TASC, lower second right 1, |"
+      },
+      {
+        "x": 190,
+        "y": 134,
+        "width": 10,
+        "height": 2,
+        "memo": "TASC, lower second right 2, _"
+      },
+      {
+        "x": 190,
+        "y": 157,
+        "width": 12,
+        "height": 2,
+        "memo": "TASC, lower second right 2, _"
+      },
+      {
+        "x": 185,
+        "y": 164,
+        "width": 24,
+        "height": 2,
+        "memo": "TASC, lower second bottom 2"
+      },
+      {
         "x": 205,
         "y": 106,
         "width": 2,
@@ -296,6 +408,41 @@
         "width": 2,
         "height": 17,
         "memo": "TASC, upper thrid right 1, |"
+      },
+      {
+        "x": 224,
+        "y": 132,
+        "width": 15,
+        "height": 2,
+        "memo": "TASC, upper thrid right 2, _"
+      },
+      {
+        "x": 198,
+        "y": 134,
+        "width": 2,
+        "height": 10,
+        "memo": "TASC, lower second left 1, |"
+      },
+      {
+        "x": 198,
+        "y": 144,
+        "width": 4,
+        "height": 2,
+        "memo": "TASC, lower second left 3, |"
+      },
+      {
+        "x": 200,
+        "y": 144,
+        "width": 2,
+        "height": 15,
+        "memo": "TASC, lower second left 3, |"
+      },
+      {
+        "x": 222,
+        "y": 141,
+        "width": 2,
+        "height": 10,
+        "memo": "TASC, lower second right 1, |"
       },
       {
         "x": 237,
