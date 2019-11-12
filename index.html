@@ -16,5 +16,10 @@
   <body>
     <canvas id="canvas"></canvas>
   </body>
-  <script src="/static/game.js"></script>
+  <script src="/static/UIElement.js">
+    export { UIElement, Ready};
+  </script>
+  <script src="/static/game.js">
+    import { UIElement, Ready } from './static/UIElement.js';
+  </script>
 </html>

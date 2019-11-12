@@ -1,23 +1,9 @@
-
-/*This file reads and constructs the elements in the .json data file for the map.
-  This file is only called when initializing the map.
-   other purpose, please create another .js file.
-*/
-
-//'fs' is required for only readFile, which is moved to index.js now,
-//but I will leave it here.
 const fs = require('fs');
 //when accessing classes in objects, call: objects.<OBJECTNAME>(<parameters>)
-var objects = require('./objects.js');
+var objects = require('./MapObject.js');
 
-// This functions receives single JSON data (which is already parsed)
-// and constructs the elements, finally returns the containers that holds
-// other containers, which holds each objects in the map.
+// Process JSON files into 2d array of map objects
 // code for calling this function [in index.js]
-// var mapDataFromFile =
-// JSON.parse(fs.readFileSync('static/objects/testMap.json', 'utf8'));
-// var processor = require('./static/objects/mapProcessor.js');
-// mapData = processor.constructFromData(mapDataFromFile);
 var constructFromData = function(jsonContent){
   var largestPosition = findLargestPosition(jsonContent);
   var mapData = giveEmptyMap(largestPosition);

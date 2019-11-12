@@ -1,17 +1,9 @@
-
-//size of the grid. the program should run even if this constant variable is suddenly changed.
-const GRID_SIZE = 5;
-
 /*Guide for adding classes to this file: [When not sure ask Hailey]
 1. Add a function in the similar form as others.
     function NAME(parameters) {
       ...
     }
-2. creating member variables:
-    this.x = x;   //creates member variable and initializes it.
-3. add
-    return this;
-4. at the end of the file, add
+2. at the end of the file, add
     module.exports.NAME = NAME;
   (This is required when accessing these from other .js files)
 
