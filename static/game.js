@@ -24,18 +24,20 @@ window.addEventListener('click', function (e) {
 });
 
 // updateRoom("just a placeholder");/// temporary
+menuProcessor();
 
-socket.on('main menu', function(data){
-  console.log("main menu called");
-  this.gameState = "menu";
-  socket.on('room', function(data){
-    updateRoom(data);
+function menuProcessor(){
+  socket.on('main menu', function(data){
+    console.log("main menu called");
+    this.gameState = "menu";
+    socket.on('room', function(data){
+      updateRoom(data);
+    });
+    socket.on('global', function(data){
+      updateGlobal(data);
+    });
   });
-  socket.on('global', function(data){
-    updateGlobal(data);
-  });
-});
-
+}
 socket.on('start game', function(){
   this.gameState = "game"
   gameLoop();
@@ -50,6 +52,8 @@ function updateRoom(data){
 }
 //update global players and rooms UI menu
 function updateGlobal(data){
+  console.log("global called")
+  console.log("\tdata: " + data);
   updateGlobalData();
   updateGlobalDrawing();
 }

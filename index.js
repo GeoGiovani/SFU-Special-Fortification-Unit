@@ -40,7 +40,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 io.on('connection', function(socket){
   var data = "testdata"
   socket.emit('main menu', data);
-  socket.emit('room', data);
+  setInterval(function(){
+    socket.emit('room', data);
+    socket.emit('global', data);
+  }, 2000)
 });
 
 
