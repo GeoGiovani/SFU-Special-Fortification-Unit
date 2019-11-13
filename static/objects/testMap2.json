@@ -414,35 +414,63 @@
         "y": 132,
         "width": 15,
         "height": 2,
-        "memo": "TASC, upper thrid right 2, _"
+        "memo": "TASC, upper third right 2, _"
       },
       {
         "x": 198,
         "y": 134,
         "width": 2,
         "height": 10,
-        "memo": "TASC, lower second left 1, |"
+        "memo": "TASC, lower third left 1, |"
       },
       {
         "x": 198,
         "y": 144,
         "width": 4,
         "height": 2,
-        "memo": "TASC, lower second left 3, |"
+        "memo": "TASC, lower third left 3, |"
       },
       {
         "x": 200,
         "y": 144,
         "width": 2,
         "height": 15,
-        "memo": "TASC, lower second left 3, |"
+        "memo": "TASC, lower third left 3, |"
+      },
+      {
+        "x": 222,
+        "y": 141,
+        "width": 22,
+        "height": 2,
+        "memo": "TASC, lower third right 0, _"
       },
       {
         "x": 222,
         "y": 141,
         "width": 2,
         "height": 10,
-        "memo": "TASC, lower second right 1, |"
+        "memo": "TASC, lower third right 1, |"
+      },
+      {
+        "x": 219,
+        "y": 151,
+        "width": 5,
+        "height": 2,
+        "memo": "TASC, lower third right 2, _"
+      },
+      {
+        "x": 219,
+        "y": 151,
+        "width": 2,
+        "height": 7,
+        "memo": "TASC, lower third right 3, |"
+      },
+      {
+        "x": 219,
+        "y": 157,
+        "width": 25,
+        "height": 2,
+        "memo": "TASC, lower third bottom 2, _"
       },
       {
         "x": 237,
@@ -457,6 +485,13 @@
         "width": 2,
         "height": 17,
         "memo": "SCK upper right 1"
+      },
+      {
+        "x": 242,
+        "y": 141,
+        "width": 2,
+        "height": 17,
+        "memo": "SCK lower right 1, |"
       },
       {
         "x": 216,
