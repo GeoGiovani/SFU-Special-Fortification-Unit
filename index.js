@@ -41,9 +41,9 @@ pool = new Pool({
 });
 
 app.use('/static', express.static(__dirname + '/static'));// Ring
-app.get('/', function(request, response) {
-response.sendFile(path.join(__dirname, 'index.html'));
-});// Starts the server.
+// app.get('/', function(request, response) {
+// response.sendFile(path.join(__dirname, 'index.html'));
+// });// Starts the server.
 server.listen(PORT, function() {
   console.log('Starting server on port 5000');
 });
@@ -481,11 +481,11 @@ function logOutPlayer(uname) {
 //=============================================================================
 // Fazal Workspace
 // Settings page
-app.get('/', function(request, response)
-{
-   var message ={'message':''};
-   response.render('settings/options.html',message);
-});
+// app.get('/', function(request, response)
+// {
+//    var message ={'message':''};
+//    response.render('settings/options.html',message);
+// });
 
 // // Enemy moves towards player while avoiding an obstacle
 // // Calculate vector between player and target
