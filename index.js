@@ -668,48 +668,66 @@ app.use(express.urlencoded({extended:false}));
 //Parse JSON body( sent by API client)
 app.use(express.json());
 
-//rendering login page 
+//rendering login page
 app.get('/', function(request, response)
 {
    var message ={'message':''};
    response.render('pages/login',message);
 });
 
-
 function loginAuthen(uname, info, type){
+  var bool;
   if (type == "convention")
   {
     //info = password
-    var query = "SELECT * FROM account WHERE usernname =&1";
+    var query = "SELECT * FROM account WHERE username =$1";
+    var results = pool.query(query,[uname]);
     pool.query(query,[uname],(error,results)=>
     {
+      bool = true;
       if (error) throw (error);
-      var result = results.rows[0];
-      if (result =='')
+      console.log(results.rows);
+      if (results.rows =='')
         {
-          return false;
+          // console.log('Username didnt match');
+          bool = false;
+          console.log("case 1 -> bool: " + bool)
         }
-      if (result!='')
+      if (results.rows !='')
       {
-        if (result.password==info)
-          {
-            return true;
-          }
-        if (result.password != info)
+        if (results.password != info)
         {
-          return false;
+          // console.log('Password didnt match');
+          bool = false;
+          console.log("case 3 -> bool: " + bool)
         }
+      // console.log('bool inside pool query'+bool);
       }
-    })
+    });
+    // console.log('bool outside pool query'+bool);
+
+
+
+    console.log("return bool: " + bool)
+
+    return bool;
   }
 }
 
 //Login request
-app.post('/checkAccount', (request, response)=>{
+app.post('/checkAccount', (request, response) => {
+  console.log(request);
+  console.log("\n\n"+ response)
+  processLogin(request, response)
+});
+
+function processLogin(request, response){
   var uname = request.body.username;
   var pw = request.body.password;
+  console.log(loginAuthen(uname,pw,"convention"));
   if (loginAuthen(uname,pw,"convention"))
   {
+    console.log('loginAuthen succeeded');
     if (uname == "ADMIN301254694")
     {
       pool.query("SELECT * FROM account;", (error,results) => {
@@ -720,7 +738,7 @@ app.post('/checkAccount', (request, response)=>{
     }
     else
     {
-      pool.query("SELECT * FROM account WHERE username =&1",[uname],(error,results)=>{
+      pool.query("SELECT * FROM account WHERE username =$1",[uname],(error,results)=>{
         if (error) throw (error);
         if (results.rows[0].online) {
           console.log("Redundant login attempt for user $1", [uname]);
@@ -735,14 +753,15 @@ app.post('/checkAccount', (request, response)=>{
           });
         //Log in user
           response.render('pages/index', user);
-      }
+      });
     }
   }
   else{
-    var message =  {'message':'Account it nos existing'};
+    console.log('loginAuthen failed');
+    var message =  {'message':'Account it not existing'};
     response.render('pages/login',message);
   }
-});
+};
 
 
 //Cheking gmail data with database
