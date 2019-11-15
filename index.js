@@ -668,80 +668,82 @@ app.use(express.urlencoded({extended:false}));
 //Parse JSON body( sent by API client)
 app.use(express.json());
 
-//home page
+//rendering login page 
 app.get('/', function(request, response)
 {
    var message ={'message':''};
    response.render('pages/login',message);
 });
 
-//Login function
+
+function loginAuthen(uname, info, type){
+  if (type == "convention")
+  {
+    //info = password
+    var query = "SELECT * FROM account WHERE usernname =&1";
+    pool.query(query,[uname],(error,results)=>
+    {
+      if (error) throw (error);
+      var result = results.rows[0];
+      if (result =='')
+        {
+          return false;
+        }
+      if (result!='')
+      {
+        if (result.password==info)
+          {
+            return true;
+          }
+        if (result.password != info)
+        {
+          return false;
+        }
+      }
+    })
+  }
+}
+
+//Login request
 app.post('/checkAccount', (request, response)=>{
   var uname = request.body.username;
   var pw = request.body.password;
-
-  //Admin user
-  if (uname == "ADMIN301254694") {
-    pool.query('SELECT password FROM account WHERE username=$1',[uname], (error,results)=>{
-      if (error) {
-        throw(error);
-      }
-      //Check for password match
-      var result = (results.rows == '') ? '':results.rows[0].password;
-      if (result == String(pw)) {
-        //Password matched, extract all table information
-        pool.query("SELECT * FROM account;", (error,results) => {
-          if (error) {
-            throw(error);
-          }
-          var results = {'rows': results.rows };
+  if (loginAuthen(uname,pw,"convention"))
+  {
+    if (uname == "ADMIN301254694")
+    {
+      pool.query("SELECT * FROM account;", (error,results) => {
+        if (error) throw(error);
+        var results = {'rows': results.rows };
           response.render('pages/admin', results);
-        });
-      }
-      //Password does not match
-      else {
-        var message ={'message':'Account is not existing'};
-        response.render('pages/login', message);
-      }
-    });
-  }
-  else {
-   pool.query(
-     'SELECT password, online FROM account WHERE username=$1',[uname], (error,results)=>{
-       if (error)
-       {
-         throw(error);
-       }
-
-       var result = (results.rows == '') ? '':results.rows[0].password;
-       if (result == String(pw))
-       {
-         //If user already online, reject login attempt
-         if (results.rows[0].online) {
+       });
+    }
+    else
+    {
+      pool.query("SELECT * FROM account WHERE username =&1",[uname],(error,results)=>{
+        if (error) throw (error);
+        if (results.rows[0].online) {
           console.log("Redundant login attempt for user $1", [uname]);
           var message ={'message':'Account is already logged in!'};
-          response.render('pages/login',message);
-         }
-         var user = {'username':uname};
-
+            response.render('pages/login',message);
+        }
+        var user = {'username':uname};
         //Upade online status
         pool.query(
           'UPDATE account SET online = true WHERE username=$1',[uname], (error,results)=>{
-            if (error)
-            {
-              throw(error);
-            }
-        });
+            if (error) throw(error);
+          });
         //Log in user
-        response.render('pages/index', user);
-       }
-       else {
-        var message ={'message':'Account is not existing'};
-        response.render('pages/login', message);
-       }
-     });
+          response.render('pages/index', user);
+      }
+    }
+  }
+  else{
+    var message =  {'message':'Account it nos existing'};
+    response.render('pages/login',message);
   }
 });
+
 
 //Cheking gmail data with database
 app.post('/gglogin', (request, response)=>{
