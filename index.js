@@ -676,40 +676,36 @@ app.get('/', function(request, response)
 });
 
 function loginAuthen(uname, info, type){
-  var bool;
   if (type == "convention")
   {
     //info = password
+    var bool = true;
     var query = "SELECT * FROM account WHERE username =$1";
     var results = pool.query(query,[uname]);
-    pool.query(query,[uname],(error,results)=>
-    {
-      bool = true;
-      if (error) throw (error);
-      console.log(results.rows);
-      if (results.rows =='')
-        {
-          // console.log('Username didnt match');
-          bool = false;
-          console.log("case 1 -> bool: " + bool)
-        }
-      if (results.rows !='')
-      {
-        if (results.password != info)
-        {
-          // console.log('Password didnt match');
-          bool = false;
-          console.log("case 3 -> bool: " + bool)
-        }
-      // console.log('bool inside pool query'+bool);
-      }
-    });
-    // console.log('bool outside pool query'+bool);
-
-
-
+    // pool.query(query,[uname],(error,results)=>
+    // {
+    //   if (error) throw (error);
+    //   console.log(results.rows);
+    //   if (results.rows =='')
+    //     {
+    //       console.log('Username didnt match');
+    //       bool = false;
+    //     }
+    //   if (results.rows !='')
+    //   {
+    //     if (results.password != info)
+    //     {
+    //       console.log('Password didnt match');
+    //       bool = false;
+    //     }
+    //   // console.log('bool inside pool query'+bool);
+    //   }
+    // });
+    var p = pool.query(query,[uname],(error,results)=>{
+      if (error) throw error;
+    })
+    console.log(p);
     console.log("return bool: " + bool)
-
     return bool;
   }
 }
