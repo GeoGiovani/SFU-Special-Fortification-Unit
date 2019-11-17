@@ -220,7 +220,7 @@ function processMapDrawing(mapData){
   //const margin = 300;
   var allMap = document.createElement("canvas");
   allMap.width = 500*GRID_SIZE;
-  allMap.height = 500*GRID_SIZE;
+  allMap.height = 600*GRID_SIZE;
   var allMapCtx = allMap.getContext('2d');
 
   //context.clearRect(startX, startY, canvasW, canvasH);

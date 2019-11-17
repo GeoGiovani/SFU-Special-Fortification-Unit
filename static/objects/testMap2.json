@@ -830,6 +830,230 @@
         "memo": "ASB right 5 |"
       },
       {
+        "x": 151,
+        "y": 228,
+        "width": 2,
+        "height": 12,
+        "memo":"RCB left 1, |"
+      },
+      {
+        "x": 147,
+        "y": 228,
+        "width": 6,
+        "height": 2,
+        "memo":"RCB left 2, _"
+      },
+      {
+        "x": 147,
+        "y": 219,
+        "width": 2,
+        "height": 9,
+        "memo":"RCB left 3, |"
+      },
+      {
+        "x": 147,
+        "y": 205,
+        "width": 3,
+        "height": 2,
+        "memo":"RCB left 4, _"
+      },
+      {
+        "x": 145,
+        "y": 205,
+        "width": 2,
+        "height": 16,
+        "memo":"RCB left 5, |"
+      },
+      {
+        "x": 148,
+        "y": 185,
+        "width": 2,
+        "height": 20,
+        "memo":"RCB left 7, |"
+      },
+      {
+        "x": 148,
+        "y": 185,
+        "width": 7,
+        "height": 2,
+        "memo":"RCB left 8, _"
+      },
+      {
+        "x": 155,
+        "y": 180,
+        "width": 2,
+        "height": 7,
+        "memo":"RCB top 1, |"
+      },
+      {
+        "x": 155,
+        "y": 180,
+        "width": 10,
+        "height": 3,
+        "memo":"RCB top 3, _"
+      },
+      {
+        "x": 165,
+        "y": 175,
+        "width": 2,
+        "height": 8,
+        "memo":"RCB top 4, |"
+      },
+      {
+        "x": 165,
+        "y": 175,
+        "width": 20,
+        "height": 3,
+        "memo":"RCB top 5, _"
+      },
+      {
+        "x": 182,
+        "y": 175,
+        "width": 3,
+        "height": 37,
+        "memo":"RCB left 1, |"
+      },
+      {
+        "x": 182,
+        "y": 210,
+        "width": 10,
+        "height": 2,
+        "memo":"RCB left 2, _"
+      },
+      {
+        "x": 190,
+        "y": 210,
+        "width": 3,
+        "height": 7,
+        "memo":"RCB left 3, |"
+      },
+      {
+        "x": 191,
+        "y": 215,
+        "width": 13,
+        "height": 2,
+        "memo":"RCB left 4, _"
+      },
+      {
+        "x": 213,
+        "y": 215,
+        "width": 11,
+        "height": 2,
+        "memo":"RCB left 5, _"
+      },
+      {
+        "x": 222,
+        "y": 215,
+        "width": 2,
+        "height": 20,
+        "memo":"RCB left 6, |"
+      },
+      {
+        "x": 200,
+        "y": 175,
+        "width": 15,
+        "height": 2,
+        "memo":"RCB-extra upper top 1, _"
+      },
+      {
+        "x": 200,
+        "y": 175,
+        "width": 2,
+        "height": 17,
+        "memo":"RCB-extra upper left 1, |"
+      },
+      {
+        "x": 215,
+        "y": 175,
+        "width": 2,
+        "height": 17,
+        "memo":"RCB-extra upper right 1, |"
+      },
+      {
+        "x": 195,
+        "y": 190,
+        "width": 10,
+        "height": 2,
+        "memo":"RCB-extra lower top 1, _"
+      },
+      {
+        "x": 210,
+        "y": 190,
+        "width": 13,
+        "height": 2,
+        "memo":"RCB-extra lower top 2, _"
+      },
+      {
+        "x": 195,
+        "y": 190,
+        "width": 2,
+        "height": 7,
+        "memo":"RCB-extra lower left 1, |"
+      },
+      {
+        "x": 223,
+        "y": 190,
+        "width": 2,
+        "height": 7,
+        "memo":"RCB-extra lower right 1, |"
+      },
+      {
+        "x": 195,
+        "y": 195,
+        "width": 12,
+        "height": 2,
+        "memo":"RCB-extra lower bottom 1, _"
+      },
+      {
+        "x": 212,
+        "y": 195,
+        "width": 12,
+        "height": 2,
+        "memo":"RCB-extra lower bottom 2, _"
+      },
+      {
+        "x": 205,
+        "y": 195,
+        "width": 2,
+        "height": 17,
+        "memo":"RCB-extra lower bottom 3, |"
+      },
+      {
+        "x": 210,
+        "y": 195,
+        "width": 2,
+        "height": 17,
+        "memo":"RCB-extra lower bottom 4, |"
+      },
+      {
+        "x": 198,
+        "y": 210,
+        "width": 8,
+        "height": 2,
+        "memo":"RCB-extra lower bottom 5, _"
+      },
+      {
+        "x": 210,
+        "y": 210,
+        "width": 8,
+        "height": 2,
+        "memo":"RCB-extra lower bottom 6, _"
+      },
+      {
+        "x": 198,
+        "y": 211,
+        "width": 2,
+        "height": 5,
+        "memo":"RCB-extra lower bottom 7, |"
+      },
+      {
+        "x": 216,
+        "y": 211,
+        "width": 2,
+        "height": 5,
+        "memo":"RCB-extra lower bottom 8, |"
+      },
+      {
         "x": 215,
         "y": 233,
         "width": 15,
