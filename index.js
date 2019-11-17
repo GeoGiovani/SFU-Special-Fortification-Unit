@@ -675,89 +675,61 @@ app.get('/', function(request, response)
    response.render('pages/login',message);
 });
 
-function loginAuthen(uname, info, type){
-  if (type == "convention")
+function loginAuthen(uname,pw,result){
+
+  if (result=='' || result.password != pw)
   {
-    //info = password
-    var bool = true;
-    var query = "SELECT * FROM account WHERE username =$1";
-    var results = pool.query(query,[uname]);
-    // pool.query(query,[uname],(error,results)=>
-    // {
-    //   if (error) throw (error);
-    //   console.log(results.rows);
-    //   if (results.rows =='')
-    //     {
-    //       console.log('Username didnt match');
-    //       bool = false;
-    //     }
-    //   if (results.rows !='')
-    //   {
-    //     if (results.password != info)
-    //     {
-    //       console.log('Password didnt match');
-    //       bool = false;
-    //     }
-    //   // console.log('bool inside pool query'+bool);
-    //   }
-    // });
-    var p = pool.query(query,[uname],(error,results)=>{
-      if (error) throw error;
-    })
-    console.log(p);
-    console.log("return bool: " + bool)
-    return bool;
+    console.log('Account doesnt exist');
+    return false;
   }
-}
+  else {
+    console.log('Account authorized');
+    return true;
+  }
+  // const query = 'SELECT * FROM account WHERE username =$1';
+  // pool.query(query,[uname],(error, results)=>{
 
+  });
+};
 //Login request
-app.post('/checkAccount', (request, response) => {
-  console.log(request);
-  console.log("\n\n"+ response)
-  processLogin(request, response)
-});
-
-function processLogin(request, response){
+app.post('/checkAccount', (request,response)=>{
   var uname = request.body.username;
   var pw = request.body.password;
-  console.log(loginAuthen(uname,pw,"convention"));
-  if (loginAuthen(uname,pw,"convention"))
-  {
-    console.log('loginAuthen succeeded');
-    if (uname == "ADMIN301254694")
-    {
-      pool.query("SELECT * FROM account;", (error,results) => {
-        if (error) throw(error);
-        var results = {'rows': results.rows };
-          response.render('pages/admin', results);
-       });
+  const query = 'SELECT * FROM account WHERE username =$1';
+  pool.query(query,[uname],(error, results)=>{
+    if (error) throw (error);
+    if (loginAuthen(uname,pw,results.rows){
+      if (uname == "ADMIN301254694"){
+         pool.query("SELECT * FROM account;", (error,results) => {
+           if (error) throw(error);
+           var results = {'rows': results.rows };
+           response.render('pages/admin', results);
+         });
+       }
+       else
+       {
+         if (results.rows[0].online) {
+           // console.log("Redundant login attempt for user $1", [uname]);
+           var message ={'message':'Account is already logged in!'};
+           response.render('pages/login',message);
+         }
+         //Upade online status
+         pool.query(
+           'UPDATE account SET online = true WHERE username=$1',[uname], (error,results)=>{
+             if (error) throw(error);
+           });
+         //Log in user
+         var user = {'username':uname};
+         response.render('pages/index', user);
+       };
     }
-    else
-    {
-      pool.query("SELECT * FROM account WHERE username =$1",[uname],(error,results)=>{
-        if (error) throw (error);
-        if (results.rows[0].online) {
-          console.log("Redundant login attempt for user $1", [uname]);
-          var message ={'message':'Account is already logged in!'};
-            response.render('pages/login',message);
-        }
-        var user = {'username':uname};
-        //Upade online status
-        pool.query(
-          'UPDATE account SET online = true WHERE username=$1',[uname], (error,results)=>{
-            if (error) throw(error);
-          });
-        //Log in user
-          response.render('pages/index', user);
-      });
+    else {
+      message = {'message':'Account does not exist'};
+      response.render('pages/login',message);
     }
-  }
-  else{
-    console.log('loginAuthen failed');
-    var message =  {'message':'Account it not existing'};
-    response.render('pages/login',message);
-  }
-};
+  });
+});
+
 
 
 //Cheking gmail data with database
@@ -832,6 +804,9 @@ app.get('/register', function(request,response)
   response.render('pages/register',message);
 });
 
+function checkRegister(uname, pw, gmail){
+  
+}
 app.post('/register', (request,response)=>{
    const uname = request.body.username;
    const pw = request.body.pw;
