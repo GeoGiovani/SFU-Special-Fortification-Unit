@@ -155,9 +155,9 @@ setInterval(function() {
   if(players.numPlayers > 0){
   //  console.log("interval player")
     moveProjectiles();
-    moveEnemies();
-    handleBulletCollisions();
-    generateEnemies();
+    //moveEnemies();
+    //handleBulletCollisions();
+    //generateEnemies();
     io.sockets.emit('state', players, projectiles, enemies);
   }
 }, 1000 / 40);
@@ -171,8 +171,8 @@ function createPlayer(id) {
   players.numPlayers += 1;
   players[id] = {
     playerID: players.numPlayers,
-    x: 212 * GRID_SIZE,
-    y: 134 * GRID_SIZE,
+    x: 100 * GRID_SIZE,
+    y: 77 * GRID_SIZE,
     healsth: 4.33,
     level: 1,
     damage: 5,
