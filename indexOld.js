@@ -41,14 +41,14 @@ pool = new Pool({
 });
 
 
-var rooms = {};
 // var rooms[room];
 // var room[socket.id];
 
 app.use('/static', express.static(__dirname + '/static'));// Ring
-// app.get('/', function(request, response) {
+app.get('/', function(request, response) {
 // response.sendFile(path.join(__dirname, 'index.html'));
-// });// Starts the server.
+  response.render('pages/matchmaking');
+});// Starts the server.
 server.listen(PORT, function() {
   console.log('Starting server on port 5000');
 });
@@ -60,9 +60,10 @@ app.set('view engine', 'ejs');
 //Looking for static files in public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
+const GRID_SIZE = 10; // each grid size for map
+var rooms = {};
 var getRoomBySocketId = {};
 
-const GRID_SIZE = 10; // each grid size for map
 
 //Creates a new player
 io.on('connection', function(socket) {

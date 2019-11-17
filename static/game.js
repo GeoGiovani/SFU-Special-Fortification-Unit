@@ -24,7 +24,27 @@ window.addEventListener('click', function (e) {
 });
 
 // updateRoom("just a placeholder");/// temporary
-menuProcessor();
+
+menuTestFunction();
+
+function menuTestFunction(){
+  var players;
+  socket.on('global', function(players){
+    console.log("  total players: " + players)
+    this.players = players;
+    if(players > 0){
+      console.log("creating room");
+      socket.emit('join room')
+    }
+  })
+  socket.on('room info', function(roomList){
+    console.log(roomList)
+  });
+  socket.on('player socket', function(socketID){
+    console.log("\tsocket: " + socketID)
+  })
+}
+// menuProcessor();
 
 function menuProcessor(){
   socket.on('main menu', function(data){

@@ -36,18 +36,95 @@ app.set('view engine', 'ejs');
 //Looking for static files in public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-
+var players = -1;
+console.log("  total players: " + players)
+var roomList = {};
+var latestRoom = 0;
+var latestPlayer = 0;
 io.on('connection', function(socket){
-  var data = "testdata"
-  socket.emit('main menu', data);
-  setInterval(function(){
-    socket.emit('room', data);
-    socket.emit('global', data);
-  }, 2000)
+  players++;
+  console.log("connection from: " + socket.id)
+  console.log("  total players: " + players)
+  socket.emit('global', players);
+  socket.on('join room', function(){
+    if(roomList[latestRoom] == undefined){
+      roomList[latestRoom] = roomData()
+      ////////////trying to create rooms with many players to see flow of socket
+    }
+    roomList[latestRoom].players[latestPlayer] = socket.id;
+    socket.join(latestRoom)
+    latestPlayer++;
+    roomList[latestRoom].players.numPlayers++;
+    if(roomList[latestRoom].length >= 4){
+      latestRoom++;
+    }
+    console.log(roomList[latestRoom]);
+    io.sockets.emit('room info', roomList);
+    console.log(roomList[latestRoom].players.length)
+    for(var i = 0; i < roomList[latestRoom].players.numPlayers; i++){
+      var socketID  = roomList[latestRoom].players[i];
+      console.log("\tsending to: " + socketID);
+
+      io.sockets.in(0).emit('player socket', socketID)
+    }
+  });
 });
+//////////////////////////////////////modify the functions to fit in
+function createRoom(serverName) {
+  rooms[serverName] = roomData(serverName);
+  console.log("LOGGING ROOMS", rooms[serverName]);
+
+  var mapDataFromFile = JSON.parse(fs.readFileSync('static/objects/testMap2.json', 'utf8'));
+  var processor = require('./static/objects/mapProcessor.js');
+  rooms[serverName].mapData = processor.constructFromData(mapDataFromFile);
+  //console.log(mapData);///////*******
+  io.sockets.to(serverName).emit('create map', rooms[serverName].mapData);
+  console.log('players.numPlayers: ', rooms[serverName].players.numPlayers, ', create map called');
+}
+
+function roomData() {
+  //Players object will contain all information about each player's position,
+  var room = {}
 
 
+  room.players = {
+    numPlayers: 0
+  };
 
+  //Projectiles object will keep track of active projectiles
+  room.projectiles = {
+    numProjectiles: 0
+  }
+  room.bulletCount = 0;
+
+  //Enemies
+  room.enemies = {
+    numEnemies: 0
+  }
+  room.enemyID = 0;
+
+  room.mapImageSrc = "";
+  room.mapData; // 2d array of the map
+
+  // when was the last object spawned
+  room.lastSpawn = -1;
+  room.spawnRate = 2000;
+
+  return room
+}
+
+function createPlayer(id, serverName) {
+  rooms[serverName].players.numPlayers += 1;
+  rooms[serverName].players[id] = {
+    playerID: rooms[serverName].players.numPlayers,
+    x: 160 * GRID_SIZE,
+    y: 59 * GRID_SIZE,
+    healsth: 4.33,
+    level: 1,
+    damage: 5,
+    speed: 3
+  };
+}
 
 
 //
