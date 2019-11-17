@@ -1,11 +1,14 @@
 var socket = io();
 var gameState = "menu"; //determine the listUI elements
 var listUI = []; //reset every change in gameState
+var totalPlayers;
+var globalPlayers = [];
+var rooms;
 
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
-var startX = 0;
-var startY = 0;
+var canvasStartX = 0;
+var canvasStartY = 0;
 var canvasW = 800;
 var canvasH = 600;
 canvas.width = canvasW;
@@ -15,7 +18,7 @@ window.addEventListener('click', function (e) {
   mouseX = e.pageX;
   mouseY = e.pageY;
   //only process when click is inside canvas
-  if(mouseX >= startX && mouseY >= startY){
+  if(mouseX >= canvasStartX && mouseY >= canvasStartY){
     if(mouseX <= canvasW && mouseY <= canvasH){
       console.log("x: " + e.pageX + ", y: " + e.pageY);
       processClick(mouseX, mouseY);
@@ -25,93 +28,127 @@ window.addEventListener('click', function (e) {
 
 // updateRoom("just a placeholder");/// temporary
 
-menuTestFunction();
+ // menuTestFunction();
 
-function menuTestFunction(){
-  var players;
-  socket.on('global', function(players){
-    console.log("  total players: " + players)
-    this.players = players;
-    if(players > 0){
-      console.log("creating room");
-      socket.emit('join room')
-    }
-  })
-  socket.on('room info', function(roomList){
-    console.log(roomList)
-  });
-  socket.on('player socket', function(socketID){
-    console.log("\tsocket: " + socketID)
-  })
+// function menuTestFunction(){
+//   var players;
+//   socket.on('global', function(players){
+//     console.log("menuTestFunction called")
+//     updateUIDrawing();////temporary
+//     console.log("  total players: " + players)
+//     this.players = players;
+//     if(players > 0){
+//       console.log("creating room");
+//       socket.emit('join room')
+//     }
+//   })
+//   socket.on('room info', function(roomList){
+//     console.log(roomList)
+//   });
+//   socket.on('player socket', function(socketID){
+//     console.log("\tsocket: " + socketID)
+//   })
+// }
+
+// updateUIDrawing();
+
+generalProcessor();
+/////processors
+function generalProcessor(){
+  if(gameState == "menu"){
+    menuProcessor();
+  }else if(gameState == "game"){
+    gameProcessor();
+  }
 }
-// menuProcessor();
 
 function menuProcessor(){
-  socket.on('main menu', function(data){
-    console.log("main menu called");
-    this.gameState = "menu";
-    socket.on('room', function(data){
-      updateRoom(data);
+  socket.on('main menu', function(){
+    console.log("main menu called");////temporary
+    // this.gameState = "menu";
+    socket.on('global', function(globalData){
+      updateGlobal(globalData);
     });
-    socket.on('global', function(data){
-      updateGlobal(data);
+    socket.on('room', function(roomData){
+      updateRoom(roomData);
     });
+    updateUIDrawing();
   });
 }
-socket.on('start game', function(){
-  this.gameState = "game"
-  gameLoop();
-});
+
+function gameProcessor(){
+  socket.on('in game',function(data){
+    // this.gameState = "game";
+    console.log("in game called");
+    //////
+  });
+}
+
+
+///// Support functions
 
 //update room UI menu
-function updateRoom(data){
+function updateGlobal(globalData){
+  console.log("global called")
+  console.log("\tdata: " + globalData);
+  updateGlobalData(globalData);
+  updateUIDrawing();
+}
+function updateRoom(roomData){
   console.log("room called")
-  console.log("\tdata: " + data)
-  updateRoomData();
-  updateRoomDrawing();
+  console.log("\troomData: " + roomData)
+  updateRoomData(roomData);
+  updateUIDrawing();
 }
 //update global players and rooms UI menu
-function updateGlobal(data){
-  console.log("global called")
-  console.log("\tdata: " + data);
-  updateGlobalData();
-  updateGlobalDrawing();
-}
 
 function gameLoop(){
 
 }
 
-///// Support functions
-function updateRoomData(data){
-  //temporary hardcoded for testing
-  console.log("empty listUI: " + listUI)
-  var player1 = new PlayerBox("shisata", 100, 100, 300, 300, 'red');
-  var player2 = new PlayerBox("satoshi", 400, 100, 300, 300, 'black');
-  var ready = new Ready(400, 400, 100, 100, 'red');
-  listUI.push(player1);
-  listUI.push(player2);
-  listUI.push(ready);
-  console.log(listUI[0])
-  console.log(listUI[1])
-  console.log(listUI[2])
-  //hardcoded for testing
+function updateGlobalData(globalData){
+  // totalplayers = globalData.totalPlayers;
+  // globalPlayers = globalData.globalPlayers;
+  removeOldGlobalData();
+  var x = 5;
+  var y = 400;
+  var width = 15;
+  var height = 15;
+  for(var playerID in globalData.globalPlayers.players){
+    var player = new GlobalPlayer(playerID, x, y, width, height, 'blue');
+    console.log(player);
+    listUI.push(player);
+    x += width * 2;
+    if(x >= canvasW){
+      x = 5;
+      y += height * 2;
+    }
+  }
 }
 
-function updateRoomDrawing(){
+function removeOldGlobalData(){
+  // var elementName = 'Global Player'
+  console.log("rremoveOldGlobalData")
+  console.log("\tlistUI: " + listUI)
+  // listUI = listUI.filter();
+  console.log("\tlistUI: " + listUI)
+}
+
+function updateRoomData(roomData){
+  var createRoom = new CreateRoom(100, 200, 200, 50, "black", this.socket);
+  listUI.push(createRoom);
+}
+
+function updateGlobalDrawing(){
+
+}
+
+function updateUIDrawing(){
   for (var i = 0; i < listUI.length; i++) {
     var element = listUI[i];
     // if(element.name == something that is from room)
     drawUIElement(element)
   }
-}
-
-function updateGlobalData(){
-
-}
-
-function updateGlobalDrawing(){
-
 }
 
 //input orignal canvas size and desired position based on canavs scaling to get actual position
@@ -136,13 +173,13 @@ function initElement(percentX, percentY){
 
 //read and draw UIElement onto canvas
 function drawUIElement(element){
-  context.font = "30px Verdana";
+  context.font = "10px Arial";
   context.fillStyle = element.color;
   context.beginPath();
   context.rect(element.x, element.y, element.width, element.height);
   context.fill();
   context.fillStyle = "white"; ///temp hardcoded
-  context.fillText(element.name, element.x + (element.width / 2), element.y + (element.height / 2));
+  context.fillText(element.name, element.x + 5, element.y + 5);
 }
 
 //process if clicked on an UI element

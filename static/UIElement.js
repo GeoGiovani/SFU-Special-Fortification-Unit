@@ -1,3 +1,4 @@
+var socket = io();
 class UIElement{
   constructor(x, y, width, height, hasTexture, textureSrc, color, name, clickable){
     this.x = x;
@@ -28,9 +29,30 @@ class Ready extends UIElement{
   }
 }
 
-class PlayerBox extends UIElement{
+class Teammate extends UIElement{
   constructor(userName, x, y, width, height, color){
     super(x, y, width, height, false, null, color, "Player", true);
+    this.userName = userName;
+  }
+  interaction(){
+    alert("Player: " + this.userName)//temporary
+  }
+}
+
+class CreateRoom extends UIElement{
+  constructor(x, y, width, height, color, socket){
+    super(x, y, width, height, false, null, color, "Create Room", true, socket);
+    // this.sock = socket;
+  }
+  interaction(){
+    var roomName = prompt("Room name: ","")
+    socket.emit('create room', roomName);
+  }
+}
+
+class GlobalPlayer extends UIElement{
+  constructor(userName, x, y, width, height, color){
+    super(x, y, width, height, false, null, color, "Global Player", true);
     this.userName = userName;
   }
   interaction(){

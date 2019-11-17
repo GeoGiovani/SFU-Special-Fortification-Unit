@@ -1,3 +1,13 @@
+//Getting username
+var username = document.getElementById('username');
+username = username.innerHTML;
+var servername = document.getElementById('servername');
+servername = servername.innerHTML;
+
+console.log(`Hello ${username}!`);
+console.log(`Server ${servername}!`);
+
+
 var socket = io();
 socket.on('message', function(data) {
   // console.log(data);
@@ -27,11 +37,10 @@ var shoot = {
     middleY: 0
 }
 
-var serverName = document.querySelector("#servername");
-var hit = new Audio("HITMARKER.mp3");
-var bang = new Audio("batman punch.wav")
-hit.type = 'audio/mp3';
-bang.type = 'audio/wav';
+//var hit = new Audio("HITMARKER.mp3");
+//var bang = new Audio("batman punch.wav")
+//hit.type = 'audio/mp3';
+//bang.type = 'audio/wav';
 
 var xPos = 0;
 var yPos = 0;
@@ -41,7 +50,7 @@ var mapImage = new Image();
 mapImage.src = "";
 var mapImageLoaded = false;
 socket.on("deliverMapImageSrcToClient", function(imageSrc){
-  console.log('deliverMapImageSrcToClient called');
+  // console.log('deliverMapImageSrcToClient called');
   if (!mapImageLoaded && imageSrc != "") {
     mapImage.src = imageSrc;
     mapImageLoaded = true;
@@ -111,8 +120,8 @@ document.addEventListener('keyup', function(event) {
 socket.on('grid-size', function(gridSize){
   GRID_SIZE = gridSize;
 })
-
-socket.emit('new player', serverName.innerHTML);
+newPlayerData = {"username" : username, "servername" : servername};
+socket.emit('new player', username, servername);
 
 setInterval(function() {
   socket.emit('movement', movement);
@@ -128,10 +137,13 @@ setInterval(function() {
   canvas.width = canvasW;
   canvas.height = canvasH;
   // canvas.cursor = "none"; //hide the original cursor
+  var lastLoop = new Date();  //this is used for getting fps
 
 window.addEventListener('mousemove', function (e) {
   xPos = e.pageX;
   yPos = e.pageY;
+  // console.log(xPos);
+  // console.log(yPos);
 });
 
   var context = canvas.getContext('2d');
@@ -141,8 +153,7 @@ window.addEventListener('mousemove', function (e) {
       socket.emit('requestPassId');
       return;
     }
-    if (!mapImageLoaded) {
-      //console.log("requesting map image to server...");
+    if (mapImage.src == "") {
       socket.emit("requestMapImageSrcFromServer");
       return;
     }
@@ -191,8 +202,14 @@ window.addEventListener('mousemove', function (e) {
 
     context.fillStyle = "white";
     context.font = "15px Arial";
-    context.fillText("x: " + (players[myId].x/GRID_SIZE) + ", y: " + (players[myId].y/GRID_SIZE), canvasW-120, canvasH-10);
-    context.fillText("Mouse: x: " + (xPos+middleX)/GRID_SIZE + ", y: " + (yPos+middleY)/GRID_SIZE, canvasW-180, canvasH-30);
+    context.fillText("Player: x: " + (players[myId].x/GRID_SIZE) + ", y: "
+      + (players[myId].y/GRID_SIZE), canvasW-170, canvasH-50);
+    context.fillText("Mouse: x: " + (xPos+middleX)/GRID_SIZE + ", y: "
+      + (yPos+middleY)/GRID_SIZE, canvasW-170, canvasH-30);
+
+    var thisLoop = new Date();
+    context.fillText(Math.round(1000 / (thisLoop - lastLoop)) + " FPS", canvasW-70, canvasH-10);
+    lastLoop = thisLoop;
   });
 
 
@@ -203,7 +220,6 @@ window.addEventListener('mousemove', function (e) {
 
 // Support Functions ------------------------------------
 function processMapDrawing(mapData){
-  mapImageLoaded = true;
   //called ONLY when numPlayers: 0 -> 1.
   //draws the whole canvas, and saves to images file.
   /*
@@ -258,6 +274,15 @@ function processMapDrawing(mapData){
   socket.emit("deliverMapImageSrcToServer", mapImage.src);
   delete allMap;
 }
+
+//=============================================================================
+// George Workpace
+var logoutButton = document.getElementById('log_out_button');
+logoutButton.addEventListener('click', function(event) {
+  logoutButton.value = username;
+});
+
+//=============================================================================
 
   // Fazal' Workstation -------------------------------------------------------------------------
   // var enemyContext = canvas.getContext('2d');
