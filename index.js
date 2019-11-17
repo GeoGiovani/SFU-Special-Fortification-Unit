@@ -104,12 +104,35 @@ app.use(express.static(path.join(__dirname, 'public')));
 const GRID_SIZE = 10; // each grid size for map
 
 //Game rooms
+var totalPlayers = -1;
 var rooms = {};
+var globalPlayers = {
+  players : [],
+};
 var getRoomBySocketId = {};
+
+
 
 //Creates a new player and puts them into the gane room specified by serverName
 io.on('connection', function(socket) {
   socket.emit('grid-size', GRID_SIZE);
+
+  socket.on('player enters lobby', function() {
+    initConnection(socket.id);
+    var data = {
+      totalPlayers,
+      globalPlayers,
+      rooms
+    }
+    mainMenuProcessor(socket.id, data);
+  });
+
+  socket.on('create room', function(roomName){
+    processCreateRoom(socket, roomName)
+    socket.emit('room', rooms);
+  });
+
+  //'new player' is called when the player joins the lobby.
   socket.on('new player', function(username, servername) {
     console.log("data.server: ", servername);
     if (servername == undefined) {
@@ -574,6 +597,102 @@ function logOutPlayer(uname) {
     console.log(`Succesfully logged out ${uname}`);
   });
 }
+
+
+//==========================================================================
+//Lobby functions
+
+function initConnection(socketid){
+  console.log("connection : " + socketid)
+  totalPlayers++;
+  console.log("totalPlayers : " + totalPlayers)
+  if(totalPlayers > 0){
+    globalPlayers.players.push(socketid);
+  }
+  console.log(globalPlayers)
+}
+
+function mainMenuProcessor(socket, data){
+  // var data = "placeholder"////temporary
+  /// roomdata = current client room
+  var globalData = {
+    totalPlayers,
+    globalPlayers
+  }
+  io.sockets.to(socket).emit('main menu');
+  // socket.broadcast.emit('global', globalData);// emit without the sender
+  io.sockets.to(socket).emit('global', globalData);//emit to all clients
+  io.sockets.to(socket).emit('room', rooms);
+    //processCreateRoom(roomName);
+
+}
+
+function processCreateRoom(socket, roomName){
+  socket.join(roomName);
+  getRoomBySocketId[socket.id] = roomName;
+  rooms[roomName] = giveRoomData(roomName);
+  console.log("rooms[roomName]: " + rooms[roomName])
+  console.log("LOGGING ROOMS", rooms[roomName]);
+}
+
+
+function giveRoomData() {
+  //Players object will contain all information about each player's position,
+  var room = {}
+
+
+  room.players = {
+    numPlayers: 0
+  };
+
+  //Projectiles object will keep track of active projectiles
+  room.projectiles = {
+    numProjectiles: 0
+  }
+  room.bulletCount = 0;
+
+  //Enemies
+  room.enemies = {
+    numEnemies: 0
+  }
+  room.enemyID = 0;
+
+  room.mapImageSrc = "";
+  room.mapData; // 2d array of the map
+
+  // when was the last object spawned
+  room.lastSpawn = -1;
+  room.spawnRate = 2000;
+
+  return room
+}
+
+function initLevel(roomName) {
+  var mapDataFromFile = JSON.parse(fs.readFileSync('static/objects/testMap2.json', 'utf8'));
+  var processor = require('./static/objects/mapProcessor.js');
+  rooms[roomName].mapData = processor.constructFromData(mapDataFromFile);
+  //console.log(mapData);///////*******
+  io.sockets.to(roomName).emit('create map', rooms[roomName].mapData);
+  console.log('players.numPlayers: ', rooms[roomName].players.numPlayers, ', create map called');
+}
+
+function createPlayer(id, serverName) {
+  rooms[serverName].players.numPlayers += 1;
+  rooms[serverName].players[id] = {
+    playerID: rooms[serverName].players.numPlayers,
+    x: 160 * GRID_SIZE,
+    y: 59 * GRID_SIZE,
+    healsth: 4.33,
+    level: 1,
+    damage: 5,
+    speed: 3
+  };
+}
+
+
+//==========================================================================
+
+
 
 //=========================================================================================
 // Testing functions

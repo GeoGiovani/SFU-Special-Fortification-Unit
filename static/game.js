@@ -1,17 +1,234 @@
-//Getting username
-var username = document.getElementById('username');
-username = username.innerHTML;
-var servername = document.getElementById('servername');
-servername = servername.innerHTML;
+// //Getting username
+// var username = document.getElementById('username');
+// username = username.innerHTML;
+// var servername = document.getElementById('servername');
+// servername = servername.innerHTML;
 
-console.log(`Hello ${username}!`);
-console.log(`Server ${servername}!`);
+// console.log(`Hello ${username}!`);
+// console.log(`Server ${servername}!`);
 
 
 var socket = io();
+var gameState = "menu"; //determine the listUI elements
+var listUI = []; //reset every change in gameState
+var totalPlayers;
+var globalPlayers = [];
+var rooms;
+
+var canvas = document.getElementById('canvas');
+var context = canvas.getContext('2d');
+var canvasStartX = 0;
+var canvasStartY = 0;
+var canvasW = 800;
+var canvasH = 600;
+canvas.width = canvasW;
+canvas.height = canvasH;
+
+window.addEventListener('click', function (e) {
+  if (gameState != "menu") {
+    return;
+  }
+  mouseX = e.pageX;
+  mouseY = e.pageY;
+  //only process when click is inside canvas
+  if(mouseX >= canvasStartX && mouseY >= canvasStartY){
+    if(mouseX <= canvasW && mouseY <= canvasH){
+      console.log("x: " + e.pageX + ", y: " + e.pageY);
+      processClick(mouseX, mouseY);
+    }
+  }
+});
+
+
 socket.on('message', function(data) {
   // console.log(data);
 });
+
+//==========================================================================
+//Lobby codes
+
+socket.emit('player enters lobby');
+
+generalProcessor();
+/////processors
+function generalProcessor(){
+  if(gameState == "menu"){
+    menuProcessor();
+  }else if(gameState == "game"){
+    gameProcessor();
+  }
+}
+
+
+function menuProcessor(){
+  socket.on('main menu', function(){
+    console.log("main menu called");////temporary
+    // this.gameState = "menu";
+    socket.on('global', function(globalData){
+      updateGlobal(globalData);
+    });
+    socket.on('room', function(roomData){
+      updateRoom(roomData);
+    });
+    updateUIDrawing();
+  });
+}
+
+
+function gameProcessor(){
+  socket.on('in game',function(data){
+    // this.gameState = "game";
+    console.log("in game called");
+    //////
+
+    // newPlayerData = {"username" : username, "servername" : servername};
+    socket.emit('new player', username, servername);
+  });
+}
+
+
+///// Support functions
+
+//update room UI menu
+function updateGlobal(globalData){
+  console.log("global called")
+  console.log("\tdata: " + globalData);
+  updateGlobalData(globalData);
+  updateUIDrawing();
+}
+function updateRoom(roomData){
+  console.log("room called")
+  console.log("\troomData: " + roomData)
+  updateRoomData(roomData);
+  updateUIDrawing();
+}
+//update global players and rooms UI menu
+
+function gameLoop(){
+
+}
+
+function updateGlobalData(globalData){
+  // totalplayers = globalData.totalPlayers;
+  // globalPlayers = globalData.globalPlayers;
+  removeOldGlobalData();
+  var x = 5;
+  var y = 400;
+  var width = 15;
+  var height = 15;
+  for(var playerID in globalData.globalPlayers.players){
+    var player = new GlobalPlayer(playerID, x, y, width, height, 'blue');
+    console.log(player);
+    listUI.push(player);
+    x += width * 2;
+    if(x >= canvasW){
+      x = 5;
+      y += height * 2;
+    }
+  }
+}
+
+function removeOldGlobalData(){
+  // var elementName = 'Global Player'
+  console.log("rremoveOldGlobalData")
+  console.log("\tlistUI: " + listUI)
+  // listUI = listUI.filter();
+  console.log("\tlistUI: " + listUI)
+}
+
+function updateRoomData(roomData){
+  var createRoom = new CreateRoom(100, 200, 200, 50, "black", this.socket);
+  listUI.push(createRoom);
+}
+
+function updateGlobalDrawing(){
+
+}
+
+function updateUIDrawing(){
+  context.fillStyle = "white";
+  context.font = "20px Arial";
+  context.fillText("If this shows, updateUIDrawing() is being called.", 100, 100);
+  for (var i = 0; i < listUI.length; i++) {
+    var element = listUI[i];
+    // if(element.name == something that is from room)
+    drawUIElement(element)
+  }
+}
+
+//input orignal canvas size and desired position based on canavs scaling to get actual position
+//used for scaling
+//ex: want to get position x = 50% of canvas width
+function giveOnCanvasPos(size, percent){
+  return position = size * (percent / 100);
+}
+
+//input position percentage of width, height of canvas to initialize element
+function initElement(percentX, percentY){
+  // console.log("interaction function")
+  // var x = 10;
+  // var hasTexture = false;
+  // var src = null;
+  // var color = 'red';
+  // var text = 'Int';
+  // var clickable = true
+  // var element = new Ready(x, x, x, x, hasTexture, src, color, text, clickable);
+  // console.log(element);
+}
+
+//read and draw UIElement onto canvas
+function drawUIElement(element){
+  context.font = "10px Arial";
+  context.fillStyle = element.color;
+  context.beginPath();
+  context.rect(element.x, element.y, element.width, element.height);
+  context.fill();
+  context.fillStyle = "white"; ///temp hardcoded
+  context.fillText(element.name, element.x + 5, element.y + 5);
+}
+
+//process if clicked on an UI element
+function processClick(mouseX, mouseY){
+  var index = giveIndexCLickableUI(mouseX, mouseY);
+  // console.log(this.listUI[0]);
+  if(index != -1){
+    console.log("Found clickable index: " + index)
+    this.listUI[index].interaction();
+  }else if(index == -1){
+    console.log("No clickable")
+  }else{
+    console.log("Error finding element. Index: " + index)
+  }
+}
+
+//find index of a clickable UI element, return -1 if none
+function giveIndexCLickableUI(mouseX, mouseY){
+  for(var i = 0; i < listUI.length; i++){
+    if(hasClickableUI(mouseX, mouseY, listUI[i])){
+      return i;
+    }
+  }
+  return -1;
+}
+
+
+//search UI element with a simple array because there aren't many elements -> wont impact performance much
+function hasClickableUI(mouseX, mouseY, element){
+  if(mouseX >= element.x && mouseY >= element.y){
+    if(mouseX <= (element.x + element.width) && mouseY < (element.y + element.height)){
+      if(element.clickable == true){
+        return true;
+      }else if(element.clickable == undefined || element.clickable == null){
+        console.log("Error in clickable element: " + element);
+      }
+    }
+  }
+  return false;
+}
+
+
+//==========================================================================
+
 
 //socket id of the client. players[myId] will return the specific player's data.
 var myId = "";
@@ -120,8 +337,8 @@ document.addEventListener('keyup', function(event) {
 socket.on('grid-size', function(gridSize){
   GRID_SIZE = gridSize;
 })
-newPlayerData = {"username" : username, "servername" : servername};
-socket.emit('new player', username, servername);
+// newPlayerData = {"username" : username, "servername" : servername};
+// socket.emit('new player', username, servername);
 
 setInterval(function() {
   socket.emit('movement', movement);
@@ -129,15 +346,15 @@ setInterval(function() {
   //makeSound("bang");
 }, 1000 / 60);
 
-  var canvas = document.getElementById('canvas');
-  var startX = 0;
-  var startY = 0;
-  var canvasW = 800;
-  var canvasH = 600;
-  canvas.width = canvasW;
-  canvas.height = canvasH;
-  // canvas.cursor = "none"; //hide the original cursor
-  var lastLoop = new Date();  //this is used for getting fps
+var canvas = document.getElementById('canvas');
+// var startX = 0;
+// var startY = 0;
+// var canvasW = 800;
+// var canvasH = 600;
+canvas.width = canvasW;
+canvas.height = canvasH;
+// canvas.cursor = "none"; //hide the original cursor
+var lastLoop = new Date();  //this is used for getting fps
 
 window.addEventListener('mousemove', function (e) {
   xPos = e.pageX;
@@ -146,76 +363,76 @@ window.addEventListener('mousemove', function (e) {
   // console.log(yPos);
 });
 
-  var context = canvas.getContext('2d');
-  socket.on('state', function(players, projectiles, enemies) {
-    //console.log("socket event state called");
-    if (myId == "") {
-      socket.emit('requestPassId');
-      return;
-    }
-    if (mapImage.src == "") {
-      socket.emit("requestMapImageSrcFromServer");
-      return;
-    }
-    context.clearRect(startX, startY, canvasW, canvasH);
+var context = canvas.getContext('2d');
+socket.on('state', function(players, projectiles, enemies) {
+  //console.log("socket event state called");
+  if (myId == "") {
+    socket.emit('requestPassId');
+    return;
+  }
+  if (mapImage.src == "") {
+    socket.emit("requestMapImageSrcFromServer");
+    return;
+  }
+  context.clearRect(canvasStartX, canvasStartY, canvasW, canvasH);
 
-    var middleX = players[myId].x - (canvasW)/2;
-    var middleY = players[myId].y - (canvasH)/2;
-    shoot.middleX = middleX;
-    shoot.middleY = middleY;
+  var middleX = players[myId].x - (canvasW)/2;
+  var middleY = players[myId].y - (canvasH)/2;
+  shoot.middleX = middleX;
+  shoot.middleY = middleY;
 
-    //'zoom' functionality. It's not done yet! Please just leave it =1..
-    //It only works on map-drawing, NOT collision.
-    var zoom = 1;
+  //'zoom' functionality. It's not done yet! Please just leave it =1..
+  //It only works on map-drawing, NOT collision.
+  var zoom = 1;
 
-    //drawing the map from mapURL
-    context.drawImage(mapImage, middleX, middleY,
-      canvasW, canvasH, 0, 0, canvasW*zoom, canvasH*zoom);
+  //drawing the map from mapURL
+  context.drawImage(mapImage, middleX, middleY,
+    canvasW, canvasH, 0, 0, canvasW*zoom, canvasH*zoom);
 
-    context.fillStyle = 'green';
-    for (var id in players) {
-      var player = players[id];
-      //Determines how the characters look
-      context.beginPath();
-      context.arc(player.x - middleX, player.y - middleY, GRID_SIZE/2 , 0, 2 * Math.PI);
-      context.fill();
-    }
+  context.fillStyle = 'green';
+  for (var id in players) {
+    var player = players[id];
+    //Determines how the characters look
+    context.beginPath();
+    context.arc(player.x - middleX, player.y - middleY, GRID_SIZE/2 , 0, 2 * Math.PI);
+    context.fill();
+  }
 
-    for (var id in projectiles) {
-      var projectile = projectiles[id];
-      //Determines how the bullets look
-      context.beginPath();
-      context.arc(projectile.x - middleX, projectile.y - middleY, 2, 0, 2 * Math.PI);
-      context.fillStyle = 'white';
-      context.fill();
-    }
+  for (var id in projectiles) {
+    var projectile = projectiles[id];
+    //Determines how the bullets look
+    context.beginPath();
+    context.arc(projectile.x - middleX, projectile.y - middleY, 2, 0, 2 * Math.PI);
+    context.fillStyle = 'white';
+    context.fill();
+  }
 
-    for (var id in enemies) {
+  for (var id in enemies) {
 
-      var enemy = enemies[id];
-      //Determines how the bullets look // old radius = 6
-      context.beginPath();
-      context.arc(enemy.x - middleX, enemy.y - middleY, GRID_SIZE/2, 0, 2 * Math.PI);
-      context.fillStyle = 'red';
-      context.fill();
-    }
+    var enemy = enemies[id];
+    //Determines how the bullets look // old radius = 6
+    context.beginPath();
+    context.arc(enemy.x - middleX, enemy.y - middleY, GRID_SIZE/2, 0, 2 * Math.PI);
+    context.fillStyle = 'red';
+    context.fill();
+  }
 
-    context.fillStyle = "white";
-    context.font = "15px Arial";
-    context.fillText("Player: x: " + (players[myId].x/GRID_SIZE) + ", y: "
-      + (players[myId].y/GRID_SIZE), canvasW-170, canvasH-50);
-    context.fillText("Mouse: x: " + (xPos+middleX)/GRID_SIZE + ", y: "
-      + (yPos+middleY)/GRID_SIZE, canvasW-170, canvasH-30);
+  context.fillStyle = "white";
+  context.font = "15px Arial";
+  context.fillText("Player: x: " + (players[myId].x/GRID_SIZE) + ", y: "
+    + (players[myId].y/GRID_SIZE), canvasW-170, canvasH-50);
+  context.fillText("Mouse: x: " + (xPos+middleX)/GRID_SIZE + ", y: "
+    + (yPos+middleY)/GRID_SIZE, canvasW-170, canvasH-30);
 
-    var thisLoop = new Date();
-    context.fillText(Math.round(1000 / (thisLoop - lastLoop)) + " FPS", canvasW-70, canvasH-10);
-    lastLoop = thisLoop;
-  });
+  var thisLoop = new Date();
+  context.fillText(Math.round(1000 / (thisLoop - lastLoop)) + " FPS", canvasW-70, canvasH-10);
+  lastLoop = thisLoop;
+});
 
 
-  socket.on("create map", function(mapData){
-    processMapDrawing(mapData);
-  });
+socket.on("create map", function(mapData){
+  processMapDrawing(mapData);
+});
 
 
 // Support Functions ------------------------------------
