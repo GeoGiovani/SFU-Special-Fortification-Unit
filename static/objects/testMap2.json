@@ -1075,67 +1075,161 @@
         "memo":"RCB~SWH top 5 |"
       },
       {
+        "x": 236,
+        "y": 195,
+        "width": 30,
+        "height": 2,
+        "memo":"SWH top 1, _"
+      },
+      {
+        "x": 266,
+        "y": 195,
+        "width": 2,
+        "height": 5,
+        "memo":"SWH top 2, |"
+      },
+      {
+        "x": 266,
+        "y": 198,
+        "width": 8,
+        "height": 2,
+        "memo":"SWH top 3, _"
+      },
+      {
+        "x": 274,
+        "y": 195,
+        "width": 2,
+        "height": 5,
+        "memo":"SWH top 4, |"
+      },
+      {
+        "x": 274,
+        "y": 195,
+        "width": 43,
+        "height": 2,
+        "memo":"SWH top 5, _"
+      },
+      {
+        "x": 245,
+        "y": 202,
+        "width": 55,
+        "height": 2,
+        "memo":"SWH top inside 1, _"
+      },
+      {
         "x": 230,
         "y": 238,
         "width": 8,
         "height": 2,
-        "memo":"SWH top 1 _"
+        "memo":"SWH bottom inside 1 _"
       },
       {
         "x": 236,
         "y": 230,
         "width": 2,
         "height": 10,
-        "memo":"SWH top 2 |"
+        "memo":"SWH bottom inside 2 |"
       },
       {
-        "x": 238,
+        "x": 244,
         "y": 230,
-        "width": 30,
+        "width": 23,
         "height": 2,
-        "memo":"SWH top 3 _"
+        "memo":"SWH bottom inside 3 _"
       },
       {
         "x": 266,
         "y": 230,
         "width": 2,
         "height": 10,
-        "memo":"SWH top 4 |"
+        "memo":"SWH bottom inside 4 |"
       },
       {
         "x": 268,
         "y": 238,
         "width": 5,
         "height": 2,
-        "memo":"SWH top 5 _"
+        "memo":"SWH bottom inside 5 _"
       },
       {
         "x": 273,
         "y": 230,
         "width": 2,
         "height": 10,
-        "memo":"SWH top 6 |"
+        "memo":"SWH bottom inside 6 |"
       },
       {
         "x": 273,
         "y": 230,
-        "width": 37,
+        "width": 27,
         "height": 2,
-        "memo":"SWH top 7 _"
+        "memo":"SWH bottom inside 7 _"
       },
       {
-        "x": 310,
-        "y": 210,
-        "width": 37,
+        "x": 236,
+        "y": 196,
+        "width": 2,
+        "height": 34,
+        "memo":"SWH left 1 |"
+      },
+      {
+        "x": 244,
+        "y": 202,
+        "width": 2,
+        "height": 28,
+        "memo":"SWH left inside 1 |"
+      },
+      {
+        "x": 317,
+        "y": 195,
+        "width": 2,
+        "height": 13,
+        "memo":"SWH right 1 |"
+      },
+      {
+        "x": 312,
+        "y": 208,
+        "width": 7,
         "height": 2,
-        "memo":"SWH top 9 _"
+        "memo":"SWH right 2 _"
+      },
+      {
+        "x": 312,
+        "y": 208,
+        "width": 2,
+        "height": 31,
+        "memo":"SWH right 3 |"
+      },
+      {
+        "x": 312,
+        "y": 237,
+        "width": 10,
+        "height": 3,
+        "memo":"SWH right 4 _"
+      },
+      {
+        "x": 298,
+        "y": 202,
+        "width": 2,
+        "height": 28,
+        "memo":"SWH right inside 1 |"
       },
       {
         "x": 215,
         "y": 246,
-        "width": 100,
+        "width": 110,
         "height": 2,
         "memo":"SWH hallway bottom"
+      }
+    ],
+    "floor": [
+      {
+        "top" : 230,
+        "bottom": 250,
+        "left": 230,
+        "right": 260,
+        "color": "#cacaca",
+        "memo": "aq test"
       }
     ],
     "player": [
