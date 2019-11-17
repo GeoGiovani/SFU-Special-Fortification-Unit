@@ -114,9 +114,9 @@ socket.emit('new player');
 
 setInterval(function() {
   socket.emit('movement', movement);
-  socket.emit('shoot', shoot);
+  //socket.emit('shoot', shoot);
   //makeSound("bang");
-}, 1000 / 60);
+}, 1000 / 20);
 
   var canvas = document.getElementById('canvas');
   var startX = 0;

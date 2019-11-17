@@ -160,7 +160,7 @@ setInterval(function() {
     generateEnemies();
     io.sockets.emit('state', players, projectiles, enemies);
   }
-}, 1000 / 120);
+}, 1000 / 40);
 
 
 //=============================================================================
