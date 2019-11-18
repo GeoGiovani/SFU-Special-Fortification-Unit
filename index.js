@@ -118,6 +118,7 @@ io.on('connection', function(socket) {
   socket.emit('grid-size', GRID_SIZE);
 
   socket.on('player enters lobby', function() {
+    io.sockets.to(socket.id).emit("passId", socket.id);
     initConnection(socket.id);
     var data = {
       totalPlayers,
@@ -127,32 +128,39 @@ io.on('connection', function(socket) {
     mainMenuProcessor(socket.id, data);
   });
 
-  socket.on('create room', function(roomName){
-    processCreateRoom(socket, roomName)
+  socket.on('create room', function(roomName, userName){
+    console.log('create room called for client:', socket.id);
+    socket.join(roomName);
+    processCreateRoom(socket.id, roomName)
+    // socket.broadcast.to(socket.id).emit('enter new room', roomName);
+    io.sockets.to(socket.id).emit('enter new room', roomName);
+    initLevel(roomName);
+    createPlayer(socket.id, roomName, userName);
     socket.emit('room', rooms);
   });
 
   //'new player' is called when the player joins the lobby.
-  socket.on('new player', function(username, servername) {
-    console.log("data.server: ", servername);
-    if (servername == undefined) {
-      servername = "STUB";
+  socket.on('new player', function(username, roomName) {
+    console.log("data.server: ", roomName);
+    console.log('new player called for client:', socket.id);
+    if (roomName == undefined) {
+      roomName = "STUB";
     }
     //client who called the 'new player' joins the server 'serverName'.
     console.log('socket event new player called');
-    console.log("Logging Game Room Name", servername)
-    socket.join(servername);
-    getRoomBySocketId[socket.id] = servername;
+    console.log("Logging Game Room Name", roomName)
+    socket.join(roomName);
+    getRoomBySocketId[socket.id] = roomName;
 
     //This condition is commented out because the 'disconnect' event is
     //commented out too. 'disconnect' is having multiple-call problem and
     //causing error for map-loading.
     //if (players.numPlayers < 4) {
-    if(rooms[servername] == undefined) {
-      createRoom(servername); //TODO
-    }
-    createPlayer(socket.id, servername, username);
-    socket.emit("passId", socket.id);
+    // if(rooms[roomName] == undefined) {
+    //   createRoom(roomName); //TODO
+    // }
+    createPlayer(socket.id, roomName, username);
+
   });
 
   //socket on functions for ID, Map, etc.
@@ -168,7 +176,9 @@ io.on('connection', function(socket) {
   socket.on("requestMapImageSrcFromServer", function(){
     // console.log('imageSrc returned for request:', mapImageSrc);
     // console.log('requestMapImageSrcFromServer called');
-    socket.emit("deliverMapImageSrcToClient", mapImageSrc);
+    if (rooms[getRoomBySocketId[socket.id]].mapImageSrc != undefined) {
+      socket.emit("deliverMapImageSrcToClient", rooms[getRoomBySocketId[socket.id]].mapImageSrc);
+    }
   });
 
   // Responds to a movement event
@@ -215,7 +225,7 @@ io.on('connection', function(socket) {
 setInterval(function() {
   for (var rm in rooms) {
     if(rooms[rm].players.numPlayers > 0){
-      //  console.log("interval player")
+        //console.log("interval player")
         moveProjectiles(rm);
         moveEnemies(rm);
         handleBulletCollisions(rm);
@@ -239,7 +249,7 @@ function createPlayer(id, serverName, username) {
   rooms[serverName].players[id] = {
     playerID: rooms[serverName].players.numPlayers,
     username: username,
-    x: 211 * GRID_SIZE,
+    x: 159 * GRID_SIZE,
     y: 247 * GRID_SIZE,
     health: 4.33,
     level: 1,
@@ -300,7 +310,7 @@ function createRoom(serverName) {
   }
 
   rooms[serverName] = roomData(serverName);
-  console.log("LOGGING ROOMS", rooms[serverName]);
+  // console.log("LOGGING ROOMS", rooms[serverName]);
 
   //Load map data
   var mapDataFromFile = JSON.parse(fs.readFileSync('static/objects/testMap2.json', 'utf8'));
@@ -627,12 +637,13 @@ function mainMenuProcessor(socket, data){
 
 }
 
-function processCreateRoom(socket, roomName){
-  socket.join(roomName);
-  getRoomBySocketId[socket.id] = roomName;
+function processCreateRoom(socketid, roomName){
+  // socket.join(roomName); //this happens before this function
+  getRoomBySocketId[socketid] = roomName;
   rooms[roomName] = giveRoomData(roomName);
-  console.log("rooms[roomName]: " + rooms[roomName])
-  console.log("LOGGING ROOMS", rooms[roomName]);
+  // console.log("rooms[roomName]: " + rooms[roomName])
+  //console.log("LOGGING ROOMS", rooms[roomName]);
+
 }
 
 
@@ -926,7 +937,7 @@ app.post('/checkAccount', (request, response)=>{
           response.render('pages/login',message);
          }
          var user = {'username':uname};
-
+         console.log(user);
         //Upade online status
         pool.query(
           'UPDATE account SET online = true WHERE username=$1',[uname], (error,results)=>{
@@ -936,8 +947,8 @@ app.post('/checkAccount', (request, response)=>{
             }
         });
         //Log in user
-        // response.render('pages/index', user);
-        response.render('pages/matchmaking', user);
+        response.render('pages/index', user);
+        //response.render('pages/matchmaking', user);
        }
        else {
         var message ={'message':'Account is not existing'};

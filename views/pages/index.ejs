@@ -16,11 +16,15 @@
   <body>
     <canvas id="canvas"></canvas>
     <form action="/logout" method='post'>
-      <p id="username" name="username" hidden><%=user%></p>
-      <p id="servername" name="servername" hidden><%=server%></p>
+      <p id="username" name="username" hidden><%=username%></p>
       <input type="submit" id="log_out_button" value="LOGOUT" name="username"/>
     </form>
   </body>
 
-  <script src="/static/game.js"></script>
+  <script src="/static/UIElement.js" defer>
+    export *;
+  </script>
+  <script src="/static/game.js" defer>
+    import * from './static/UIElement.js';
+  </script>
 </html>

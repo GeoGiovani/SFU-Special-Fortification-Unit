@@ -1,6 +1,6 @@
 // //Getting username
-// var username = document.getElementById('username');
-// username = username.innerHTML;
+var username = document.getElementById('username');
+username = username.innerHTML;
 // var servername = document.getElementById('servername');
 // servername = servername.innerHTML;
 
@@ -23,6 +23,8 @@ var canvasW = 800;
 var canvasH = 600;
 canvas.width = canvasW;
 canvas.height = canvasH;
+
+var loading = false;
 
 window.addEventListener('click', function (e) {
   if (gameState != "menu") {
@@ -48,42 +50,71 @@ socket.on('message', function(data) {
 //Lobby codes
 
 socket.emit('player enters lobby');
+updateUIDrawing();
+// generalProcessor();
 
-generalProcessor();
+//commented out this part because menuProcessor is called only at the start,
+//and gameProcessor is called when server emits some related events.
 /////processors
-function generalProcessor(){
-  if(gameState == "menu"){
-    menuProcessor();
-  }else if(gameState == "game"){
-    gameProcessor();
-  }
-}
+// function generalProcessor(){
+//   if(gameState == "menu"){
+//     menuProcessor();
+//   }else if(gameState == "game"){
+//     gameProcessor();
+//   }
+// }
+
+socket.on('enter new room', function(roomName) {
+  console.log('enter new room called on client');
+  gameState = "game";
+  //gameProcessor(roomName);
+});
 
 
-function menuProcessor(){
-  socket.on('main menu', function(){
-    console.log("main menu called");////temporary
-    // this.gameState = "menu";
-    socket.on('global', function(globalData){
-      updateGlobal(globalData);
-    });
-    socket.on('room', function(roomData){
-      updateRoom(roomData);
-    });
-    updateUIDrawing();
-  });
-}
+// function menuProcessor(){
+//   socket.on('main menu', function(){
+//     console.log("main menu called");////temporary
+//     // this.gameState = "menu";
+//     socket.on('global', function(globalData){
+//       updateGlobal(globalData);
+//     });
+//     socket.on('room', function(roomData){
+//       updateRoom(roomData);
+//     });
+//     updateUIDrawing();
+//   });
+// }
 
 
-function gameProcessor(){
-  socket.on('in game',function(data){
-    // this.gameState = "game";
-    console.log("in game called");
-    //////
+socket.on('main menu', function(){
+  //console.log("main menu called");////temporary
+  updateUIDrawing();
+});
 
-    // newPlayerData = {"username" : username, "servername" : servername};
-    socket.emit('new player', username, servername);
-  });
+socket.on('global', function(globalData){
+  updateGlobal(globalData);
+  updateUIDrawing();
+});
+socket.on('room', function(roomData){
+  updateRoom(roomData);
+  updateUIDrawing();
+});
+
+//
+// function gameProcessor(roomName){
+//   socket.on('in game',function(data){
+//     // this.gameState = "game";
+//     console.log("in game called");
+//     //////
+//
+//     // newPlayerData = {"username" : username, "servername" : servername};
+//     socket.emit('new player', username, roomName);
+//   });
+// }
+
+
+function gameProcessor(roomName){
+  socket.emit('new player', username, roomName);
 }
 
 
@@ -137,7 +168,7 @@ function removeOldGlobalData(){
 }
 
 function updateRoomData(roomData){
-  var createRoom = new CreateRoom(100, 200, 200, 50, "black", this.socket);
+  var createRoom = new CreateRoom(100, 200, 200, 50, "black", this.socket, username);
   listUI.push(createRoom);
 }
 
@@ -146,6 +177,9 @@ function updateGlobalDrawing(){
 }
 
 function updateUIDrawing(){
+  if (gameState == 'game') {
+    return;
+  }
   context.fillStyle = "white";
   context.font = "20px Arial";
   context.fillText("If this shows, updateUIDrawing() is being called.", 100, 100);
@@ -365,12 +399,18 @@ window.addEventListener('mousemove', function (e) {
 
 var context = canvas.getContext('2d');
 socket.on('state', function(players, projectiles, enemies) {
+  //console.log('state called on client side');
+  if (loading) {
+    return;
+  }
   //console.log("socket event state called");
   if (myId == "") {
+    console.log('requesting id...');
     socket.emit('requestPassId');
     return;
   }
-  if (mapImage.src == "") {
+  if (!mapImageLoaded) {
+    console.log('requesting map...');
     socket.emit("requestMapImageSrcFromServer");
     return;
   }
@@ -438,6 +478,11 @@ socket.on("create map", function(mapData){
 // Support Functions ------------------------------------
 function processMapDrawing(mapData){
   console.log(mapData);
+  loading = true;
+  context.clearRect(canvasStartX, canvasStartX, canvasW, canvasH);
+  context.fillStyle = "white";
+  context.font = "30px Arial";
+  context.fillText("Loading . . .", (canvasW/2-100), (canvasW/2-30));
   //called ONLY when numPlayers: 0 -> 1.
   //draws the whole canvas, and saves to images file.
   /*
@@ -452,7 +497,7 @@ function processMapDrawing(mapData){
   allMap.height = 500*GRID_SIZE;
   var allMapCtx = allMap.getContext('2d');
 
-  //context.clearRect(startX, startY, canvasW, canvasH);
+
   /*
   aqImage = new Image();
   aqImage.src = '../image/aq.jpeg';
@@ -462,10 +507,10 @@ function processMapDrawing(mapData){
 
   for (var x = 0; x < mapData.length; x++) {
     var line = "";
-    console.log("mapdata is running");
+    //console.log("mapdata is running");
     for (var y = 0; y < mapData[mapData.length - 1].length; y++){
       // console.log("\tMapdata[" + x + "][" + y + "]"); ////*****
-      console.log("hi qt");
+      //console.log("hi qt");
       if(mapData[x][y] != '')
       {
         // var source = mapData[x][y].textureSrc;
@@ -486,12 +531,14 @@ function processMapDrawing(mapData){
         line += "!";
       }
     }
-    console.log(line);//////*****
+    //console.log(line);//////*****
   }
   //console.log(mapData);/////*****
   mapImage.src = allMap.toDataURL();
   console.log('socket event create map called: URL set to', mapImage.src);/////*****
   socket.emit("deliverMapImageSrcToServer", mapImage.src);
+  mapImageLoaded = true;
+  loading = false;
   delete allMap;
 }
 
