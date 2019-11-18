@@ -247,7 +247,7 @@ function createPlayer(id, serverName, username) {
   io.sockets.to(serverName).emit('create map', rooms[serverName].mapData);
   rooms[serverName].players.numPlayers += 1;
   rooms[serverName].players[id] = {
-    playerID: rooms[serverName].players.numPlayers,
+    //playerID: rooms[serverName].players.numPlayers,
     username: username,
     x: 159 * GRID_SIZE,
     y: 247 * GRID_SIZE,
@@ -686,19 +686,19 @@ function initLevel(roomName) {
   io.sockets.to(roomName).emit('create map', rooms[roomName].mapData);
   console.log('players.numPlayers: ', rooms[roomName].players.numPlayers, ', create map called');
 }
-
-function createPlayer(id, serverName) {
-  rooms[serverName].players.numPlayers += 1;
-  rooms[serverName].players[id] = {
-    playerID: rooms[serverName].players.numPlayers,
-    x: 160 * GRID_SIZE,
-    y: 59 * GRID_SIZE,
-    healsth: 4.33,
-    level: 1,
-    damage: 5,
-    speed: 3
-  };
-}
+//
+// function createPlayer(id, serverName) {
+//   rooms[serverName].players.numPlayers += 1;
+//   rooms[serverName].players[id] = {
+//     playerID: rooms[serverName].players.numPlayers,
+//     x: 160 * GRID_SIZE,
+//     y: 59 * GRID_SIZE,
+//     healsth: 4.33,
+//     level: 1,
+//     damage: 5,
+//     speed: 3
+//   };
+// }
 
 
 //==========================================================================
