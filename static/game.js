@@ -242,7 +242,7 @@ function processMapDrawing(mapData){
         // var pattern = ctx.createPattern(source, "repeat");
         allMapCtx.beginPath();
         allMapCtx.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
-        allMapCtx.fillStyle =" #B3B3B3";
+        allMapCtx.fillStyle =" #222222";
         allMapCtx.fill();
       }
 
