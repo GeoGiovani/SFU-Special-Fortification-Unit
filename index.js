@@ -79,11 +79,15 @@ function mainMenuProcessor(socket, data){
   socket.emit('main menu');
   // socket.broadcast.emit('global', globalData);// emit without the sender
   io.sockets.emit('global', globalData);//emit to all clients
-  socket.emit('room', rooms);
+  // socket.emit('room', rooms);
   socket.on('create room', function(roomName){
     processCreateRoom(socket, roomName)
-    socket.emit('room', rooms);
+    io.to(roomName).emit('room data', rooms[roomName]);
   });
+
+  socket.on('in game', function(){
+
+  })
     //processCreateRoom(roomName);
 
 }
@@ -91,13 +95,22 @@ function mainMenuProcessor(socket, data){
 function processCreateRoom(socket, roomName){
   socket.join(roomName);
   getRoomBySocketId[socket.id] = roomName;
-  rooms[roomName] = giveRoomData(roomName);
+  if(rooms[roomName] == undefined){
+    rooms[roomName] = giveEmptyRoomData(roomName);
+  }
+  rooms[roomName].players[socket.id] = {};
+  rooms[roomName].players.numPlayers++;
+
   console.log("rooms[roomName]: " + rooms[roomName])
   console.log("LOGGING ROOMS", rooms[roomName]);
 }
 
+function joinRoom(){
 
-function giveRoomData() {
+}
+
+
+function giveEmptyRoomData() {
   //Players object will contain all information about each player's position,
   var room = {}
 
@@ -137,10 +150,10 @@ function initLevel(roomName) {
   console.log('players.numPlayers: ', rooms[roomName].players.numPlayers, ', create map called');
 }
 
-function createPlayer(id, serverName) {
+function createInGamePlayer(id, serverName) {
   rooms[serverName].players.numPlayers += 1;
   rooms[serverName].players[id] = {
-    playerID: rooms[serverName].players.numPlayers,
+    userName: socket.id,
     x: 160 * GRID_SIZE,
     y: 59 * GRID_SIZE,
     healsth: 4.33,

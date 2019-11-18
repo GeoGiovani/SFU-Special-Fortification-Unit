@@ -31,7 +31,7 @@ class Ready extends UIElement{
 
 class Teammate extends UIElement{
   constructor(userName, x, y, width, height, color){
-    super(x, y, width, height, false, null, color, "Player", true);
+    super(x, y, width, height, false, null, color, "Teammate", true);
     this.userName = userName;
   }
   interaction(){
