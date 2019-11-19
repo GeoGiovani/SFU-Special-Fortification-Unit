@@ -21,9 +21,9 @@ pool = new Pool({
 // var room[socket.id];
 
 app.use('/static', express.static(__dirname + '/static'));// Ring
-app.get('/', function(request, response) {
-  response.sendFile(path.join(__dirname, 'index.html'));
-});// Starts the server.
+// app.get('/', function(request, response) {
+//   response.sendFile(path.join(__dirname, 'index.html'));
+// });// Starts the server.
 server.listen(PORT, function() {
   console.log('Starting server on port 5000');
 });
@@ -202,6 +202,235 @@ function createInGamePlayer(id, serverName) {
     speed: 3
   };
 }
+
+
+//=============================================================================
+// Long Workpace
+//Parse URL-encoded bodies (sent by HTML form)
+app.use(express.urlencoded({extended:false}));
+//Parse JSON body( sent by API client)
+app.use(express.json());
+
+//home page
+app.get('/', function(request, response)
+{
+   var message ={'message':''};
+   response.render('pages/login',message);
+});
+
+//Login function
+app.post('/checkAccount', (request, response)=>{
+  var uname = request.body.username;
+  var pw = request.body.password;
+
+  //Admin user
+  if (uname == "ADMIN301254694") {
+    pool.query('SELECT password FROM account WHERE username=$1',[uname], (error,results)=>{
+      if (error) {
+        throw(error);
+      }
+      //Check for password match
+      var result = (results.rows == '') ? '':results.rows[0].password;
+      if (result == String(pw)) {
+        //Password matched, extract all table information
+        pool.query("SELECT * FROM account;", (error,results) => {
+          if (error) {
+            throw(error);
+          }
+          var results = {'rows': results.rows };
+          response.render('pages/admin', results);
+        });
+      }
+      //Password does not match
+      else {
+        var message ={'message':'Account is not existing'};
+        response.render('pages/login', message);
+      }
+    });
+  }
+  else {
+   pool.query(
+     'SELECT password, online FROM account WHERE username=$1',[uname], (error,results)=>{
+       if (error)
+       {
+         throw(error);
+       }
+
+       var result = (results.rows == '') ? '':results.rows[0].password;
+       if (result == String(pw))
+       {
+         //If user already online, reject login attempt
+         if (results.rows[0].online) {
+          console.log("Redundant login attempt for user $1", [uname]);
+          var message ={'message':'Account is already logged in!'};
+          response.render('pages/login',message);
+         }
+         var user = {'username':uname};
+
+        //Upade online status
+        pool.query(
+          'UPDATE account SET online = true WHERE username=$1',[uname], (error,results)=>{
+            if (error)
+            {
+              throw(error);
+            }
+        });
+        //Log in user
+        // response.render('pages/index', user);
+        response.render('pages/matchmaking', user);
+       }
+       else {
+        var message ={'message':'Account is not existing'};
+        response.render('pages/login', message);
+       }
+     });
+  }
+});
+
+//Cheking gmail data with database
+app.post('/gglogin', (request, response)=>{
+  const uname = request.body.username;
+  const gmail=request.body.gmail;
+  const searchQuery = "SELECT * FROM account WHERE gmail=$1";
+  pool.query(searchQuery,[gmail], (error,results) =>{
+    if (error){
+      throw(error);
+    }
+    if (results.rows!='')
+    {
+      if (results.rows[0].username != uname)
+      {
+        var message = 'Gmail is used';
+        response.render('pages/login',message);
+      }
+    }
+    if (results.rows=='')
+    {
+      console.log('Creating new account with Google');
+      const createQuery = "INSERT INTO account (username,gmail) VALUES($1,$2)";
+      pool.query(createQuery,[uname,gmail], (error,results)=>{
+      if (error)
+        throw(error);
+      });
+    }
+    response.end();
+  });
+
+});
+//Login with gmail
+app.post('/ggAccount',(request,response)=>
+{
+  const uname = request.body.username;
+  const user = {
+    'username':uname
+  };
+  const query = "SELECT * FROM account WHERE username =$1";
+  pool.query(query,[uname],(error, results)=>{
+    if (error)
+      throw (error);
+    if (results.rows[0].online)
+    {
+      console.log("Redundant login attempt for user $1", [uname]);
+      var message ={'message':'Account is already logged in!'};
+     response.render('pages/login',message);
+      // response.send(uname+ ' is online already');
+    }
+    else
+      {
+        //Upade online status
+        pool.query(
+          'UPDATE account SET online = true WHERE username=$1',[uname], (error,results)=>{
+            if (error)
+            {
+              throw(error);
+            }
+        });
+       response.render('pages/index',user);
+        // response.send('Login successfully for'+uname);
+      }
+  });
+
+});
+
+//sign-up page
+app.get('/register', function(request,response)
+{
+  var message ={'message':''};
+  response.render('pages/register',message);
+});
+
+app.post('/register', (request,response)=>{
+   const uname = request.body.username;
+   const pw = request.body.pw;
+   const gmail = request.body.gmail;
+
+   //Check username availability
+   console.log('CHECKING USERNAME');
+   var text = `SELECT * FROM account WHERE username='${uname}';`;
+   pool.query(text,(error,results)=>{
+     if (error){
+       throw (error);
+     }
+     else {
+       var result = {'rows': results.rows};
+       if (result.rows.length !=0)
+       {
+         var message = {'message':'Username is used'};
+         console.log('USERNAME IS USED');
+         response.render('pages/register',message);
+       }
+       else {
+         console.log('USERNAME CHECKED');
+         //Check gmail availability
+         console.log('CHECKING GMAIL');
+         var text = `SELECT * FROM account WHERE gmail='${gmail}';`;
+         pool.query(text,(error, results)=>{
+           if (error){
+             throw(error);
+           }
+           else {
+             var result2 = {'rows': results.rows};
+             if (result2.rows.length !=0)
+             {
+               var message = {'message':'Gmail is used'}
+               console.log('GMAIL IS USED');
+               response.render('pages/register',message);
+             }
+             else {
+               console.log('GMAIL CHECKED');
+               console.log('INSERTING...')
+               var text = `INSERT INTO account (username, password, gmail)
+                 VALUES ('${uname}','${pw}','${gmail}');`;
+               pool.query(text, (error, results) =>{
+                 if (error){
+                   response.end(error);
+                 };
+                 console.log("INSERT ACCOUNT COMPLETED");
+                 var message = {'message':'Sign-up Completed'};
+                 response.render('pages/login',message)
+               });
+             };
+           };
+         });
+       }
+     };
+   });
+});
+//=============================================================================
+
+//=============================================================================
+// George Workpace
+app.post('/logout', (request, response)=>{
+  console.log("logging username on logout request", request.body.username);
+  logOutPlayer(request.body.username);
+  response.render('pages/login', {'message':'Please play again!'} );
+});
+
+app.post('/gameroom', (request, response)=>{
+  var data = {"server": request.body.roomName, "user": request.body.uname};
+  console.log("logging results", data)
+  response.render('pages/index', data);
+});
 
 // var players = -1;
 // console.log("  total players: " + players)
