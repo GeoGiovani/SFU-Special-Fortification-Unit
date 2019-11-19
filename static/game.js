@@ -54,6 +54,9 @@ function menuProcessor(){
 }
 
 function gameProcessor(){
+  socket.on('starting game', function(){
+    // socket.emit
+  })
   socket.on('in game',function(data){
     listUI = {};
     // this.gameState = "game";

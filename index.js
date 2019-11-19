@@ -21,9 +21,9 @@ pool = new Pool({
 // var room[socket.id];
 
 app.use('/static', express.static(__dirname + '/static'));// Ring
-// app.get('/', function(request, response) {
-//   response.sendFile(path.join(__dirname, 'index.html'));
-// });// Starts the server.
+app.get('/', function(request, response) {
+  response.sendFile(path.join(__dirname, 'index.html'));
+});// Starts the server.
 server.listen(PORT, function() {
   console.log('Starting server on port 5000');
 });
@@ -42,23 +42,32 @@ var globalPlayers = {
   players : [],
 };
 var getRoomBySocketId = {};
+const GRID_SIZE = 10;
 
 io.on('connection', function(socket){/// needs function to remove globalPlayers/rooms elements when player disconnect
   var gameState = "menu"
   initConnection(socket);
+  generalProcessor(socket, gameState);
+});
 
+function generalProcessor(socket, gameState){
+  var data = {
+    totalPlayers,
+    globalPlayers,
+    rooms,
+    getRoomBySocketId
+  }
   if(gameState == "menu"){
-    var data = {
-      totalPlayers,
-      globalPlayers,
-      rooms
-    }
+    console.log("gameState = " + gameState);
     mainMenuProcessor(socket, data);
   }else if(gameState == "game"){
-    // console.log("gameState = " + gameState);
+    console.log("gameState = " + gameState);
     inGameProcessor(socket, data);
   }
-});
+  socket.on('disconnect', function() {
+    processDisconnect(socket);
+  });
+}
 
 function initConnection(socket){
   console.log("connection : " + socket.id)
@@ -94,8 +103,61 @@ function mainMenuProcessor(socket, data){
 //processCreateRoom(roomName);
 
 function inGameProcessor(socket, data){
-  socket.emit('in game');
+  initGameStart(socket);
+  // socket.on('in game');
+  socket.emit("passId", socket.id);
+  socket.on('requestPassId', function(){
+    // socket.emit("passId", socket.id);
+    socket.broadcast.to(socket.id).emit("passId", socket.id);
+  });
+  socket.on("deliverMapImageSrcToServer", function(imageSrc){
+    //console.log('deliverMapImageSrcToServer called');
+    // mapImageSrc = imageSrc;
+    rooms[getRoomBySocketId[socket.id]].mapImageSrc = imageSrc;
+  });
+  socket.on("requestMapImageSrcFromServer", function(){
+    // console.log('imageSrc returned for request:', mapImageSrc);
+    // console.log('requestMapImageSrcFromServer called');
+    socket.emit("deliverMapImageSrcToClient", mapImageSrc);
+  });
 
+  // Responds to a movement event
+  socket.on('movement', function(data) {
+    // var player = players[socket.id] || {};
+    // movePlayer(player, data);
+    if (getRoomBySocketId == undefined
+      || getRoomBySocketId[socket.id] == undefined) {
+      return;
+    }
+    var player = rooms[getRoomBySocketId[socket.id]].players[socket.id] || {};
+    movePlayer(player, data, getRoomBySocketId[socket.id]);
+  });
+
+  //Code block to respond to shooting
+  socket.on('shoot', function(data) {
+    if (data.shootBullet) {
+      var rm = getRoomBySocketId[socket.id]
+      // console.log("emit sound");
+      // var sound = "bang";
+      // socket.emit('sound', sound);
+      generateProjectile(socket.id, data, rm);
+    }
+  });
+
+}
+
+function processDisconnect(socket){
+  console.log('socket event disconnect called');
+  if (getRoomBySocketId == undefined
+    || getRoomBySocketId[socket.id] == undefined
+    || rooms[getRoomBySocketId[socket.id]] == undefined
+    || rooms[getRoomBySocketId[socket.id]].players[socket.id] == undefined) {
+    //if the socket id is not valid, ignore the disconnect signal
+    console.log('invalid disconnect call: ignoring...')
+    return;
+  }
+  delete rooms[getRoomBySocketId[socket.id]].players[socket.id];
+  rooms[getRoomBySocketId[socket.id]].players.numPlayers -= 1;
 }
 
 function processCreateRoom(socket, roomName){
@@ -112,6 +174,15 @@ function processCreateRoom(socket, roomName){
 }
 
 function joinRoom(){
+
+}
+
+function initGameStart(socket){
+  var roomName = getRoomBySocketId[socket.id];
+  initLevel(roomName);
+  createInGamePlayer(socket.id, roomName, socket.id);
+  console.log("in game data: " + rooms[roomName])
+  socket.emit('in game');
 
 }
 
@@ -163,21 +234,21 @@ function processPlayerReady(socket){
 
 function processStartGame(socket){
   if(isGameStartable(socket)){
-    console.log("process creating game map")
+    generalProcessor(socket, "game");
   }
 }
 
 function isGameStartable(socket){
-  var roomName = getRoomBySocketId[socket.id];
-  var playerList = rooms[roomName].players;
-  for(var player in playerList){
-    if(player.ready == false){
-      return false;
-    }else if(player.ready != true){
-      console.log("Error in ready: " + player.ready)
-      return false;
-    }
-  }
+  // var roomName = getRoomBySocketId[socket.id];
+  // var playerList = rooms[roomName].players;
+  // for(var player in playerList){
+  //   if(player.ready == false){
+  //     return false;
+  //   }else if(player.ready != true){
+  //     console.log("Error in ready: " + player.ready)
+  //     return false;
+  //   }
+  // }
   return true;
 }
 
@@ -190,10 +261,9 @@ function initLevel(roomName) {
   console.log('players.numPlayers: ', rooms[roomName].players.numPlayers, ', create map called');
 }
 
-function createInGamePlayer(id, serverName) {
-  rooms[serverName].players.numPlayers += 1;
-  rooms[serverName].players[id] = {
-    userName: socket.id,
+function createInGamePlayer(id, roomName, uName) {
+  rooms[roomName].players[id] = {
+    userName: uName,
     x: 160 * GRID_SIZE,
     y: 59 * GRID_SIZE,
     healsth: 4.33,
