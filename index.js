@@ -36,7 +36,7 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-var totalPlayers = -1;
+var totalPlayers = 0;
 var rooms = {};
 var globalPlayers = {
   players : [],
@@ -55,7 +55,8 @@ io.on('connection', function(socket){/// needs function to remove globalPlayers/
     }
     mainMenuProcessor(socket, data);
   }else if(gameState == "game"){
-    console.log("gameState = " + gameState);
+    // console.log("gameState = " + gameState);
+    inGameProcessor(socket, data);
   }
 });
 
@@ -85,10 +86,15 @@ function mainMenuProcessor(socket, data){
     io.to(roomName).emit('room data', rooms[roomName]);
   });
 
-  socket.on('in game', function(){
+  socket.on('ready', function(){
+    processPlayerReady(socket);
+  });
 
-  })
-    //processCreateRoom(roomName);
+}
+//processCreateRoom(roomName);
+
+function inGameProcessor(socket, data){
+  socket.emit('in game');
 
 }
 
@@ -139,6 +145,40 @@ function giveEmptyRoomData() {
   room.spawnRate = 2000;
 
   return room
+}
+
+function processPlayerReady(socket){
+  var roomName = getRoomBySocketId[socket.id];
+  // var ready = rooms[roomName].players[socket.id].ready;
+  if(rooms[roomName].players[socket.id].ready == undefined){
+    rooms[roomName].players[socket.id].ready = true;
+  }else if(rooms[roomName].players[socket.id].ready == true){
+    rooms[roomName].players[socket.id].ready = false;
+  }else{
+    rooms[roomName].players[socket.id].ready = true;
+  }
+  console.log(socket.id + " ready: " + rooms[roomName].players[socket.id].ready)
+  processStartGame(socket);
+}
+
+function processStartGame(socket){
+  if(isGameStartable(socket)){
+    console.log("process creating game map")
+  }
+}
+
+function isGameStartable(socket){
+  var roomName = getRoomBySocketId[socket.id];
+  var playerList = rooms[roomName].players;
+  for(var player in playerList){
+    if(player.ready == false){
+      return false;
+    }else if(player.ready != true){
+      console.log("Error in ready: " + player.ready)
+      return false;
+    }
+  }
+  return true;
 }
 
 function initLevel(roomName) {

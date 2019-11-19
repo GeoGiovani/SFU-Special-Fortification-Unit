@@ -41,7 +41,7 @@ function menuProcessor(){
     console.log("socket.id = " + socket.id)//temporary
     console.log("main menu called");////temporary
     // this.gameState = "menu";
-    initBasicUI()
+    initBasicMenuUI()
     socket.on('global', function(globalData){
       updateGlobal(globalData);
     });
@@ -55,6 +55,7 @@ function menuProcessor(){
 
 function gameProcessor(){
   socket.on('in game',function(data){
+    listUI = {};
     // this.gameState = "game";
     console.log("in game called");
   });
@@ -64,7 +65,7 @@ function gameProcessor(){
 /////////////////////// Support functions
 
 //create basic UI such as create room, search,etc..
-function initBasicUI(){
+function initBasicMenuUI(){
   var createRoom = new CreateRoom(5, 350, 200, 50, "black", this.socket);
   listUI.push(createRoom);
 }
@@ -142,6 +143,8 @@ function updateRoomData(room){
       y += height * 2;
     }
   }
+  var element = new Ready(350, 350, 50, 50, "purple");
+  listUI.push(element);
 }
 
 function updateUIDrawing(){
