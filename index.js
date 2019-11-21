@@ -42,6 +42,7 @@ var globalPlayers = {
   players : [],
 };
 var getRoomBySocketId = {};
+var mapImageSrc = "";
 const GRID_SIZE = 10;
 
 io.on('connection', function(socket){/// needs function to remove globalPlayers/rooms elements when player disconnect
@@ -105,6 +106,7 @@ function mainMenuProcessor(socket, data){
 function inGameProcessor(socket, data){
   initGameStart(socket);
   // socket.on('in game');
+  socket.emit("grid size", GRID_SIZE);
   socket.emit("passId", socket.id);
   socket.on('requestPassId', function(){
     // socket.emit("passId", socket.id);
@@ -178,12 +180,13 @@ function joinRoom(){
 }
 
 function initGameStart(socket){
-  var roomName = getRoomBySocketId[socket.id];
-  initLevel(roomName);
-  createInGamePlayer(socket.id, roomName, socket.id);
-  console.log("in game data: " + rooms[roomName])
   socket.emit('in game');
-
+  var roomName = getRoomBySocketId[socket.id];
+  console.log("InitGameStart from player: " + socket.id + "\n\tat room: " + roomName);
+  console.log("\trooms[roomName]: " + rooms[roomName])
+  initLevel(socket, roomName);
+  createInGamePlayer(socket.id, roomName, socket.id);
+  console.log("in game data: " + rooms[roomName]);
 }
 
 
@@ -252,12 +255,16 @@ function isGameStartable(socket){
   return true;
 }
 
-function initLevel(roomName) {
+function initLevel(socket, roomName){
   var mapDataFromFile = JSON.parse(fs.readFileSync('static/objects/testMap2.json', 'utf8'));
   var processor = require('./static/objects/mapProcessor.js');
+  console.log("----Inside Init level-----")
+  console.log("roomName = " + roomName)
+  console.log("rooms[roomName]: " + rooms[roomName])
+  console.log("\trooms[roomName].mapData: " + rooms[roomName].mapData)
   rooms[roomName].mapData = processor.constructFromData(mapDataFromFile);
   //console.log(mapData);///////*******
-  io.sockets.to(roomName).emit('create map', rooms[roomName].mapData);
+  socket.emit('create map', rooms[roomName].mapData);
   console.log('players.numPlayers: ', rooms[roomName].players.numPlayers, ', create map called');
 }
 

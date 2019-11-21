@@ -7,6 +7,10 @@ var rooms;
 
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
+var mapImage = new Image();
+mapImage.src = "";
+var mapImageLoaded = false;
+var GRID_SIZE;
 var canvasStartX = 0;
 var canvasStartY = 0;
 var canvasW = 800;
@@ -29,39 +33,41 @@ window.addEventListener('click', function (e) {
 generalProcessor();
 
 function generalProcessor(){
-  if(gameState == "menu"){
+  socket.on('main menu', function(){
     menuProcessor();
-  }else if(gameState == "game"){
+  });
+  socket.on('in game',function(data){
     gameProcessor();
-  }
+  });
 }
 
 function menuProcessor(){
-  socket.on('main menu', function(){
-    console.log("socket.id = " + socket.id)//temporary
-    console.log("main menu called");////temporary
-    // this.gameState = "menu";
-    initBasicMenuUI()
-    socket.on('global', function(globalData){
-      updateGlobal(globalData);
-    });
-    socket.on('room data', function(room){
-      updateRoom(room);
-      removeCreateRoomUI();
-    });
-    updateUIDrawing();
+  console.log("socket.id = " + socket.id)//temporary
+  console.log("main menu called");////temporary
+  // this.gameState = "menu";
+  initBasicMenuUI()
+  socket.on('global', function(globalData){
+    updateGlobal(globalData);
   });
+  socket.on('room data', function(room){
+    updateRoom(room);
+    removeCreateRoomUI();
+  });
+  updateUIDrawing();
 }
 
 function gameProcessor(){
-  socket.on('starting game', function(){
-    // socket.emit
-  })
-  socket.on('in game',function(data){
+  socket.on('create map', function(mapData){
     listUI = {};
-    // this.gameState = "game";
-    console.log("in game called");
+    console.log("create map called")
+    processMapDrawing(mapData);
   });
+  socket.on("grid size", function(size){
+    GRID_SIZE = size
+    console.log("GRID_SIZE = " + size)
+  });
+  // this.gameState = "game";
+  console.log("in game called");
 }
 
 
@@ -87,7 +93,7 @@ function updateRoom(room){
   for(var player in room.players){
     console.log("\tplayer " + player)
   }
-  console.log("projectiles" + room.projectiles)
+  console.log("projefctiles" + room.projectiles)
   console.log("bulletCount " + room.bulletCount)
   console.log("enemies " + room.enemies)
   console.log("enemyID " + room.enemyID)
@@ -160,6 +166,64 @@ function updateUIDrawing(){
 
 function removeCreateRoomUI(){
 
+}
+
+function processMapDrawing(mapData){
+  var allMap = document.createElement("canvas");
+  allMap.width = 500*GRID_SIZE;
+  allMap.height = 500*GRID_SIZE;
+  var allMapCtx = allMap.getContext('2d');
+  drawMap(allMapCtx, mapData)
+  //console.log(mapData);/////*****
+  processImageDelivery(mapData, allMap)
+}
+
+function drawMap(allMapCtx, mapData){
+  clearScreen(allMapCtx);
+  for (var x = 0; x < mapData.length; x++) {
+    var line = "";//temporary
+    for (var y = 0; y < mapData[mapData.length - 1].length; y++){
+      if(mapData[x][y] != '')
+      {
+        // var source = mapData[x][y].textureSrc;
+        // console.log(source)
+        // var pattern = ctx.createPattern(source, "repeat");
+        allMapCtx.beginPath();
+        allMapCtx.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+        allMapCtx.fillStyle =" #B3B3B3";
+        allMapCtx.fill();
+      }
+
+      ////******
+      if (mapData[x][y] == ''){
+        line += "0";
+      }else if(mapData[x][y].name == "wall"){
+        line += "1";
+      }else{
+        line += "!";
+      }
+    }
+    console.log(line);//////*****
+  }
+}
+
+function processImageDelivery(mapData, allMap){
+
+  mapImage.src = allMap.toDataURL();
+  console.log('socket event create map called: URL set to', mapImage.src);/////*****
+  socket.emit("deliverMapImageSrcToServer", mapImage.src);
+  delete allMap;
+
+  socket.on("deliverMapImageSrcToClient", function(imageSrc){
+    if (!mapImageLoaded && imageSrc != "") {
+      mapImage.src = imageSrc;
+      mapImageLoaded = true;
+    }
+  });
+}
+
+function clearScreen(context){
+  context.clearRect(canvasStartX, canvasStartY, canvasW, canvasH);
 }
 
 function gameLoop(){
