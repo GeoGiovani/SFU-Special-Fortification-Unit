@@ -4,6 +4,7 @@ var listUI = []; //reset every change in gameState
 var totalPlayers;
 var globalPlayers = [];
 var rooms;
+var myId = "";
 
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
@@ -44,7 +45,7 @@ function generalProcessor(){
 function menuProcessor(){
   console.log("socket.id = " + socket.id)//temporary
   console.log("main menu called");////temporary
-  // this.gameState = "menu";
+  this.gameState = "menu";
   initBasicMenuUI()
   socket.on('global', function(globalData){
     updateGlobal(globalData);
@@ -57,19 +58,23 @@ function menuProcessor(){
 }
 
 function gameProcessor(){
+  this.gameState = "game";
+  console.log("in game called");
+  socket.on("grid size", function(size){
+    GRID_SIZE = size
+    console.log("GRID_SIZE = " + size)
+  });
+
   socket.on('create map', function(mapData){
     listUI = {};
     console.log("create map called")
     processMapDrawing(mapData);
   });
-  socket.on("grid size", function(size){
-    GRID_SIZE = size
-    console.log("GRID_SIZE = " + size)
-  });
-  // this.gameState = "game";
-  console.log("in game called");
-}
 
+  socket.on('state', function(players, projectiles, enemies) {
+    gameStateProcessor(players, projectiles, enemies)
+  });
+}
 
 /////////////////////// Support functions
 
@@ -169,7 +174,7 @@ function removeCreateRoomUI(){
 }
 
 function processMapDrawing(mapData){
-  var allMap = document.createElement("canvas");
+  var allMap = document.createElement("canvas")
   allMap.width = 500*GRID_SIZE;
   allMap.height = 500*GRID_SIZE;
   var allMapCtx = allMap.getContext('2d');
@@ -226,8 +231,70 @@ function clearScreen(context){
   context.clearRect(canvasStartX, canvasStartY, canvasW, canvasH);
 }
 
-function gameLoop(){
+function gameStateProcessor(players, projectiles, enemies){
+  var context = canvas.getContext('2d');
+  //console.log("socket event state called");
+  if (myId == "") {
+    socket.emit('requestPassId');
+    return;
+  }
+  if (mapImage.src == "") {
+    socket.emit("requestMapImageSrcFromServer");
+    return;
+  }
+  context.clearRect(startX, startY, canvasW, canvasH);
 
+  var middleX = players[myId].x - (canvasW)/2;
+  var middleY = players[myId].y - (canvasH)/2;
+  shoot.middleX = middleX;
+  shoot.middleY = middleY;
+
+  //'zoom' functionality. It's not done yet! Please just leave it =1..
+  //It only works on map-drawing, NOT collision.
+  var zoom = 1;
+
+  //drawing the map from mapURL
+  context.drawImage(mapImage, middleX, middleY,
+    canvasW, canvasH, 0, 0, canvasW*zoom, canvasH*zoom);
+
+    context.fillStyle = 'green';
+    for (var id in players) {
+      var player = players[id];
+      //Determines how the characters look
+      context.beginPath();
+      context.arc(player.x - middleX, player.y - middleY, GRID_SIZE/2 , 0, 2 * Math.PI);
+      context.fill();
+    }
+
+    for (var id in projectiles) {
+      var projectile = projectiles[id];
+      //Determines how the bullets look
+      context.beginPath();
+      context.arc(projectile.x - middleX, projectile.y - middleY, 2, 0, 2 * Math.PI);
+      context.fillStyle = 'white';
+      context.fill();
+    }
+
+    for (var id in enemies) {
+
+      var enemy = enemies[id];
+      //Determines how the bullets look // old radius = 6
+      context.beginPath();
+      context.arc(enemy.x - middleX, enemy.y - middleY, GRID_SIZE/2, 0, 2 * Math.PI);
+      context.fillStyle = 'red';
+      context.fill();
+    }
+
+    context.fillStyle = "white";
+    context.font = "15px Arial";
+    context.fillText("Player: x: " + (players[myId].x/GRID_SIZE) + ", y: "
+    + (players[myId].y/GRID_SIZE), canvasW-170, canvasH-50);
+    context.fillText("Mouse: x: " + (xPos+middleX)/GRID_SIZE + ", y: "
+    + (yPos+middleY)/GRID_SIZE, canvasW-170, canvasH-30);
+
+    var thisLoop = new Date();
+    context.fillText(Math.round(1000 / (thisLoop - lastLoop)) + " FPS", canvasW-70, canvasH-10);
+    lastLoop = thisLoop;
 }
 
 //input orignal canvas size and desired position based on canavs scaling to get actual position

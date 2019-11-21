@@ -45,6 +45,21 @@ var getRoomBySocketId = {};
 var mapImageSrc = "";
 const GRID_SIZE = 10;
 
+setInterval(function() {
+  for (var rm in rooms) {
+    if(rooms[rm].players.numPlayers > 0){
+      //  console.log("interval player")
+        moveProjectiles(rm);
+        moveEnemies(rm);
+        handleBulletCollisions(rm);
+        generateEnemies(rm);
+        //console.log("LOGGING rm", rm);
+        io.sockets.to(rm).emit('state', rooms[rm].players,
+          rooms[rm].projectiles, rooms[rm].enemies);
+      }
+  }
+}, 1000 / 120);
+
 io.on('connection', function(socket){/// needs function to remove globalPlayers/rooms elements when player disconnect
   var gameState = "menu"
   initConnection(socket);
@@ -278,6 +293,199 @@ function createInGamePlayer(id, roomName, uName) {
     damage: 5,
     speed: 3
   };
+}
+
+
+function moveProjectiles(rm) {
+  for (var id in rooms[rm].projectiles) {
+    if (rooms[rm].projectiles[id]) {
+      var delBullet = false;
+      var originX = rooms[rm].projectiles[id].x;
+      var originY = rooms[rm].projectiles[id].y;
+      rooms[rm].projectiles[id].x += rooms[rm].projectiles[id].vx;
+      rooms[rm].projectiles[id].y += rooms[rm].projectiles[id].vy;
+      if(hasCollision(rooms[rm].projectiles[id].x, rooms[rm].projectiles[id].y, rm)){
+        rooms[rm].projectiles[id].x = originX;
+        rooms[rm].projectiles[id].y = originY;
+        delBullet = true;
+        // deleteBullet(id);
+      }
+      //Delete stale projectiles
+      if ( (rooms[rm].projectiles[id].x > 5000) || (rooms[rm].projectiles[id].y > 5000) ||
+          (rooms[rm].projectiles[id].x < -5000) || (rooms[rm].projectiles[id].y < -5000)) {
+          delBullet = true;
+      }
+      if(delBullet == true){
+        deleteBullet(id, rm);
+      }
+    }
+  }
+}
+
+function hasCollision(x, y, rm){
+  var gridX = Math.floor(x / GRID_SIZE);
+  var gridY = Math.floor(y / GRID_SIZE);
+  if(rooms[rm] == undefined || rooms[rm].mapData == undefined
+    || rooms[rm].mapData[gridX] == undefined
+    || rooms[rm].mapData[gridX][gridY] == undefined) {
+    // console.log("collision " + gridX + ", " + gridY)
+    // console.log("RETURNING FALSE, ROOM MAPDATA PROBLEM");
+    return false;
+  } else if(rooms[rm].mapData[gridX][gridY].collision == true){
+    // console.log("collision " + gridX + ", " + gridY)
+    return true;
+  }
+  return false;
+}
+
+function deleteBullet(id, rm) {
+  var temp = rooms[rm].projectiles[rooms[rm].bulletCount -= 1];
+  rooms[rm].projectiles[rooms[rm].bulletCount] = rooms[rm].projectiles[id];
+  rooms[rm].projectiles[id] = temp;
+  rooms[rm].projectiles[rooms[rm].bulletCount] = 0;
+  rooms[rm].projectiles.numProjectiles -= 1;
+}
+
+function moveEnemies(rm) {
+  //Enemy movement handler
+  for (var id in rooms[rm].enemies) {
+   //Find closest players
+   if ( rooms[rm].players.numPlayers > 0 ) {
+   // if ( (players.numPlayers > 0) && (enemies.numEnemies > 0) ) {
+     var closestPlayer;
+     var closestPlayerDistance = Infinity;
+     for (var player in rooms[rm].players) {
+       var distX = rooms[rm].players[player].x - rooms[rm].enemies[id].x;
+       var distY = rooms[rm].players[player].y - rooms[rm].enemies[id].y;
+       var distance = Math.sqrt( distX * distX + distY * distY );
+       if (distance < closestPlayerDistance) {
+         closestPlayer = player;
+         closestPlayerDistance = distance;
+       }
+     }
+     if (rooms[rm].players[closestPlayer] == undefined) {
+       console.log("players[closestPlayer] is undefined. Ignoring",
+         "moveEnemies() logic instead of letting program crash.",
+         "Please check the logic.");
+       return;
+     }
+     //Move to closest player
+     distX = rooms[rm].enemies[id].x - rooms[rm].players[closestPlayer].x;
+     distY = rooms[rm].enemies[id].y - rooms[rm].players[closestPlayer].y;
+
+     var attackTheta = Math.atan(distX / distY);
+
+     var sign = -1;
+     if (rooms[rm].enemies[id].y < rooms[rm].players[closestPlayer].y) {
+       sign = 1;
+     }
+
+     if ( Math.abs(distX) < 12 && Math.abs(distY) < 12 ) {
+       // console.log("distX ", distX, "distY, ", distY);
+       //Deplete health
+       rooms[rm].players[closestPlayer].health -= .05;
+       //Kill player
+       // if (players[closestPlayer].health < 0) {
+       //   players[closestPlayer] = 0;
+       //   players.numPlayers -= 1;
+       // }
+
+       //Dont move any closer
+       sign = 0;
+     }
+
+     rooms[rm].enemies[id].vx =  rooms[rm].enemies[id].speed * Math.sin(attackTheta) * sign;
+     rooms[rm].enemies[id].vy =  rooms[rm].enemies[id].speed * Math.cos(attackTheta) * sign;
+     var originX = rooms[rm].enemies[id].x;
+     var originY = rooms[rm].enemies[id].y;
+     rooms[rm].enemies[id].x += rooms[rm].enemies[id].vx;
+     rooms[rm].enemies[id].y += rooms[rm].enemies[id].vy;
+     if(hasCollision(rooms[rm].enemies[id].x, rooms[rm].enemies[id].y, rm)){
+       rooms[rm].enemies[id].x = originX;
+       rooms[rm].enemies[id].y = originY;
+     }
+   }
+ }
+}
+
+function handleBulletCollisions(rm) {
+  //Player-projectile collision handler
+  for (var player in rooms[rm].players) {
+    for (var id in rooms[rm].projectiles) {
+      if (rooms[rm].projectiles[id]) {
+        if ( (Math.abs(rooms[rm].players[player].x - rooms[rm].projectiles[id].x) < 2) &&
+            (Math.abs(rooms[rm].players[player].y - rooms[rm].projectiles[id].y) < 2) ) {
+          rooms[rm].players[player].health -= 1;
+          // if (players[player].health < 0) {
+          //   players[player] = 0;
+          //   players.numPlayers -= 1;
+          // }
+        }
+      }
+    }
+  }
+  //Enemy-projectile collision handler
+  for (var enemy in rooms[rm].enemies) {
+    for (var id in rooms[rm].projectiles) {
+      if (rooms[rm].projectiles[id]) {
+        if ( (Math.abs(rooms[rm].enemies[enemy].x - rooms[rm].projectiles[id].x) < 5) &&
+            (Math.abs(rooms[rm].enemies[enemy].y - rooms[rm].projectiles[id].y) < 5) ) {
+              rooms[rm].enemies[enemy].health -= 1;
+              if (rooms[rm].enemies[enemy].health < 0) {
+                var temp = rooms[rm].enemies[rooms[rm].enemyID -= 1];
+                rooms[rm].enemies[rooms[rm].enemyID] = rooms[rm].enemies[enemy];
+                rooms[rm].enemies[enemy] = temp;
+                rooms[rm].enemies[rooms[rm].enemyID] = 0;
+                rooms[rm].enemies.numEnemies -= 1;
+              }
+        }
+      }
+    }
+  }
+}
+
+function generateEnemies(rm) {
+
+  // spawn a new object
+  if (rooms[rm].spawnRate > 1000) {
+    rooms[rm].spawnRate = rooms[rm].spawnRate -= 1;
+  }
+
+  // get the elapsed time
+  var time = Date.now();
+
+  // see if its time to spawn a new object
+  if (time > (rooms[rm].lastSpawn + rooms[rm].spawnRate)) {
+    rooms[rm].lastSpawn = time;
+    spawnRandomObject(rm);
+    //console.log('emeny spawned. spawnRate: ', spawnRate);
+  }
+}
+
+function spawnRandomObject(rm) {
+
+  // About Math.random()
+  // Math.random() generates a semi-random number
+  // between 0-1. So to randomly decide if the next object
+  // will be A or B, we say if the random# is 0-.49 we
+  // create A and if the random# is .50-1.00 we create B
+
+  // add the new object to the objects[] array
+  if (rooms[rm].enemies.numEnemies < 10) {
+    rooms[rm].enemies[rooms[rm].enemyID] = {
+      // type: t,
+      // set x randomly but at least 15px off the canvas edges
+      x: Math.random() * 350,
+      // set y to start on the line where objects are spawned
+      y: Math.random() * 300,
+      vx: 5,
+      vy: 5,
+      speed: .5,
+      health: 4
+    }
+    rooms[rm].enemies.numEnemies++;
+    rooms[rm].enemyID++;
+  }
 }
 
 
