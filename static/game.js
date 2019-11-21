@@ -184,7 +184,7 @@ function processMapDrawing(mapData){
 }
 
 function drawMap(allMapCtx, mapData){
-  clearScreen(allMapCtx);
+  clearScreen(context);
   for (var x = 0; x < mapData.length; x++) {
     var line = "";//temporary
     for (var y = 0; y < mapData[mapData.length - 1].length; y++){
@@ -215,6 +215,7 @@ function drawMap(allMapCtx, mapData){
 function processImageDelivery(mapData, allMap){
 
   mapImage.src = allMap.toDataURL();
+  console.log("allMap.toDataURL(): " + allMap.toDataURL())
   console.log('socket event create map called: URL set to', mapImage.src);/////*****
   socket.emit("deliverMapImageSrcToServer", mapImage.src);
   delete allMap;
@@ -232,7 +233,6 @@ function clearScreen(context){
 }
 
 function gameStateProcessor(players, projectiles, enemies){
-  var context = canvas.getContext('2d');
   //console.log("socket event state called");
   if (myId == "") {
     socket.emit('requestPassId');

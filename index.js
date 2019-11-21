@@ -128,8 +128,9 @@ function inGameProcessor(socket, data){
     socket.broadcast.to(socket.id).emit("passId", socket.id);
   });
   socket.on("deliverMapImageSrcToServer", function(imageSrc){
-    //console.log('deliverMapImageSrcToServer called');
+    console.log('deliverMapImageSrcToServer called');
     // mapImageSrc = imageSrc;
+    console.log("imageSrc " + imageSrc)
     rooms[getRoomBySocketId[socket.id]].mapImageSrc = imageSrc;
   });
   socket.on("requestMapImageSrcFromServer", function(){
@@ -276,8 +277,8 @@ function initLevel(socket, roomName){
   console.log("----Inside Init level-----")
   console.log("roomName = " + roomName)
   console.log("rooms[roomName]: " + rooms[roomName])
-  console.log("\trooms[roomName].mapData: " + rooms[roomName].mapData)
   rooms[roomName].mapData = processor.constructFromData(mapDataFromFile);
+  console.log("\trooms[roomName].mapData: " + rooms[roomName].mapData)
   //console.log(mapData);///////*******
   socket.emit('create map', rooms[roomName].mapData);
   console.log('players.numPlayers: ', rooms[roomName].players.numPlayers, ', create map called');
