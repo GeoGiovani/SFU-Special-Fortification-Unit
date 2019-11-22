@@ -200,7 +200,7 @@ function drawMap(mapData){
         // var source = mapData[x][y].textureSrc;
         // console.log(source)
         // var pattern = ctx.createPattern(source, "repeat");
-        context.fillStyle ="#B3B3B3";//last change: allMapCtx -> context to see if its drawing correctly, nothing happened
+        context.fillStyle ="#B3B3B3";//last change: allMapCtx -> context to see draw correctly, now GRID_SIZE is passed down before drawing
         context.beginPath();
         context.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
         context.fill();
@@ -222,15 +222,15 @@ function drawMap(mapData){
 function processImageDelivery(){
 
   mapImage.src = canvas.toDataURL();
-  console.log("canvas.toDataURL(): " + canvas.toDataURL())
   console.log('socket event create map called: URL set to', mapImage.src);/////*****
   socket.emit("deliverMapImageSrcToServer", mapImage.src);
-  // delete allMap;
+  delete canvas;
 
   socket.on("deliverMapImageSrcToClient", function(imageSrc){
     if (!mapImageLoaded && imageSrc != "") {
       mapImage.src = imageSrc;
       mapImageLoaded = true;
+      console.log("imageSrc recieved: " + imageSrc)
     }
   });
 }
