@@ -5,6 +5,7 @@ var totalPlayers;
 var globalPlayers = [];
 var rooms;
 var myId = "";
+var audioList = {};
 
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
@@ -174,29 +175,35 @@ function removeCreateRoomUI(){
 }
 
 function processMapDrawing(mapData){
-  var allMap = document.createElement("canvas")
-  allMap.width = 500*GRID_SIZE;
-  allMap.height = 500*GRID_SIZE;
-  var allMapCtx = allMap.getContext('2d');
-  drawMap(allMapCtx, mapData)
-  //console.log(mapData);/////*****
-  processImageDelivery(mapData, allMap)
+  // var allMap = document.createElement("canvas")
+  // allMap.width = 500*GRID_SIZE;
+  // allMap.height = 500*GRID_SIZE;
+  // var allMapCtx = allMap.getContext('2d');
+  // drawMap(allMapCtx, mapData)
+  // //console.log(mapData);/////*****
+  // processImageDelivery(allMap)
+  canvas.width = 500 * GRID_SIZE;
+  canvas.height = 500 * GRID_SIZE;
+  drawMap(mapData);
+  processImageDelivery();
 }
 
-function drawMap(allMapCtx, mapData){
+function drawMap(mapData){
   clearScreen(context);
   for (var x = 0; x < mapData.length; x++) {
+    console.log("mapData.length = " + mapData.length)
     var line = "";//temporary
     for (var y = 0; y < mapData[mapData.length - 1].length; y++){
+      console.log("mapData[mapData.length - 1].length = " + mapData[mapData.length - 1].length)
       if(mapData[x][y] != '')
       {
         // var source = mapData[x][y].textureSrc;
         // console.log(source)
         // var pattern = ctx.createPattern(source, "repeat");
-        allMapCtx.beginPath();
-        allMapCtx.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
-        allMapCtx.fillStyle =" #B3B3B3";
-        allMapCtx.fill();
+        context.fillStyle ="#B3B3B3";//last change: allMapCtx -> context to see if its drawing correctly, nothing happened
+        context.beginPath();
+        context.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+        context.fill();
       }
 
       ////******
@@ -212,13 +219,13 @@ function drawMap(allMapCtx, mapData){
   }
 }
 
-function processImageDelivery(mapData, allMap){
+function processImageDelivery(){
 
-  mapImage.src = allMap.toDataURL();
-  console.log("allMap.toDataURL(): " + allMap.toDataURL())
+  mapImage.src = canvas.toDataURL();
+  console.log("canvas.toDataURL(): " + canvas.toDataURL())
   console.log('socket event create map called: URL set to', mapImage.src);/////*****
   socket.emit("deliverMapImageSrcToServer", mapImage.src);
-  delete allMap;
+  // delete allMap;
 
   socket.on("deliverMapImageSrcToClient", function(imageSrc){
     if (!mapImageLoaded && imageSrc != "") {
