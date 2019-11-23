@@ -38,6 +38,14 @@ class MapObject{
   }
 }
 
+class Floor extends MapObject {
+  constructor(color){
+    super("floor", false, false, false, color);
+    this.color = color;
+
+  }
+}
+
 //a general class for Surfaces such as wall, floor, grass, glasses,etc
 class Wall extends MapObject{
   constructor(){
@@ -76,7 +84,32 @@ class Player {
 // module.exports.Surface = Surface;
 module.exports.MapObject = MapObject;
 module.exports.Wall = Wall;
+module.exports.Floor = Floor;
 module.exports.Furniture = Furniture;
 
 
 // Detailed definitions for: furnitures
+
+
+
+
+
+//======================================================
+
+class Zone {
+  constructor(num, x, y, width, height) {
+    this.num = num;
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.open = false;  //will be modified during game!
+
+    this.inside = function(x, y) {
+      return ((x >= this.x && x <= this.x + width)
+        && (y >= this.y && y <= this.y + height));
+    }
+  }
+}
+
+module.exports.Zone = Zone;

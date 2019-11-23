@@ -21,6 +21,7 @@ var objects = require('./objects.js');
 var constructFromData = function(jsonContent){
   var largestPosition = findLargestPosition(jsonContent);
   var mapData = giveEmptyMap(largestPosition);
+  mapData = initFloorMap(mapData, jsonContent);
   mapData = initWallMap(mapData, jsonContent);
   //NEED more functions here for other objects
   return mapData;
@@ -36,6 +37,21 @@ function findLargestPosition(json){
     var y = json.map.wall[i].y;
     var width = json.map.wall[i].width;
     var height = json.map.wall[i].height;
+    var lastX = x + width - 1;
+    var lastY = y + height - 1;
+    if(lastX > largestX){
+      largestX = lastX;
+    }
+    if(lastY > largestY){
+      largestY = lastY
+    }
+    //console.log(obj.name);
+  }
+  for (var i = 0; i < json.map.floor.length; i++) {
+    var x = json.map.floor[i].x;
+    var y = json.map.floor[i].y;
+    var width = json.map.floor[i].width;
+    var height = json.map.floor[i].height;
     var lastX = x + width - 1;
     var lastY = y + height - 1;
     if(lastX > largestX){
@@ -74,6 +90,18 @@ function initWallMap(mapData, json){
   return mapData;
 }
 
+function initFloorMap(mapData, json){
+  for (var i = 0; i < json.map.floor.length; i++) {
+    var x = json.map.floor[i].x;
+    var y = json.map.floor[i].y;
+    var width = json.map.floor[i].width;
+    var height = json.map.floor[i].height;
+    var color = json.map.floor[i].color;
+    mapData = insertFloorIntoArray(mapData, x, y, width, height, color);
+  }
+  return mapData;
+}
+
 function insertWallIntoArray(mapData, x, y, width, height){
   var endX = x + width;
   var endY = y + height;
@@ -98,6 +126,20 @@ function insertWallIntoArray(mapData, x, y, width, height){
   //   console.log(line);
   // }
   // /////*****
+  return mapData;
+}
+
+function insertFloorIntoArray(mapData, x, y, width, height, color){
+  var endX = x + width;
+  var endY = y + height;
+  for (var mapX = x; mapX < endX; mapX++){
+    for (var mapY = y; mapY < endY; mapY++){
+      if (mapData[mapX][mapY] != '') {
+        delete mapData[mapX][mapY];
+      }
+      mapData[mapX][mapY] = new objects.Floor(color);
+    }
+  }
   return mapData;
 }
 
@@ -133,3 +175,20 @@ function givePlayerArray(json){
   return array;
 }
 module.exports.constructFromData = constructFromData;
+
+//=====================================================
+
+var constructZone = function(json) {
+  var zones = {};
+  for (var i = 0; i < json.map.zone.length; i++) {
+    var num = json.map.zone[i].num;
+    var x = json.map.zone[i].x;
+    var y = json.map.zone[i].y;
+    var width = json.map.zone[i].width;
+    var height = json.map.zone[i].height;
+    zones[num] = new objects.Zone(num, x, y, width, height);
+  }
+  return zones;
+}
+
+module.exports.constructZone = constructZone;

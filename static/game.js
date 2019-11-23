@@ -1,3 +1,13 @@
+//Getting username
+// var username = document.getElementById('username');
+// username = username.innerHTML;
+// var servername = document.getElementById('servername');
+// servername = servername.innerHTML;
+//
+// console.log(`Hello ${username}!`);
+// console.log(`Server ${servername}!`);
+
+
 var socket = io();
 socket.on('message', function(data) {
   // console.log(data);
@@ -27,10 +37,10 @@ var shoot = {
     middleY: 0
 }
 
-var hit = new Audio("HITMARKER.mp3");
-var bang = new Audio("batman punch.wav")
-hit.type = 'audio/mp3';
-bang.type = 'audio/wav';
+//var hit = new Audio("HITMARKER.mp3");
+//var bang = new Audio("batman punch.wav")
+//hit.type = 'audio/mp3';
+//bang.type = 'audio/wav';
 
 var xPos = 0;
 var yPos = 0;
@@ -110,13 +120,14 @@ document.addEventListener('keyup', function(event) {
 socket.on('grid-size', function(gridSize){
   GRID_SIZE = gridSize;
 })
+// newPlayerData = {"username" : username, "servername" : servername};
 socket.emit('new player');
 
 setInterval(function() {
   socket.emit('movement', movement);
-  //socket.emit('shoot', shoot);
+  socket.emit('shoot', shoot);
   //makeSound("bang");
-}, 1000 / 20);
+}, 1000 / 60);
 
   var canvas = document.getElementById('canvas');
   var startX = 0;
@@ -136,7 +147,7 @@ window.addEventListener('mousemove', function (e) {
 });
 
   var context = canvas.getContext('2d');
-  socket.on('state', function(players, projectiles, enemies) {
+  socket.on('state', function(players, projectiles, enemies, zones) {
     //console.log("socket event state called");
     if (myId == "") {
       socket.emit('requestPassId');
@@ -175,7 +186,7 @@ window.addEventListener('mousemove', function (e) {
       //Determines how the bullets look
       context.beginPath();
       context.arc(projectile.x - middleX, projectile.y - middleY, 2, 0, 2 * Math.PI);
-      context.fillStyle = 'white';
+      context.fillStyle = 'blue';
       context.fill();
     }
 
@@ -189,7 +200,17 @@ window.addEventListener('mousemove', function (e) {
       context.fill();
     }
 
-    context.fillStyle = "white";
+    //20191122
+    context.fillStyle = "rgba(100, 100, 100, 0.5)";
+    // context.fillStyle = "black";
+    for (var id in zones) {
+      var zone = zones[id];
+      context.beginPath();
+      context.rect(zone.x*GRID_SIZE - middleX, zone.y*GRID_SIZE - middleY, zone.width*GRID_SIZE, zone.height*GRID_SIZE);
+      context.fill();
+    }
+
+    context.fillStyle = "blue";
     context.font = "15px Arial";
     context.fillText("Player: x: " + (players[myId].x/GRID_SIZE) + ", y: "
       + (players[myId].y/GRID_SIZE), canvasW-170, canvasH-50);
@@ -209,6 +230,7 @@ window.addEventListener('mousemove', function (e) {
 
 // Support Functions ------------------------------------
 function processMapDrawing(mapData){
+  // console.log(mapData);
   //called ONLY when numPlayers: 0 -> 1.
   //draws the whole canvas, and saves to images file.
   /*
@@ -220,7 +242,7 @@ function processMapDrawing(mapData){
   //const margin = 300;
   var allMap = document.createElement("canvas");
   allMap.width = 500*GRID_SIZE;
-  allMap.height = 600*GRID_SIZE;
+  allMap.height = 500*GRID_SIZE;
   var allMapCtx = allMap.getContext('2d');
 
   //context.clearRect(startX, startY, canvasW, canvasH);
@@ -230,19 +252,31 @@ function processMapDrawing(mapData){
   aqImage.onload = function(){
     context.drawImage(aqImage, 0, 0);
   }*/
-
+  var texture = new Image();
+  texture.src = "/objects/JoshFavorite.png"
   for (var x = 0; x < mapData.length; x++) {
     var line = "";
+    // console.log("mapdata is running");
     for (var y = 0; y < mapData[mapData.length - 1].length; y++){
       // console.log("\tMapdata[" + x + "][" + y + "]"); ////*****
-      if(mapData[x][y] != '')
+      // console.log("hi qt");
+      // console.log("mapdata: ", mapData[x][y]);
+      if(mapData[x][y] != '' && mapData[x][y].name == "floor")
+      {
+        allMapCtx.beginPath();
+        allMapCtx.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+        allMapCtx.fillStyle = mapData[x][y].color;
+        allMapCtx.fill();
+      }
+      else if(mapData[x][y] != '' && mapData[x][y].name == "wall")
       {
         // var source = mapData[x][y].textureSrc;
         // console.log(source)
         // var pattern = ctx.createPattern(source, "repeat");
         allMapCtx.beginPath();
         allMapCtx.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
-        allMapCtx.fillStyle =" #222222";
+        // allMapCtx.fillStyle = texture.src;
+        allMapCtx.fillStyle = "black";
         allMapCtx.fill();
       }
 
@@ -255,7 +289,7 @@ function processMapDrawing(mapData){
         line += "!";
       }
     }
-    //console.log(line);//////*****
+    // console.log(line);//////*****
   }
   //console.log(mapData);/////*****
   mapImage.src = allMap.toDataURL();
@@ -263,6 +297,15 @@ function processMapDrawing(mapData){
   socket.emit("deliverMapImageSrcToServer", mapImage.src);
   delete allMap;
 }
+
+//=============================================================================
+// George Workpace
+var logoutButton = document.getElementById('log_out_button');
+// logoutButton.addEventListener('click', function(event) {
+//   logoutButton.value = username;
+// });
+
+//=============================================================================
 
   // Fazal' Workstation -------------------------------------------------------------------------
   // var enemyContext = canvas.getContext('2d');

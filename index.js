@@ -73,6 +73,9 @@ var enemies = {
 }
 enemyID = 0;
 
+//20191122
+var zones = {};
+
 var mapImageSrc = "";
 var mapData; // 2d array of the map
 const GRID_SIZE = 10; // each grid size for map
@@ -96,6 +99,8 @@ io.on('connection', function(socket) {
       var mapDataFromFile = JSON.parse(fs.readFileSync('static/objects/testMap2.json', 'utf8'));
       var processor = require('./static/objects/mapProcessor.js');
       mapData = processor.constructFromData(mapDataFromFile);
+      //20191122
+      zones = processor.constructZone(mapDataFromFile);
       //console.log(mapData);///////*******
       socket.emit('create map', mapData);
       console.log('players.numPlayers: ', players.numPlayers, ', create map called');
@@ -158,7 +163,7 @@ setInterval(function() {
     //moveEnemies();
     //handleBulletCollisions();
     //generateEnemies();
-    io.sockets.emit('state', players, projectiles, enemies);
+    io.sockets.emit('state', players, projectiles, enemies, zones);
   }
 }, 1000 / 40);
 
@@ -171,9 +176,9 @@ function createPlayer(id) {
   players.numPlayers += 1;
   players[id] = {
     playerID: players.numPlayers,
-    x: 240 * GRID_SIZE,
-    y: 238 * GRID_SIZE,
-    healsth: 4.33,
+    x: 163 * GRID_SIZE,
+    y: 245 * GRID_SIZE,
+    health: 4.33,
     level: 1,
     damage: 5,
     speed: 15,
@@ -223,6 +228,12 @@ function movePlayer(player, data) {
 function hasCollision(x, y){
   var gridX = Math.floor(x / GRID_SIZE);
   var gridY = Math.floor(y / GRID_SIZE);
+  for (zoneNum in zones) {
+    if (!zones[zoneNum].open && zones[zoneNum].inside(gridX, gridY)) {
+      console.log("collision by zone");
+      return true;
+    }
+  }
   if(mapData == undefined || mapData[gridX] == undefined
     || mapData[gridX][gridY] == undefined){
     // console.log("collision " + gridX + ", " + gridY)
