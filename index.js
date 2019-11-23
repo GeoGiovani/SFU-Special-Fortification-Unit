@@ -48,22 +48,25 @@ const GRID_SIZE = 10;
 setInterval(function() {
   for (var rm in rooms) {
     if(rooms[rm].players.numPlayers > 0){
+      console.log("Rooms[" + rm + "]: " + rooms[rm])
+      console.log("Rooms[" + rm + "],players: " + rooms[rm].players)
       //  console.log("interval player")
-        moveProjectiles(rm);
-        moveEnemies(rm);
-        handleBulletCollisions(rm);
-        generateEnemies(rm);
-        //console.log("LOGGING rm", rm);
-        io.sockets.to(rm).emit('state', rooms[rm].players,
-          rooms[rm].projectiles, rooms[rm].enemies);
-      }
+      moveProjectiles(rm);
+      moveEnemies(rm);
+      handleBulletCollisions(rm);
+      generateEnemies(rm);
+      //console.log("LOGGING rm", rm);
+      io.sockets.to(rm).emit('state', rooms[rm].players,
+      rooms[rm].projectiles, rooms[rm].enemies);
+    }
   }
-}, 1000 / 120);
+}, 1000/120);
 
 io.on('connection', function(socket){/// needs function to remove globalPlayers/rooms elements when player disconnect
   var gameState = "menu"
   initConnection(socket);
   generalProcessor(socket, gameState);
+
 });
 
 function generalProcessor(socket, gameState){
@@ -119,13 +122,15 @@ function mainMenuProcessor(socket, data){
 //processCreateRoom(roomName);
 
 function inGameProcessor(socket, data){
-  initGameStart(socket);
   // socket.on('in game');
   socket.emit("passId", socket.id);
   socket.on('requestPassId', function(){
     // socket.emit("passId", socket.id);
     socket.broadcast.to(socket.id).emit("passId", socket.id);
   });
+
+  initGameStart(socket);
+
   socket.on("deliverMapImageSrcToServer", function(imageSrc){
     console.log('deliverMapImageSrcToServer called');
     // mapImageSrc = imageSrc;
@@ -160,7 +165,6 @@ function inGameProcessor(socket, data){
       generateProjectile(socket.id, data, rm);
     }
   });
-
 }
 
 function processDisconnect(socket){
@@ -200,6 +204,7 @@ function initGameStart(socket){
   console.log("InitGameStart from player: " + socket.id + "\n\tat room: " + roomName);
   console.log("\trooms[roomName]: " + rooms[roomName])
   initLevel(socket, roomName);
+  emitLevelInfo(socket, roomName);
   createInGamePlayer(socket.id, roomName, socket.id);
   console.log("in game data: " + rooms[roomName]);
 }
@@ -279,6 +284,10 @@ function initLevel(socket, roomName){
   rooms[roomName].mapData = processor.constructFromData(mapDataFromFile);
   console.log("\trooms[roomName].mapData: " + rooms[roomName].mapData)
   //console.log(mapData);///////*******
+
+}
+
+function emitLevelInfo(socket, roomName){
   socket.emit("grid size", GRID_SIZE);
   socket.emit('create map', rooms[roomName].mapData);
   console.log('players.numPlayers: ', rooms[roomName].players.numPlayers, ', create map called');
@@ -319,6 +328,31 @@ function moveProjectiles(rm) {
       if(delBullet == true){
         deleteBullet(id, rm);
       }
+    }
+  }
+}
+
+function movePlayer(player, data, rm) {
+  //Modified the values here to reflect player speed - GG 2019.10.26 17:30
+  var originX = player.x;
+  var originY = player.y;
+  //console.log(player.x + ", " + player.y)////*****
+  if (data.left) {
+    player.x -= player.speed;
+  }
+  if (data.up) {
+    player.y -= player.speed;
+  }
+  if (data.right) {
+    player.x += player.speed;
+  }
+  if (data.down) {
+    player.y += player.speed;
+  }
+  if(player != undefined){
+    if(hasCollision(player.x, player.y, rm)){
+      player.x = originX;
+      player.y = originY
     }
   }
 }
@@ -460,6 +494,40 @@ function generateEnemies(rm) {
     rooms[rm].lastSpawn = time;
     spawnRandomObject(rm);
     //console.log('emeny spawned. spawnRate: ', spawnRate);
+  }
+}
+
+function generateProjectile(id, data, rm) {
+  rooms[rm].projectiles.numProjectiles++;
+
+  mouseX = data.x;
+  mouseY = data.y;
+  playerX = rooms[rm].players[id].x - data.middleX;
+  playerY = rooms[rm].players[id].y - data.middleY;
+
+  dx = mouseX - playerX;
+  dy = mouseY - playerY;
+
+  theta = Math.atan(dx / dy);
+
+  velX = rooms[rm].players[id].speed * Math.sin(theta);
+  velY = rooms[rm].players[id].speed * Math.cos(theta);
+  if (dy < 0) {
+    velY *= -1;
+    velX *= -1;
+  }
+
+  rooms[rm].projectiles[rooms[rm].bulletCount] = {
+    x: rooms[rm].players[id].x + (4 * velX),
+    y: rooms[rm].players[id].y + (4 * velY),
+    vx: velX,
+    vy: velY
+  };
+
+  rooms[rm].bulletCount++;
+  //reset bullet count
+  if (rooms[rm].bulletCount > 100) {
+    spawnRandomObjectbulletCount = 0;
   }
 }
 

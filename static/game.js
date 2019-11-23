@@ -4,7 +4,7 @@ var listUI = []; //reset every change in gameState
 var totalPlayers;
 var globalPlayers = [];
 var rooms;
-var myId = "";
+// var myId = "";
 var audioList = {};
 
 var canvas = document.getElementById('canvas');
@@ -20,7 +20,67 @@ var canvasH = 600;
 canvas.width = canvasW;
 canvas.height = canvasH;
 
-window.addEventListener('click', function (e) {
+var mouseX = 0;
+var mouseY = 0;
+
+var movement = {
+    up: false,
+    down: false,
+    left: false,
+    right: false,
+}
+var shoot = {
+    shootBullet: false,
+    x: 0,
+    y: 0,
+    middleX: 0,
+    middleY: 0
+}
+
+document.addEventListener('keydown', function(event) {
+  switch (event.keyCode) {
+    case 65: // A
+      movement.left = true;
+      break;
+    case 87: // W
+      movement.up = true;
+      break;
+    case 68: // D
+      movement.right = true;
+      break;
+    case 83: // S
+      movement.down = true;
+      break;
+    case 32: // ' '
+      shoot.shootBullet = true;
+      shoot.x = mouseX;
+      shoot.y = mouseY;
+      break;
+  }
+});
+document.addEventListener('keyup', function(event) {
+  switch (event.keyCode) {
+    case 65: // A
+      movement.left = false;
+      break;
+    case 87: // W
+      movement.up = false;
+      break;
+    case 68: // D
+      movement.right = false;
+      break;
+    case 83: // S
+      movement.down = false;
+      break;
+    case 32: // ' '
+      shoot.shootBullet = false;
+      shoot.x = mouseX;
+      shoot.y = mouseY;
+      break;
+  }
+});
+
+document.addEventListener('click', function (e) {
   mouseX = e.pageX;
   mouseY = e.pageY;
   //only process when click is inside canvas
@@ -30,6 +90,11 @@ window.addEventListener('click', function (e) {
       processClick(mouseX, mouseY);
     }
   }
+});
+
+window.addEventListener('mousemove', function (e) {
+  mouseX = e.pageX;
+  mouseY = e.pageY;
 });
 
 generalProcessor();
@@ -61,6 +126,13 @@ function menuProcessor(){
 function gameProcessor(){
   this.gameState = "game";
   console.log("in game called");
+  // if (myId == "") {
+  //   socket.emit('requestPassId');
+  //   socket.on("passId", function(socketID){
+  //     myId = socketID;
+  //   })
+  // }
+
   socket.on("grid size", function(size){
     GRID_SIZE = size
     console.log("GRID_SIZE = " + size)
@@ -73,8 +145,14 @@ function gameProcessor(){
   });
 
   socket.on('state', function(players, projectiles, enemies) {
+    for(var player in players){
+      console.log("player: " + player)
+    }
+    // console.log("myID: " + myId)
     gameStateProcessor(players, projectiles, enemies)
   });
+
+  gameLoop();
 }
 
 /////////////////////// Support functions
@@ -175,20 +253,20 @@ function removeCreateRoomUI(){
 }
 
 function processMapDrawing(mapData){
-  // var allMap = document.createElement("canvas")
-  // allMap.width = 500*GRID_SIZE;
-  // allMap.height = 500*GRID_SIZE;
-  // var allMapCtx = allMap.getContext('2d');
-  // drawMap(allMapCtx, mapData)
-  // //console.log(mapData);/////*****
-  // processImageDelivery(allMap)
-  canvas.width = 500 * GRID_SIZE;
-  canvas.height = 500 * GRID_SIZE;
-  drawMap(mapData);
-  processImageDelivery();
+  var allMap = document.createElement("canvas")
+  allMap.width = 500*GRID_SIZE;
+  allMap.height = 500*GRID_SIZE;
+  var allMapCtx = allMap.getContext('2d');
+  drawMap(allMapCtx, mapData)
+  //console.log(mapData);/////*****
+  processImageDelivery(allMap)
+  // canvas.width = 500 * GRID_SIZE;
+  // canvas.height = 500 * GRID_SIZE;
+  // drawMap(mapData);
+  // processImageDelivery();
 }
 
-function drawMap(mapData){
+function drawMap(allMapCtx, mapData){
   clearScreen(context);
   for (var x = 0; x < mapData.length; x++) {
     console.log("mapData.length = " + mapData.length)
@@ -200,10 +278,10 @@ function drawMap(mapData){
         // var source = mapData[x][y].textureSrc;
         // console.log(source)
         // var pattern = ctx.createPattern(source, "repeat");
-        context.fillStyle ="#B3B3B3";//last change: allMapCtx -> context to see draw correctly, now GRID_SIZE is passed down before drawing
-        context.beginPath();
-        context.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
-        context.fill();
+        allMapCtx.fillStyle ="#B3B3B3";//last change: allMapCtx -> context to see draw correctly, now GRID_SIZE is passed down before drawing, needs to emit requestMapImageSrcFromServer
+        allMapCtx.beginPath();
+        allMapCtx.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+        allMapCtx.fill();
       }
 
       ////******
@@ -219,12 +297,16 @@ function drawMap(mapData){
   }
 }
 
-function processImageDelivery(){
+function processImageDelivery(allMap){
 
-  mapImage.src = canvas.toDataURL();
+  mapImage.src = allMap.toDataURL();
   console.log('socket event create map called: URL set to', mapImage.src);/////*****
   socket.emit("deliverMapImageSrcToServer", mapImage.src);
-  delete canvas;
+  // delete canvas;
+  delete allMap;
+  if (mapImage.src == "") {
+    socket.emit("requestMapImageSrcFromServer");
+  }
 
   socket.on("deliverMapImageSrcToClient", function(imageSrc){
     if (!mapImageLoaded && imageSrc != "") {
@@ -241,18 +323,10 @@ function clearScreen(context){
 
 function gameStateProcessor(players, projectiles, enemies){
   //console.log("socket event state called");
-  if (myId == "") {
-    socket.emit('requestPassId');
-    return;
-  }
-  if (mapImage.src == "") {
-    socket.emit("requestMapImageSrcFromServer");
-    return;
-  }
-  context.clearRect(startX, startY, canvasW, canvasH);
+  context.clearRect(canvasStartX, canvasStartY, canvasW, canvasH);
 
-  var middleX = players[myId].x - (canvasW)/2;
-  var middleY = players[myId].y - (canvasH)/2;
+  var middleX = players[socket.id].x - (canvasW)/2;
+  var middleY = players[socket.id].y - (canvasH)/2;
   shoot.middleX = middleX;
   shoot.middleY = middleY;
 
@@ -294,14 +368,22 @@ function gameStateProcessor(players, projectiles, enemies){
 
     context.fillStyle = "white";
     context.font = "15px Arial";
-    context.fillText("Player: x: " + (players[myId].x/GRID_SIZE) + ", y: "
-    + (players[myId].y/GRID_SIZE), canvasW-170, canvasH-50);
-    context.fillText("Mouse: x: " + (xPos+middleX)/GRID_SIZE + ", y: "
-    + (yPos+middleY)/GRID_SIZE, canvasW-170, canvasH-30);
+    context.fillText("Player: x: " + (players[socket.id].x/GRID_SIZE) + ", y: "
+    + (players[socket.id].y/GRID_SIZE), canvasW-170, canvasH-50);
+    context.fillText("Mouse: x: " + (mouseX+middleX)/GRID_SIZE + ", y: "
+    + (mouseY+middleY)/GRID_SIZE, canvasW-170, canvasH-30);
 
-    var thisLoop = new Date();
-    context.fillText(Math.round(1000 / (thisLoop - lastLoop)) + " FPS", canvasW-70, canvasH-10);
-    lastLoop = thisLoop;
+    // var thisLoop = new Date();
+    // context.fillText(Math.round(1000 / (thisLoop - lastLoop)) + " FPS", canvasW-70, canvasH-10);
+    // lastLoop = thisLoop;
+}
+
+function gameLoop(){
+  setInterval(function() {
+    socket.emit('movement', movement);
+    socket.emit('shoot', shoot);
+    //makeSound("bang");
+  }, 1000 / 60);
 }
 
 //input orignal canvas size and desired position based on canavs scaling to get actual position
