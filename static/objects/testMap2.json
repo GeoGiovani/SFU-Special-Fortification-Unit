@@ -4,1246 +4,1281 @@
   "map": {
     "wall": [
       {
-        "x": 150,
+        "x": 250,
         "y": 140,
         "width": 65,
         "height": 2,
         "memo":"AQ top wall"
       },
       {
-        "x": 165,
+        "x": 265,
         "y": 150,
         "width": 42,
         "height": 2,
         "memo":"AQ inside top wall"
       },
       {
-        "x": 150,
+        "x": 250,
         "y": 204,
         "width": 9,
         "height": 2,
         "memo":"AQ bottom wall 1"
       },
       {
-        "x": 165,
+        "x": 365,
         "y": 204,
         "width": 15,
         "height": 2,
         "memo":"AQ bottom wall 2"
       },
       {
-        "x": 185,
+        "x": 285,
         "y": 204,
         "width": 22,
         "height": 2,
         "memo":"AQ bottom wall 3"
       },
       {
-        "x": 165,
+        "x": 265,
         "y": 195,
         "width": 42,
         "height": 2,
         "memo":"AQ inside bottom wall"
       },
       {
-        "x": 150,
+        "x": 250,
         "y": 140,
         "width": 4,
         "height": 40,
         "memo":"AQ left wall - up"
       },
       {
-        "x": 150,
+        "x": 250,
         "y": 185,
         "width": 4,
         "height": 20,
         "memo":"AQ left wall - bottom"
       },
       {
-        "x": 165,
+        "x": 265,
         "y": 150,
         "width": 2,
         "height": 45,
         "memo":"AQ inside left wall"
       },
       {
-        "x": 215,
+        "x": 315,
         "y": 146,
         "width": 4,
         "height": 60,
         "memo":"AQ right wall"
       },
       {
-        "x": 206,
+        "x": 306,
         "y": 150,
         "width": 2,
         "height": 47,
         "memo":"AQ inside right wall"
       },
       {
-        "x": 138,
+        "x": 238,
         "y": 178,
         "width": 12,
         "height": 2,
         "memo": "Library side to AQ"
       },
       {
-        "x": 40,
+        "x": 150,
         "y": 185,
-        "width": 53,
+        "width": 43,
         "height": 2,
         "memo":"WMC~AQ hallway bottom 1"
       },
       {
-        "x": 103,
+        "x": 203,
         "y": 185,
         "width": 47,
         "height": 2,
         "memo":"WMC~AQ hallway bottom 2"
       },
       {
-        "x": 76,
+        "x": 176,
         "y": 186,
         "width": 4,
         "height": 6,
         "memo":"MBC left 1, |"
       },
       {
-        "x": 70,
+        "x": 170,
         "y": 190,
         "width": 8,
         "height": 2,
         "memo":"MBC left 2, _"
       },
       {
-        "x": 70,
+        "x": 170,
         "y": 190,
         "width": 2,
         "height": 7,
         "memo":"MBC left 3, |"
       },
       {
-        "x": 62,
+        "x": 162,
         "y": 195,
         "width": 8,
         "height": 2,
         "memo":"MBC left 4, _"
       },
       {
-        "x": 62,
+        "x": 162,
         "y": 195,
         "width": 4,
         "height": 22,
         "memo":"MBC left 5, |"
       },
       {
-        "x": 62,
+        "x": 162,
         "y": 215,
         "width": 7,
         "height": 2,
         "memo":"MBC left 6, _"
       },
       {
-        "x": 68,
+        "x": 168,
         "y": 215,
         "width": 2,
         "height": 5,
         "memo":"MBC left~bottom 1, |"
       },
       {
-        "x": 68,
+        "x": 168,
         "y": 220,
         "width": 10,
         "height": 2,
         "memo":"MBC left~bottom 2, _"
       },
       {
-        "x": 76,
+        "x": 176,
         "y": 221,
         "width": 2,
         "height": 5,
         "memo":"MBC left~bottom 3, |"
       },
       {
-        "x": 76,
+        "x": 176,
         "y": 226,
         "width": 13,
         "height": 2,
         "memo":"MBC left~bottom 4, _"
       },
       {
-        "x": 87,
+        "x": 187,
         "y": 227,
         "width": 2,
         "height": 5,
         "memo":"MBC left~bottom 5, |"
       },
       {
-        "x": 87,
+        "x": 187,
         "y": 231,
         "width": 11,
         "height": 2,
         "memo":"MBC left~bottom 6, _"
       },
       {
-        "x": 98,
+        "x": 198,
         "y": 231,
         "width": 2,
         "height": 15,
         "memo":"MBC left~bottom 7, |"
       },
       {
-        "x": 98,
+        "x": 198,
         "y": 245,
         "width": 17,
         "height": 2,
         "memo":"MBC left~bottom 8, _"
       },
       {
-        "x": 122,
+        "x": 222,
         "y": 187,
         "width": 2,
         "height": 4,
         "memo":"MBC right 1, |"
       },
       {
-        "x": 122,
+        "x": 222,
         "y": 191,
         "width": 7,
         "height": 2,
         "memo":"MBC right 2, _"
       },
       {
-        "x": 127,
+        "x": 227,
         "y": 191,
         "width": 3,
         "height": 27,
         "memo":"MBC right 3, |"
       },
       {
-        "x": 117,
+        "x": 217,
         "y": 216,
         "width": 12,
         "height": 2,
         "memo":"MBC right 4, _"
       },
       {
-        "x": 117,
+        "x": 217,
         "y": 216,
         "width": 3,
         "height": 7,
         "memo":"MBC right 5, |"
       },
       {
-        "x": 113,
+        "x": 213,
         "y": 222,
         "width": 7,
         "height": 2,
         "memo":"MBC right 5, _"
       },
       {
-        "x": 113,
+        "x": 213,
         "y": 222,
         "width": 3,
         "height": 25,
         "memo":"MBC right 7, |"
       },
       {
-        "x": 70,
+        "x": 170,
         "y": 167,
         "width": 24,
         "height": 2,
         "memo": "convo mall library side wall - left"
       },
       {
-        "x": 100,
+        "x": 200,
         "y": 167,
         "width": 38,
         "height": 2,
         "memo": "convo mall library side wall - right"
       },
       {
-        "x": 137,
+        "x": 237,
         "y": 167,
         "width": 2,
         "height": 13,
         "memo": "convocation mall right small wall"
       },
       {
-        "x": 70,
+        "x": 170,
         "y": 142,
         "width": 55,
         "height": 2,
         "memo": "library top wall"
       },
       {
-        "x": 123,
+        "x": 223,
         "y": 142,
         "width": 4,
         "height": 25,
         "memo": "library right wall"
       },
       {
-        "x": 70,
+        "x": 170,
         "y": 142,
         "width": 4,
         "height": 25,
         "memo": "library left wall"
       },
       {
-        "x": 157,
+        "x": 257,
         "y": 205,
         "width": 2,
         "height": 7,
         "memo": "TASC, upper first, |"
       },
       {
-        "x": 148,
+        "x": 248,
         "y": 210,
         "width": 11,
         "height": 2,
         "memo": "TASC, upper first, _"
       },
       {
-        "x": 157,
+        "x": 257,
         "y": 205,
         "width": 2,
         "height": 7,
         "memo": "TASC, upper first, |"
       },
       {
-        "x": 148,
+        "x": 248,
         "y": 212,
         "width": 2,
         "height": 15,
         "memo": "TASC, upper first, |"
       },
       {
-        "x": 143,
+        "x": 243,
         "y": 226,
         "width": 7,
         "height": 2,
         "memo": "TASC, upper first, _"
       },
       {
-        "x": 143,
+        "x": 243,
         "y": 226,
         "width": 2,
         "height": 8,
         "memo": "TASC, upper first, |"
       },
       {
-        "x": 165,
+        "x": 265,
         "y": 205,
         "width": 2,
         "height": 4,
         "memo": "TASC, upper first right, |"
       },
       {
-        "x": 165,
+        "x": 265,
         "y": 208,
         "width": 5,
         "height": 2,
         "memo": "TASC, upper first right, _"
       },
       {
-        "x": 170,
+        "x": 270,
         "y": 208,
         "width": 2,
         "height": 20,
         "memo": "TASC, upper first right, |"
       },
       {
-        "x": 170,
+        "x": 270,
         "y": 228,
         "width": 5,
         "height": 2,
         "memo": "TASC, upper first right, _"
       },
       {
-        "x": 143,
+        "x": 243,
         "y": 233,
         "width": 5,
         "height": 2,
         "memo": "TASC, lower first left 1, _"
       },
       {
-        "x": 147,
+        "x": 247,
         "y": 233,
         "width": 2,
         "height": 25,
         "memo": "TASC, lower first left 2, |"
       },
       {
-        "x": 140,
+        "x": 240,
         "y": 257,
         "width": 9,
         "height": 2,
         "memo": "TASC, lower first left 3, _"
       },
       {
-        "x": 140,
+        "x": 240,
         "y": 257,
         "width": 2,
         "height": 7,
         "memo": "TASC, lower first left 4, |"
       },
       {
-        "x": 140,
+        "x": 240,
         "y": 264,
         "width": 17,
         "height": 2,
         "memo": "TASC, lower first bottom 1"
       },
       {
-        "x": 164,
+        "x": 264,
         "y": 264,
         "width": 15,
         "height": 2,
         "memo": "TASC, lower first bottom 2"
       },
       {
-        "x": 169,
+        "x": 269,
         "y": 234,
         "width": 2,
         "height": 24,
         "memo": "TASC, lower first right 1, |"
       },
       {
-        "x": 169,
+        "x": 269,
         "y": 234,
         "width": 7,
         "height": 2,
         "memo": "TASC, lower first right 2, _"
       },
       {
-        "x": 178,
+        "x": 278,
         "y": 206,
         "width": 2,
         "height": 5,
         "memo": "TASC, upper second left 1, |"
       },
       {
-        "x": 175,
+        "x": 275,
         "y": 210,
         "width": 5,
         "height": 2,
         "memo": "TASC, upper second left 2, _"
       },
       {
-        "x": 175,
+        "x": 275,
         "y": 210,
         "width": 2,
         "height": 20,
         "memo": "TASC, upper second left 3, |"
       },
       {
-        "x": 185,
+        "x": 285,
         "y": 206,
         "width": 2,
         "height": 3,
         "memo": "TASC, upper second right 1, |"
       },
       {
-        "x": 185,
+        "x": 285,
         "y": 208,
         "width": 5,
         "height": 2,
         "memo": "TASC, upper second right 2, _"
       },
       {
-        "x": 190,
+        "x": 290,
         "y": 208,
         "width": 2,
         "height": 22,
         "memo": "TASC, upper second right 3, |"
       },
       {
-        "x": 190,
+        "x": 290,
         "y": 228,
         "width": 10,
         "height": 2,
         "memo": "TASC, upper second hall, _"
       },
       {
-        "x": 175,
+        "x": 275,
         "y": 234,
         "width": 2,
         "height": 17,
         "memo": "TASC, lower second left 1, |"
       },
       {
-        "x": 173,
+        "x": 273,
         "y": 250,
         "width": 4,
         "height": 2,
         "memo": "TASC, lower second left 2, _"
       },
       {
-        "x": 173,
+        "x": 273,
         "y": 250,
         "width": 2,
         "height": 8,
         "memo": "TASC, lower second left 3, |"
       },
       {
-        "x": 169,
+        "x": 269,
         "y": 257,
         "width": 6,
         "height": 2,
         "memo": "TASC, lower second left 4, _"
       },
       {
-        "x": 190,
+        "x": 290,
         "y": 234,
         "width": 2,
         "height": 24,
         "memo": "TASC, lower second right 1, |"
       },
       {
-        "x": 190,
+        "x": 290,
         "y": 234,
         "width": 10,
         "height": 2,
         "memo": "TASC, lower second right 2, _"
       },
       {
-        "x": 190,
+        "x": 290,
         "y": 257,
         "width": 12,
         "height": 2,
         "memo": "TASC, lower second right 2, _"
       },
       {
-        "x": 185,
+        "x": 285,
         "y": 264,
         "width": 24,
         "height": 2,
         "memo": "TASC, lower second bottom 2"
       },
       {
-        "x": 205,
+        "x": 305,
         "y": 206,
         "width": 2,
         "height": 5,
         "memo": "TASC, upper thrid left 1, |"
       },
       {
-        "x": 202,
+        "x": 302,
         "y": 211,
         "width": 5,
         "height": 2,
         "memo": "TASC, upper thrid left 2, _"
       },
       {
-        "x": 202,
+        "x": 302,
         "y": 211,
         "width": 2,
         "height": 10,
         "memo": "TASC, upper thrid left 3, |"
       },
       {
-        "x": 200,
+        "x": 300,
         "y": 220,
         "width": 4,
         "height": 2,
         "memo": "TASC, upper thrid left 4, _"
       },
       {
-        "x": 200,
+        "x": 300,
         "y": 220,
         "width": 2,
         "height": 10,
         "memo": "TASC, upper thrid left 5, |"
       },
       {
-        "x": 224,
+        "x": 324,
         "y": 215,
         "width": 2,
         "height": 17,
         "memo": "TASC, upper thrid right 1, |"
       },
       {
-        "x": 224,
+        "x": 324,
         "y": 232,
         "width": 15,
         "height": 2,
         "memo": "TASC, upper third right 2, _"
       },
       {
-        "x": 198,
+        "x": 298,
         "y": 234,
         "width": 2,
         "height": 10,
         "memo": "TASC, lower third left 1, |"
       },
       {
-        "x": 198,
+        "x": 298,
         "y": 244,
         "width": 4,
         "height": 2,
         "memo": "TASC, lower third left 3, |"
       },
       {
-        "x": 200,
+        "x": 300,
         "y": 244,
         "width": 2,
         "height": 15,
         "memo": "TASC, lower third left 3, |"
       },
       {
-        "x": 222,
+        "x": 322,
         "y": 241,
         "width": 22,
         "height": 2,
         "memo": "TASC, lower third right 0, _"
       },
       {
-        "x": 222,
+        "x": 322,
         "y": 241,
         "width": 2,
         "height": 10,
         "memo": "TASC, lower third right 1, |"
       },
       {
-        "x": 219,
+        "x": 319,
         "y": 251,
         "width": 5,
         "height": 2,
         "memo": "TASC, lower third right 2, _"
       },
       {
-        "x": 219,
+        "x": 319,
         "y": 251,
         "width": 2,
         "height": 7,
         "memo": "TASC, lower third right 3, |"
       },
       {
-        "x": 219,
+        "x": 319,
         "y": 257,
         "width": 25,
         "height": 2,
         "memo": "TASC, lower third bottom 2, _"
       },
       {
-        "x": 215,
+        "x": 315,
         "y": 264,
         "width": 29,
         "height": 2,
         "memo": "TASC, lower third bottom 3, _"
       },
       {
-        "x": 140,
+        "x": 240,
         "y": 264,
         "width": 129,
         "height": 2,
         "memo": "TASC, lower bottom exit over-draw _"
       },
       {
-        "x": 237,
+        "x": 337,
         "y": 215,
         "width": 2,
         "height": 17,
         "memo": "SCK upper left 1"
       },
       {
-        "x": 260,
+        "x": 360,
         "y": 215,
         "width": 2,
         "height": 17,
         "memo": "SCK upper right 1"
       },
       {
-        "x": 242,
+        "x": 342,
         "y": 241,
         "width": 2,
         "height": 17,
         "memo": "SCK lower left 1, |"
       },
       {
-        "x": 258,
+        "x": 358,
         "y": 238,
         "width": 18,
         "height": 2,
         "memo": "SCK lower right 0, _"
       },
       {
-        "x": 258,
+        "x": 358,
         "y": 238,
         "width": 2,
         "height": 6,
         "memo": "SCK lower right 1, |"
       },
       {
-        "x": 250,
+        "x": 350,
         "y": 242,
         "width": 10,
         "height": 2,
         "memo": "SCK lower right 1.5, _"
       },
       {
-        "x": 250,
+        "x": 350,
         "y": 243,
         "width": 2,
         "height": 15,
         "memo": "SCK lower right 2, |"
       },
       {
-        "x": 250,
+        "x": 350,
         "y": 257,
         "width": 17,
         "height": 2,
         "memo": "SCK lower right 3, _"
       },
       {
-        "x": 267,
+        "x": 367,
         "y": 257,
         "width": 2,
         "height": 8,
         "memo": "SCK lower right 4, |"
       },
       {
-        "x": 250,
+        "x": 350,
         "y": 264,
         "width": 19,
         "height": 2,
         "memo": "SCK lower bottom, _"
       },
       {
-        "x": 216,
+        "x": 316,
         "y": 204,
         "width": 75,
         "height": 2,
         "memo": "AQ to ASB hallway, top"
       },
       {
-        "x": 226,
+        "x": 326,
         "y": 215,
         "width": 20,
         "height": 2,
         "memo": "AQ to ASB hallway, bottom 1"
       },
       {
-        "x": 255,
+        "x": 355,
         "y": 215,
         "width": 27,
         "height": 2,
         "memo": "AQ to ASB hallway, bottom 2"
       },
       {
-        "x": 291,
+        "x": 391,
         "y": 204,
         "width": 2,
         "height": 5,
         "memo": "ASB top 1 |"
       },
       {
-        "x": 291,
+        "x": 391,
         "y": 209,
         "width": 40,
         "height": 2,
         "memo": "ASB top 2 _"
       },
       {
-        "x": 280,
+        "x": 380,
         "y": 217,
         "width": 2,
         "height": 6,
         "memo": "ASB left 1 |"
       },
       {
-        "x": 275,
+        "x": 375,
         "y": 221,
         "width": 5,
         "height": 2,
         "memo": "ASB left 2 _"
       },
       {
-        "x": 275,
+        "x": 375,
         "y": 221,
         "width": 2,
         "height": 12,
         "memo": "ASB left 3 |"
       },
       {
-        "x": 260,
+        "x": 360,
         "y": 231,
         "width": 15,
         "height": 2,
         "memo": "ASB left 4 _"
       },
       {
-        "x": 275,
+        "x": 375,
         "y": 238,
         "width": 2,
         "height": 27,
         "memo": "ASB left 6 |"
       },
       {
-        "x": 275,
+        "x": 375,
         "y": 265,
         "width": 17,
         "height": 2,
         "memo": "ASB bottom 1 _"
       },
       {
-        "x": 300,
+        "x": 400,
         "y": 265,
         "width": 25,
         "height": 2,
         "memo": "ASB bottom 2 _"
       },
       {
-        "x": 275,
+        "x": 375,
         "y": 265,
         "width": 50,
         "height": 2,
         "memo": "ASB bottom exit over-draw _"
       },
       {
-        "x": 315,
+        "x": 415,
         "y": 218,
         "width": 10,
         "height": 2,
         "memo": "ASB to outside bottom _"
       },
       {
-        "x": 315,
+        "x": 415,
         "y": 218,
         "width": 2,
         "height": 7,
         "memo": "ASB right 1 |"
       },
       {
-        "x": 315,
+        "x": 415,
         "y": 225,
         "width": 7,
         "height": 2,
         "memo": "ASB right 2 _"
       },
       {
-        "x": 320,
+        "x": 420,
         "y": 225,
         "width": 2,
         "height": 18,
         "memo": "ASB right 3 |"
       },
       {
-        "x": 320,
+        "x": 420,
         "y": 243,
         "width": 7,
         "height": 2,
         "memo": "ASB right 4 _"
       },
       {
-        "x": 325,
+        "x": 425,
         "y": 243,
         "width": 2,
         "height": 24,
         "memo": "ASB right 5 |"
       },
       {
-        "x": 325,
+        "x": 425,
         "y": 210,
         "width": 3,
         "height": 10,
         "memo": "ASB right exit block |"
       },
       {
-        "x": 151,
+        "x": 251,
         "y": 128,
         "width": 2,
         "height": 12,
         "memo":"RCB left 1, |"
       },
       {
-        "x": 147,
+        "x": 247,
         "y": 128,
         "width": 6,
         "height": 2,
         "memo":"RCB left 2, _"
       },
       {
-        "x": 147,
+        "x": 247,
         "y": 119,
         "width": 2,
         "height": 9,
         "memo":"RCB left 3, |"
       },
       {
-        "x": 147,
+        "x": 247,
         "y": 105,
         "width": 3,
         "height": 2,
         "memo":"RCB left 4, _"
       },
       {
-        "x": 145,
+        "x": 245,
         "y": 105,
         "width": 2,
         "height": 16,
         "memo":"RCB left 5, |"
       },
       {
-        "x": 148,
+        "x": 248,
         "y": 85,
         "width": 2,
         "height": 20,
         "memo":"RCB left 7, |"
       },
       {
-        "x": 148,
+        "x": 248,
         "y": 85,
         "width": 7,
         "height": 2,
         "memo":"RCB left 8, _"
       },
       {
-        "x": 155,
+        "x": 255,
         "y": 80,
         "width": 2,
         "height": 7,
         "memo":"RCB top 1, |"
       },
       {
-        "x": 155,
+        "x": 255,
         "y": 80,
         "width": 10,
         "height": 3,
         "memo":"RCB top 3, _"
       },
       {
-        "x": 165,
+        "x": 265,
         "y": 75,
         "width": 2,
         "height": 8,
         "memo":"RCB top 4, |"
       },
       {
-        "x": 165,
+        "x": 265,
         "y": 75,
         "width": 20,
         "height": 3,
         "memo":"RCB top 5, _"
       },
       {
-        "x": 182,
+        "x": 282,
         "y": 75,
         "width": 3,
         "height": 37,
         "memo":"RCB left 1, |"
       },
       {
-        "x": 182,
+        "x": 282,
         "y": 110,
         "width": 10,
         "height": 2,
         "memo":"RCB left 2, _"
       },
       {
-        "x": 190,
+        "x": 290,
         "y": 110,
         "width": 3,
         "height": 7,
         "memo":"RCB left 3, |"
       },
       {
-        "x": 191,
+        "x": 291,
         "y": 115,
         "width": 13,
         "height": 2,
         "memo":"RCB left 4, _"
       },
       {
-        "x": 213,
+        "x": 313,
         "y": 115,
         "width": 11,
         "height": 2,
         "memo":"RCB left 5, _"
       },
       {
-        "x": 222,
+        "x": 322,
         "y": 115,
         "width": 2,
         "height": 20,
         "memo":"RCB left 6, |"
       },
       {
-        "x": 200,
+        "x": 300,
         "y": 75,
         "width": 15,
         "height": 2,
         "memo":"RCB-extra upper top 1, _"
       },
       {
-        "x": 200,
+        "x": 300,
         "y": 75,
         "width": 2,
         "height": 17,
         "memo":"RCB-extra upper left 1, |"
       },
       {
-        "x": 215,
+        "x": 315,
         "y": 75,
         "width": 2,
         "height": 17,
         "memo":"RCB-extra upper right 1, |"
       },
       {
-        "x": 195,
+        "x": 295,
         "y": 90,
         "width": 10,
         "height": 2,
         "memo":"RCB-extra lower top 1, _"
       },
       {
-        "x": 210,
+        "x": 310,
         "y": 90,
         "width": 13,
         "height": 2,
         "memo":"RCB-extra lower top 2, _"
       },
       {
-        "x": 195,
+        "x": 295,
         "y": 90,
         "width": 2,
         "height": 7,
         "memo":"RCB-extra lower left 1, |"
       },
       {
-        "x": 223,
+        "x": 323,
         "y": 90,
         "width": 2,
         "height": 7,
         "memo":"RCB-extra lower right 1, |"
       },
       {
-        "x": 195,
+        "x": 295,
         "y": 95,
         "width": 12,
         "height": 2,
         "memo":"RCB-extra lower bottom 1, _"
       },
       {
-        "x": 212,
+        "x": 312,
         "y": 95,
         "width": 12,
         "height": 2,
         "memo":"RCB-extra lower bottom 2, _"
       },
       {
-        "x": 205,
+        "x": 305,
         "y": 95,
         "width": 2,
         "height": 17,
         "memo":"RCB-extra lower bottom 3, |"
       },
       {
-        "x": 210,
+        "x": 310,
         "y": 95,
         "width": 2,
         "height": 17,
         "memo":"RCB-extra lower bottom 4, |"
       },
       {
-        "x": 198,
+        "x": 298,
         "y": 110,
         "width": 8,
         "height": 2,
         "memo":"RCB-extra lower bottom 5, _"
       },
       {
-        "x": 210,
+        "x": 310,
         "y": 110,
         "width": 8,
         "height": 2,
         "memo":"RCB-extra lower bottom 6, _"
       },
       {
-        "x": 198,
+        "x": 298,
         "y": 111,
         "width": 2,
         "height": 5,
         "memo":"RCB-extra lower bottom 7, |"
       },
       {
-        "x": 216,
+        "x": 316,
         "y": 111,
         "width": 2,
         "height": 5,
         "memo":"RCB-extra lower bottom 8, |"
       },
       {
-        "x": 215,
+        "x": 315,
         "y": 133,
         "width": 15,
         "height": 2,
         "memo":"RCB~SWH top 4 _"
       },
       {
-        "x": 215,
+        "x": 315,
         "y": 137,
         "width": 2,
         "height": 5,
         "memo":"RCB~SWH top 4.5 |"
       },
       {
-        "x": 228,
+        "x": 328,
         "y": 133,
         "width": 2,
         "height": 7,
         "memo":"RCB~SWH top 5 |"
       },
       {
-        "x": 236,
+        "x": 336,
         "y": 95,
         "width": 30,
         "height": 2,
         "memo":"SWH top 1, _"
       },
       {
-        "x": 266,
+        "x": 366,
         "y": 95,
         "width": 2,
         "height": 5,
         "memo":"SWH top 2, |"
       },
       {
-        "x": 266,
+        "x": 366,
         "y": 98,
         "width": 8,
         "height": 2,
         "memo":"SWH top 3, _"
       },
       {
-        "x": 274,
+        "x": 374,
         "y": 95,
         "width": 2,
         "height": 5,
         "memo":"SWH top 4, |"
       },
       {
-        "x": 274,
+        "x": 374,
         "y": 95,
         "width": 43,
         "height": 2,
         "memo":"SWH top 5, _"
       },
       {
-        "x": 245,
+        "x": 345,
         "y": 102,
         "width": 55,
         "height": 2,
         "memo":"SWH top inside 1, _"
       },
       {
-        "x": 230,
+        "x": 330,
         "y": 138,
         "width": 8,
         "height": 2,
         "memo":"SWH bottom inside 1 _"
       },
       {
-        "x": 236,
-        "y": 230,
+        "x": 336,
+        "y": 130,
         "width": 2,
         "height": 10,
         "memo":"SWH bottom inside 2 |"
       },
       {
-        "x": 244,
+        "x": 344,
         "y": 130,
         "width": 23,
         "height": 2,
         "memo":"SWH bottom inside 3 _"
       },
       {
-        "x": 266,
+        "x": 366,
         "y": 130,
         "width": 2,
         "height": 10,
         "memo":"SWH bottom inside 4 |"
       },
       {
-        "x": 268,
+        "x": 368,
         "y": 138,
         "width": 5,
         "height": 2,
         "memo":"SWH bottom inside 5 _"
       },
       {
-        "x": 273,
+        "x": 373,
         "y": 130,
         "width": 2,
         "height": 10,
         "memo":"SWH bottom inside 6 |"
       },
       {
-        "x": 273,
+        "x": 373,
         "y": 130,
         "width": 27,
         "height": 2,
         "memo":"SWH bottom inside 7 _"
       },
       {
-        "x": 236,
+        "x": 336,
         "y": 96,
         "width": 2,
         "height": 34,
         "memo":"SWH left 1 |"
       },
       {
-        "x": 244,
+        "x": 344,
         "y": 102,
         "width": 2,
         "height": 28,
         "memo":"SWH left inside 1 |"
       },
       {
-        "x": 317,
+        "x": 417,
         "y": 95,
         "width": 2,
         "height": 13,
         "memo":"SWH right 1 |"
       },
       {
-        "x": 312,
+        "x": 412,
         "y": 108,
         "width": 7,
         "height": 2,
         "memo":"SWH right 2 _"
       },
       {
-        "x": 312,
+        "x": 412,
         "y": 108,
         "width": 2,
         "height": 31,
         "memo":"SWH right 3 |"
       },
       {
-        "x": 312,
+        "x": 412,
         "y": 137,
         "width": 11,
         "height": 3,
         "memo":"SWH right 4 _"
       },
       {
-        "x": 298,
+        "x": 398,
         "y": 102,
         "width": 2,
         "height": 28,
         "memo":"SWH right inside 1 |"
       },
       {
-        "x": 215,
+        "x": 315,
         "y": 146,
         "width": 110,
         "height": 2,
         "memo":"SWH hallway bottom"
       },
       {
-        "x": 322,
+        "x": 105,
+        "y": 175,
+        "width": 4,
+        "height": 4,
+        "memo":"Rotunda middle point"
+      },
+      {
+        "x": 80,
+        "y": 173,
+        "width": 2,
+        "height": 8,
+        "memo":"Rotunda left end |"
+      },
+      {
+        "x": 84,
+        "y": 165,
+        "width": 2,
+        "height": 7,
+        "memo":"Rotunda top left 2 |"
+      },
+      {
+        "x": 103,
+        "y": 150,
+        "width": 8,
+        "height": 2,
+        "memo":"Rotunda upper end _"
+      },
+      {
+        "x": 103,
+        "y": 200,
+        "width": 8,
+        "height": 2,
+        "memo":"Rotunda lower end _"
+      },
+      {
+        "x": 422,
         "y": 138,
         "width": 3,
         "height": 10,
@@ -1260,7 +1295,7 @@
         "memo": "white background because it's snowing"
       },
       {
-        "x": 150,
+        "x": 250,
         "y": 140,
         "width": 65,
         "height": 10,
@@ -1268,7 +1303,7 @@
         "memo": "aq top"
       },
       {
-        "x": 176,
+        "x": 276,
         "y": 164,
         "width": 10,
         "height": 22,
@@ -1280,27 +1315,27 @@
       {
         "x": 50,
         "y": 50,
-        "width": 90,
-        "height": 300,
+        "width": 10,
+        "height": 10,
         "num": "1",
         "memo": "zone locking thing. number should NEVER be 0!"
       }
     ],
     "player": [
       {
-        "x": 10,
+        "x": 20,
         "y": 10
       },
       {
-        "x": 12,
+        "x": 22,
         "y": 10
       },
       {
-        "x": 12,
+        "x": 22,
         "y": 10
       },
       {
-        "x": 12,
+        "x": 22,
         "y": 12
       }
     ]
