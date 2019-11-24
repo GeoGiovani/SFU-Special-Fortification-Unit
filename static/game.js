@@ -23,6 +23,21 @@ canvas.height = canvasH;
 var mouseX = 0;
 var mouseY = 0;
 
+var globalDisplayArea = {
+  startX : canvasStartX + 5,
+  startY : canvasStartY + 400,
+  endX : canvasW,
+  endY : canvasH,
+}
+
+var roomDisplayArea = {
+  startX : canvasStartX + 5,
+  startY : canvasStartY,
+  endX : canvasW,
+  endY : canvasStartY + 110,
+}
+
+
 var movement = {
     up: false,
     down: false,
@@ -113,14 +128,25 @@ function menuProcessor(){
   console.log("main menu called");////temporary
   this.gameState = "menu";
   initBasicMenuUI()
-  socket.on('global', function(globalData){
-    updateGlobal(globalData);
+  socket.on('global data', function(totalPlayers, globalPlayers){
+    console.log("update global data called")
+    // this.totalPlayers = totalPlayers;
+    // this.globalPlayers = globalPlayers;]
+    console.log("\ttotalPlayers received:" + totalPlayers)
+    console.log("\tglobalPlayers received:" + globalPlayers)
+    updateGlobal(globalPlayers);
   });
   socket.on('room data', function(room){
     updateRoom(room);
-    removeCreateRoomUI();
   });
   updateUIDrawing();
+  // setTimeout(function(){
+  //     context.clearRect(globalDisplayArea.startX, globalDisplayArea.startY, globalDisplayArea.endX, globalDisplayArea.endY);
+  //   setTimeout(function(){
+  //     updateUIDrawing();
+  //     console.log("listUI",listUI)
+  //   }, 2000)
+  // }, 2000)
 }
 
 function gameProcessor(){
@@ -146,7 +172,7 @@ function gameProcessor(){
 
   socket.on('state', function(players, projectiles, enemies) {
     for(var player in players){
-      console.log("player: " + player)
+      // console.log("player: " + player)
     }
     // console.log("myID: " + myId)
     gameStateProcessor(players, projectiles, enemies)
@@ -164,58 +190,91 @@ function initBasicMenuUI(){
 }
 
 //update room UI menu
-function updateGlobal(globalData){
-  console.log("global called")
-  console.log("\tdata: " + globalData);
-  updateGlobalData(globalData);
+function updateGlobal(globalPlayers){
+  console.log("updateGlobal")
+  console.log("\tglobalPlayers",globalPlayers)
+  // for(var l = 0; l < globalPlayers.length; l++){
+  //   console.log("\tglobalData[",l,"]",globalData[l]);
+  //   for(var i = 0; i < globalData[l].length; i++){
+  //     console.log("\t\tglobalData[",l, "][",i,"] ", globalData[i]);
+  //   }
+  // }
+
+  updateGlobalData(globalPlayers);
+  clearMenu(globalDisplayArea);
+  // clearScreen(context);
   updateUIDrawing();
 }
 
 function updateRoom(room){
-  console.log("room called")
-  console.log(socket.id)
-  for(var player in room.players){
-    console.log("\tplayer " + player)
-  }
-  console.log("projefctiles" + room.projectiles)
-  console.log("bulletCount " + room.bulletCount)
-  console.log("enemies " + room.enemies)
-  console.log("enemyID " + room.enemyID)
-  console.log("mapImageSrc " + room.mapImageSrc)
-  console.log("mapData " + room.mapData)
-  console.log("lastSpawn " + room.lastSpawn)
-  console.log("spawnRate " + room.spawnRate)
+  // console.log("room called")
+  // console.log(socket.id)
+  // for(var player in room.players){
+  //   console.log("\tplayer " + player)
+  // }
+  // console.log("projefctiles" + room.projectiles)
+  // console.log("bulletCount " + room.bulletCount)
+  // console.log("enemies " + room.enemies)
+  // console.log("enemyID " + room.enemyID)
+  // console.log("mapImageSrc " + room.mapImageSrc)
+  // console.log("mapData " + room.mapData)
+  // console.log("lastSpawn " + room.lastSpawn)
+  // console.log("spawnRate " + room.spawnRate)
   updateRoomData(room);
+  removeCreateRoomUI();
+  clearMenu(roomDisplayArea)
   updateUIDrawing();
 }
 //update global players and rooms UI menu
 
 
-function updateGlobalData(globalData){
-  removeOldGlobalData();
-  initGlobalData(globalData);
+function updateGlobalData(globalPlayers){
+  removeUIElements("Global Player")
+  initGlobalData(globalPlayers);
 }
 
-function removeOldGlobalData(){
-  // var elementName = 'Global Player'
-  console.log("rremoveOldGlobalData")
-  console.log("\tlistUI: " + listUI)
-  // listUI = listUI.filter();
-  console.log("\tlistUI: " + listUI)
+function removeUIElements(name){
+  for(var i = 0; i < listUI.length; i++){
+    if(listUI[i].name == name){
+      listUI.splice(i, 1);
+      i--
+    }
+  }
 }
 
-function initGlobalData(globalData){
-  var x = 5;
-  var y = 400;
-  var width = 20;
-  var height = 20;
-  for(var playerID in globalData.globalPlayers.players){
-    var player = new GlobalPlayer(playerID, x, y, width, height, 'blue');
-    console.log(player);
+// function removeOldGlobalData(){
+//   // var elementName = 'Global Player'
+//   console.log("rremoveOldGlobalData")
+//   console.log("\tlistUI before remove old data: ")
+//   for(var ui in listUI){
+//     console.log("\t",ui);
+//   }
+//   for(var i = 0; i < listUI.length; i++){
+//     if(listUI[i].name == "Global Player"){
+//       listUI.splice(i, 1);
+//       i--;
+//     }
+//   }
+//   // listUI = listUI.filter();
+//   console.log("\tlistUI after remove old data: ")
+//   for(var ui in listUI){
+//     console.log("\t",ui);
+//   }
+// }
+
+function initGlobalData(globalPlayers){
+  var x = globalDisplayArea.startX;
+  var y = globalDisplayArea.startY;
+  var width = 40;
+  var height = 40;
+  console.log("\tglobalPlayers",globalPlayers)
+  for(var playerID in globalPlayers.players){
+    var player = new GlobalPlayer(globalPlayers.players[playerID], x, y, width, height, 'blue');
+    console.log("\tnewly player created ", player);
     listUI.push(player);
     x += width * 2;
-    if(x >= canvasW){
-      x = 5;
+    if(x >= globalDisplayArea.endX){
+      x = globalDisplayArea.startX;
       y += height * 2;
     }
   }
@@ -227,7 +286,7 @@ function updateRoomData(room){
   var width = 50;
   var height = 100;
   for(var playerID in room.players){
-    var player = new Teammate(playerID, x, y, width, height, 'blue');
+    var player = new Teammate(playerID, x, y, width, height, 'grey');
     console.log(player);
     listUI.push(player);
     x += width * 2;
@@ -240,16 +299,8 @@ function updateRoomData(room){
   listUI.push(element);
 }
 
-function updateUIDrawing(){
-  for (var i = 0; i < listUI.length; i++) {
-    var element = listUI[i];
-    // if(element.name == something that is from room)
-    drawUIElement(element)
-  }
-}
-
 function removeCreateRoomUI(){
-
+  removeUIElements("Create Room")
 }
 
 function processMapDrawing(mapData){
@@ -295,6 +346,10 @@ function drawMap(allMapCtx, mapData){
     }
     console.log(line);//////*****
   }
+}
+
+function clearMenu(areaName){
+  context.clearRect(areaName.startX, areaName.startY, areaName.endX, areaName.endY);
 }
 
 function processImageDelivery(allMap){
@@ -406,16 +461,32 @@ function initElement(percentX, percentY){
   // console.log(element);
 }
 
+function updateUIDrawing(name){
+  for (var i = 0; i < listUI.length; i++) {
+    var element = listUI[i];
+    // console.log("listUI[",i,"] ",listUI[i])
+    // if(element.name == something that is from room)
+    if(element.name == name || name == undefined){
+      drawUIElement(element)
+    }
+  }
+}
+
 //read and draw UIElement onto canvas
 function drawUIElement(element){
-  context.font = "10px Arial";
+  context.font = "800 15px Verdana";
   context.fillStyle = element.color;
   context.beginPath();
   context.rect(element.x, element.y, element.width, element.height);
   context.fill();
   context.fillStyle = "white"; ///temp hardcoded
   var text = element.name;
-  context.fillText(text, element.x + 5, element.y + 5);
+  if(element.userName != undefined){
+    text = element.userName
+  }
+  context.fillText(text, element.x + 10, element.y + 20);
+  console.log("drawUIElement ", text, element.x, element.y, element.width, element.height)
+  console.log("-------")
 }
 
 function giveElementText(element){

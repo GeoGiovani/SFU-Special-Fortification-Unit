@@ -67,6 +67,9 @@ io.on('connection', function(socket){/// needs function to remove globalPlayers/
   initConnection(socket);
   generalProcessor(socket, gameState);
 
+  socket.on('disconnect', function() {
+    processDisconnect(socket);
+  });
 });
 
 function generalProcessor(socket, gameState){
@@ -83,9 +86,6 @@ function generalProcessor(socket, gameState){
     console.log("gameState = " + gameState);
     inGameProcessor(socket, data);
   }
-  socket.on('disconnect', function() {
-    processDisconnect(socket);
-  });
 }
 
 function initConnection(socket){
@@ -93,7 +93,8 @@ function initConnection(socket){
   totalPlayers++;
   console.log("totalPlayers : " + totalPlayers)
   if(totalPlayers > 0){
-    globalPlayers.players.push(socket.id);
+    globalPlayers.players.push(socket.id); //push socket.id and username
+    console.log("globalPlayers.players", globalPlayers.players)
   }
   console.log(globalPlayers)
 }
@@ -101,13 +102,9 @@ function initConnection(socket){
 function mainMenuProcessor(socket, data){
   // var data = "placeholder"////temporary
   /// roomdata = current client room
-  var globalData = {
-    totalPlayers,
-    globalPlayers
-  }
   socket.emit('main menu');
   // socket.broadcast.emit('global', globalData);// emit without the sender
-  io.sockets.emit('global', globalData);//emit to all clients
+  io.sockets.emit('global data', data.totalPlayers, data.globalPlayers);//emit to all clients
   // socket.emit('room', rooms);
   socket.on('create room', function(roomName){
     processCreateRoom(socket, roomName)
@@ -167,19 +164,6 @@ function inGameProcessor(socket, data){
   });
 }
 
-function processDisconnect(socket){
-  console.log('socket event disconnect called');
-  if (getRoomBySocketId == undefined
-    || getRoomBySocketId[socket.id] == undefined
-    || rooms[getRoomBySocketId[socket.id]] == undefined
-    || rooms[getRoomBySocketId[socket.id]].players[socket.id] == undefined) {
-    //if the socket id is not valid, ignore the disconnect signal
-    console.log('invalid disconnect call: ignoring...')
-    return;
-  }
-  delete rooms[getRoomBySocketId[socket.id]].players[socket.id];
-  rooms[getRoomBySocketId[socket.id]].players.numPlayers -= 1;
-}
 
 function processCreateRoom(socket, roomName){
   socket.join(roomName);
@@ -197,6 +181,31 @@ function processCreateRoom(socket, roomName){
 function joinRoom(){
 
 }
+
+function processDisconnect(socket){
+  console.log('socket event disconnect called');
+  console.log("globalPlayers.players", globalPlayers.players)
+  globalPlayers.players.splice(socket.id, 1);
+  totalPlayers--;
+  console.log("\tglobalPlayers.players", globalPlayers.players)
+  // var globalData = {totalPlayers, globalPlayers};
+  // console.log("\tglobalData being sent: ", globalData)
+  io.sockets.emit('global data', totalPlayers, globalPlayers);
+  var roomName = getRoomBySocketId[socket.id];
+  if (getRoomBySocketId == undefined
+    || roomName == undefined
+    || rooms[roomName] == undefined
+    || rooms[roomName].players[socket.id] == undefined) {
+      //if the socket id is not valid, ignore the disconnect signal
+      console.log('invalid disconnect call: ignoring...')
+      return;
+    }
+
+    console.log("rooms[roomName].players[socket.id]", rooms[roomName].players[socket.id])
+    delete rooms[roomName].players[socket.id];
+    console.log("\trooms[roomName].players[socket.id]", rooms[roomName].players[socket.id])
+    rooms[roomName].players.numPlayers -= 1;
+  }
 
 function initGameStart(socket){
   socket.emit('in game');
@@ -265,9 +274,9 @@ function isGameStartable(socket){
   // var roomName = getRoomBySocketId[socket.id];
   // var playerList = rooms[roomName].players;
   // for(var player in playerList){
-  //   if(player.ready == false){
+  //   if(playerList[player].ready == false){
   //     return false;
-  //   }else if(player.ready != true){
+  //   }else if(playerList[player].ready != true){
   //     console.log("Error in ready: " + player.ready)
   //     return false;
   //   }
