@@ -1315,9 +1315,12 @@
       {
         "x": 50,
         "y": 50,
-        "width": 10,
-        "height": 10,
+        "width": 178,
+        "height": 118,
         "num": "1",
+        "name": "W.A.C. Library",
+        "description": "With All Clues, W.A.C. Bennett Library.",
+        "open": true,
         "memo": "zone locking thing. number should NEVER be 0!"
       }
     ],
