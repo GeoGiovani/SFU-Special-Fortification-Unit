@@ -93,6 +93,7 @@ function initConnection(socket){
   totalPlayers++;
   console.log("totalPlayers : " + totalPlayers)
   if(totalPlayers > 0){
+    var userName = socket.id; //temporary
     globalPlayers.players.push(socket.id); //push socket.id and username
     console.log("globalPlayers.players", globalPlayers.players)
   }

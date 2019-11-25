@@ -1,6 +1,6 @@
-var socket = io();
+// var socket = io();
 class UIElement{
-  constructor(x, y, width, height, hasTexture, textureSrc, color, name, clickable){
+  constructor(x, y, width, height, hasTexture, textureSrc, color, name, clickable, socket){
     this.x = x;
     this.y = y;
     this.width = width;
@@ -14,7 +14,7 @@ class UIElement{
 }
 
 class Ready extends UIElement{
-  constructor(x, y, width, height, color){
+  constructor(x, y, width, height, color, socket){
     super(x, y, width, height, false, null, color, "UNREADY", true);
     this.ready = false;
   }
@@ -31,7 +31,7 @@ class Ready extends UIElement{
 }
 
 class Teammate extends UIElement{
-  constructor(userName, x, y, width, height, color){
+  constructor(userName, x, y, width, height, color, socket){
     super(x, y, width, height, false, null, color, "Teammate", true);
     this.userName = userName;
   }
@@ -52,7 +52,7 @@ class CreateRoom extends UIElement{
 }
 
 class GlobalPlayer extends UIElement{
-  constructor(userName, x, y, width, height, color){
+  constructor(userName, x, y, width, height, color, socket){
     super(x, y, width, height, false, null, color, "Global Player", true);
     this.userName = userName;
   }
