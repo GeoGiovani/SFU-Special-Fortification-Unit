@@ -137,8 +137,12 @@ function menuProcessor(){
     updateGlobal(globalPlayers);
   });
   socket.on('room data', function(room){
-    console.log("received room data:", room)
-    updateRoom(room);
+    if(room != "Room has already been taken"){
+      console.log("received room data:", room)
+      updateRoom(room);
+    }else{
+      alert("Room has already been taken");
+    }
   });
   updateUIDrawing();
   // setTimeout(function(){
@@ -287,6 +291,7 @@ function updateRoomData(room){
   var width = 50;
   var height = 100;
   for(var playerID in room.players){
+    console.log("updateRoomData: ",room.players[playerID])
     var player = new Teammate(playerID, x, y, width, height, 'grey', socket);
     console.log(player);
     listUI.push(player);
@@ -330,7 +335,7 @@ function drawMap(allMapCtx, mapData){
         // var source = mapData[x][y].textureSrc;
         // console.log(source)
         // var pattern = ctx.createPattern(source, "repeat");
-        allMapCtx.fillStyle ="#B3B3B3";//last change: allMapCtx -> context to see draw correctly, now GRID_SIZE is passed down before drawing, needs to emit requestMapImageSrcFromServer
+        allMapCtx.fillStyle ="#B3B3B3";
         allMapCtx.beginPath();
         allMapCtx.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
         allMapCtx.fill();
@@ -467,7 +472,7 @@ function updateUIDrawing(name){
     var element = listUI[i];
     // console.log("listUI[",i,"] ",listUI[i])
     // if(element.name == something that is from room)
-    if(element.name == name || name == undefined || name == ""){//last change: trying to delete old room UI
+    if(element.name == name || name == undefined || name == ""){
       drawUIElement(element)
     }
   }

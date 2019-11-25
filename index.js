@@ -45,22 +45,22 @@ var getRoomBySocketId = {};
 var mapImageSrc = "";
 const GRID_SIZE = 10;
 
-setInterval(function() {
-  for (var rm in rooms) {
-    if(rooms[rm].players.numPlayers > 0){
-      console.log("Rooms[" + rm + "]: " + rooms[rm])
-      console.log("Rooms[" + rm + "],players: " + rooms[rm].players)
-      //  console.log("interval player")
-      moveProjectiles(rm);
-      moveEnemies(rm);
-      handleBulletCollisions(rm);
-      generateEnemies(rm);
-      //console.log("LOGGING rm", rm);
-      io.sockets.to(rm).emit('state', rooms[rm].players,
-      rooms[rm].projectiles, rooms[rm].enemies);
-    }
-  }
-}, 1000/120);
+// setInterval(function() {
+//   for (var rm in rooms) {
+//     if(rooms[rm].numPlayers > 0){
+//       console.log("Rooms[" + rm + "]: " + rooms[rm])
+//       console.log("Rooms[" + rm + "],players: " + rooms[rm].players)
+//       //  console.log("interval player")
+//       moveProjectiles(rm);
+//       moveEnemies(rm);
+//       handleBulletCollisions(rm);
+//       generateEnemies(rm);
+//       //console.log("LOGGING rm", rm);
+//       io.sockets.to(rm).emit('state', rooms[rm].players,
+//       rooms[rm].projectiles, rooms[rm].enemies);
+//     }
+//   }
+// }, 1000/120);
 
 io.on('connection', function(socket){/// needs function to remove globalPlayers/rooms elements when player disconnect
   var gameState = "menu"
@@ -109,7 +109,6 @@ function mainMenuProcessor(socket, data){
   // socket.emit('room', rooms);
   socket.on('create room', function(roomName){
     processCreateRoom(socket, roomName)
-    io.to(roomName).emit('room data', rooms[roomName]);
   });
 
   socket.on('ready', function(){
@@ -121,11 +120,11 @@ function mainMenuProcessor(socket, data){
 
 function inGameProcessor(socket, data){
   // socket.on('in game');
-  socket.emit("passId", socket.id);
-  socket.on('requestPassId', function(){
-    // socket.emit("passId", socket.id);
-    socket.broadcast.to(socket.id).emit("passId", socket.id);
-  });
+  // socket.emit("passId", socket.id);
+  // socket.on('requestPassId', function(){
+  //   // socket.emit("passId", socket.id);
+  //   socket.broadcast.to(socket.id).emit("passId", socket.id);
+  // });
 
   initGameStart(socket);
 
@@ -167,16 +166,23 @@ function inGameProcessor(socket, data){
 
 
 function processCreateRoom(socket, roomName){
-  socket.join(roomName);
-  getRoomBySocketId[socket.id] = roomName;
   if(rooms[roomName] == undefined){
+    socket.join(roomName);
+    getRoomBySocketId[socket.id] = roomName;
     rooms[roomName] = giveEmptyRoomData(roomName);
+    rooms[roomName].owner = socket.id;
+    rooms[roomName].players[socket.id] = {};
+    rooms[roomName].numPlayers++;
+    console.log("rooms[roomName]: " + rooms[roomName])
+    console.log("LOGGING ROOMS", rooms[roomName]);
+    io.to(roomName).emit('room data', rooms[roomName]);
+    console.log("player list in room", rooms[roomName].players)
+    console.log("first player in room", rooms[roomName].players[0])
+  }else{
+    var warning = "Room has already been taken";
+    socket.emit('room data', warning);
   }
-  rooms[roomName].players[socket.id] = {};
-  rooms[roomName].players.numPlayers++;
 
-  console.log("rooms[roomName]: " + rooms[roomName])
-  console.log("LOGGING ROOMS", rooms[roomName]);
 }
 
 function joinRoom(){
@@ -205,12 +211,12 @@ function processDisconnect(socket){
     console.log("rooms[roomName].players[socket.id]", rooms[roomName].players[socket.id])
     delete rooms[roomName].players[socket.id];
     console.log("\trooms[roomName].players[socket.id]", rooms[roomName].players[socket.id])
-    rooms[roomName].players.numPlayers -= 1;
+    rooms[roomName].numPlayers -= 1;
   }
 
 function initGameStart(socket){
-  socket.emit('in game');
   var roomName = getRoomBySocketId[socket.id];
+  io.to(roomName).emit('in game');
   console.log("InitGameStart from player: " + socket.id + "\n\tat room: " + roomName);
   console.log("\trooms[roomName]: " + rooms[roomName])
   initLevel(socket, roomName);
@@ -223,16 +229,16 @@ function initGameStart(socket){
 function giveEmptyRoomData() {
   //Players object will contain all information about each player's position,
   var room = {}
-
+  room.owner;
 
   room.players = {
-    numPlayers: 0
   };
+  room.numPlayers = 0;
 
   //Projectiles object will keep track of active projectiles
   room.projectiles = {
-    numProjectiles: 0
   }
+  room.numProjectiles = 0;
   room.bulletCount = 0;
 
   //Enemies
@@ -255,10 +261,13 @@ function processPlayerReady(socket){
   var roomName = getRoomBySocketId[socket.id];
   // var ready = rooms[roomName].players[socket.id].ready;
   if(rooms[roomName].players[socket.id].ready == undefined){
+    console.log("ready undefined")
     rooms[roomName].players[socket.id].ready = true;
   }else if(rooms[roomName].players[socket.id].ready == true){
+    console.log("ready true")
     rooms[roomName].players[socket.id].ready = false;
   }else{
+    console.log("ready false")
     rooms[roomName].players[socket.id].ready = true;
   }
   console.log(socket.id + " ready: " + rooms[roomName].players[socket.id].ready)
@@ -272,16 +281,16 @@ function processStartGame(socket){
 }
 
 function isGameStartable(socket){
-  // var roomName = getRoomBySocketId[socket.id];
-  // var playerList = rooms[roomName].players;
-  // for(var player in playerList){
-  //   if(playerList[player].ready == false){
-  //     return false;
-  //   }else if(playerList[player].ready != true){
-  //     console.log("Error in ready: " + player.ready)
-  //     return false;
-  //   }
-  // }
+  var roomName = getRoomBySocketId[socket.id];
+  var playerList = rooms[roomName].players;
+  for(var player in playerList){
+    if(!playerList[player].ready){
+      return false;
+    }else if(playerList[player].ready != true){
+      console.log("Error in ready: " + player.ready)
+      return false;
+    }
+  }
   return true;
 }
 
@@ -299,8 +308,10 @@ function initLevel(socket, roomName){
 
 function emitLevelInfo(socket, roomName){
   socket.emit("grid size", GRID_SIZE);
+  console.log("\tplayer list in room", rooms[roomName].players)
+  console.log("\tfirst player in room", rooms[roomName].players[0])
   socket.emit('create map', rooms[roomName].mapData);
-  console.log('players.numPlayers: ', rooms[roomName].players.numPlayers, ', create map called');
+  console.log('numPlayers: ', rooms[roomName].numPlayers, ', create map called');
 }
 
 function createInGamePlayer(id, roomName, uName) {
@@ -388,15 +399,15 @@ function deleteBullet(id, rm) {
   rooms[rm].projectiles[rooms[rm].bulletCount] = rooms[rm].projectiles[id];
   rooms[rm].projectiles[id] = temp;
   rooms[rm].projectiles[rooms[rm].bulletCount] = 0;
-  rooms[rm].projectiles.numProjectiles -= 1;
+  rooms[rm].numProjectiles -= 1;
 }
 
 function moveEnemies(rm) {
   //Enemy movement handler
   for (var id in rooms[rm].enemies) {
    //Find closest players
-   if ( rooms[rm].players.numPlayers > 0 ) {
-   // if ( (players.numPlayers > 0) && (enemies.numEnemies > 0) ) {
+   if ( rooms[rm].numPlayers > 0 ) {
+   // if ( (numPlayers > 0) && (enemies.numEnemies > 0) ) {
      var closestPlayer;
      var closestPlayerDistance = Infinity;
      for (var player in rooms[rm].players) {
@@ -432,7 +443,7 @@ function moveEnemies(rm) {
        //Kill player
        // if (players[closestPlayer].health < 0) {
        //   players[closestPlayer] = 0;
-       //   players.numPlayers -= 1;
+       //   numPlayers -= 1;
        // }
 
        //Dont move any closer
@@ -463,7 +474,7 @@ function handleBulletCollisions(rm) {
           rooms[rm].players[player].health -= 1;
           // if (players[player].health < 0) {
           //   players[player] = 0;
-          //   players.numPlayers -= 1;
+          //   numPlayers -= 1;
           // }
         }
       }
@@ -508,7 +519,7 @@ function generateEnemies(rm) {
 }
 
 function generateProjectile(id, data, rm) {
-  rooms[rm].projectiles.numProjectiles++;
+  rooms[rm].numProjectiles++;
 
   mouseX = data.x;
   mouseY = data.y;
