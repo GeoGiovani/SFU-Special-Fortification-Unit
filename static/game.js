@@ -137,11 +137,15 @@ function menuProcessor(){
     updateGlobal(globalPlayers);
   });
   socket.on('room data', function(room){
-    if(room != "Room has already been taken"){
+    if(room == "Room has already been taken"){
+      alert("Room has already been taken");
+    }else if(room == "Room does not exist"){
+      alert("Room does not exist");
+    }else if(room == "Room currently in game"){
+      alert("Room currently in game");
+    }else{
       console.log("received room data:", room)
       updateRoom(room);
-    }else{
-      alert("Room has already been taken");
     }
   });
   updateUIDrawing();
@@ -173,8 +177,8 @@ function gameProcessor(){
     listUI = {};
     console.log("create map called")
     processMapDrawing(mapData);
-  });
-
+  });// last change: only room owner deliver mapImage, other will receieve mapImage from server
+  receiveMapImageFromServer(socket);
   socket.on('state', function(players, projectiles, enemies) {
     for(var player in players){
       // console.log("player: " + player)
@@ -227,6 +231,7 @@ function updateRoom(room){
   // console.log("spawnRate " + room.spawnRate)
   updateRoomData(room);
   removeUIElements("Create Room")
+  console.log("listUI after remove Create Room ",listUI)//last change: try to refresh createRoom button
   clearMenu(roomDisplayArea)
   updateUIDrawing();
 }
@@ -316,7 +321,7 @@ function processMapDrawing(mapData){
   var allMapCtx = allMap.getContext('2d');
   drawMap(allMapCtx, mapData)
   //console.log(mapData);/////*****
-  processImageDelivery(allMap)
+  deliverMapImageSrcToServer(allMap)
   // canvas.width = 500 * GRID_SIZE;
   // canvas.height = 500 * GRID_SIZE;
   // drawMap(mapData);
@@ -358,7 +363,7 @@ function clearMenu(areaName){
   context.clearRect(areaName.startX, areaName.startY, areaName.endX, areaName.endY);
 }
 
-function processImageDelivery(allMap){
+function deliverMapImageSrcToServer(allMap){
 
   mapImage.src = allMap.toDataURL();
   console.log('socket event create map called: URL set to', mapImage.src);/////*****
@@ -368,7 +373,9 @@ function processImageDelivery(allMap){
   if (mapImage.src == "") {
     socket.emit("requestMapImageSrcFromServer");
   }
+}
 
+function receiveMapImageFromServer(){
   socket.on("deliverMapImageSrcToClient", function(imageSrc){
     if (!mapImageLoaded && imageSrc != "") {
       mapImage.src = imageSrc;

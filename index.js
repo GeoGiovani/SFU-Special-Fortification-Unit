@@ -45,22 +45,22 @@ var getRoomBySocketId = {};
 var mapImageSrc = "";
 const GRID_SIZE = 10;
 
-// setInterval(function() {
-//   for (var rm in rooms) {
-//     if(rooms[rm].numPlayers > 0){
-//       console.log("Rooms[" + rm + "]: " + rooms[rm])
-//       console.log("Rooms[" + rm + "],players: " + rooms[rm].players)
-//       //  console.log("interval player")
-//       moveProjectiles(rm);
-//       moveEnemies(rm);
-//       handleBulletCollisions(rm);
-//       generateEnemies(rm);
-//       //console.log("LOGGING rm", rm);
-//       io.sockets.to(rm).emit('state', rooms[rm].players,
-//       rooms[rm].projectiles, rooms[rm].enemies);
-//     }
-//   }
-// }, 1000/120);
+setInterval(function() {
+  for (var rm in rooms) {
+    if(rooms[rm].gameState == "game"){
+      console.log("Rooms[" + rm + "]: " + rooms[rm])
+      console.log("Rooms[" + rm + "],players: " + rooms[rm].players)
+      //  console.log("interval player")
+      moveProjectiles(rm);
+      moveEnemies(rm);
+      handleBulletCollisions(rm);
+      generateEnemies(rm);
+      //console.log("LOGGING rm", rm);
+      io.sockets.to(rm).emit('state', rooms[rm].players,
+      rooms[rm].projectiles, rooms[rm].enemies);
+    }
+  }
+}, 1000/120);// last change: create different functions for mapImage delivery, new condition for setInterval, rooms now have gameState
 
 io.on('connection', function(socket){/// needs function to remove globalPlayers/rooms elements when player disconnect
   var gameState = "menu"
@@ -127,25 +127,14 @@ function inGameProcessor(socket, data){
   // });
 
   initGameStart(socket);
-
-  socket.on("deliverMapImageSrcToServer", function(imageSrc){
-    console.log('deliverMapImageSrcToServer called');
-    // mapImageSrc = imageSrc;
-    rooms[getRoomBySocketId[socket.id]].mapImageSrc = imageSrc;
-    console.log("imageSrc " + imageSrc)
-  });
-  socket.on("requestMapImageSrcFromServer", function(){
-    // console.log('imageSrc returned for request:', mapImageSrc);
-    // console.log('requestMapImageSrcFromServer called');
-    socket.emit("deliverMapImageSrcToClient", mapImageSrc);
-  });
-
   // Responds to a movement event
   socket.on('movement', function(data) {
     // var player = players[socket.id] || {};
     // movePlayer(player, data);
     if (getRoomBySocketId == undefined
       || getRoomBySocketId[socket.id] == undefined) {
+        console.log("Error processing movement getRoomBySocketId ", getRoomBySocketId,
+         " and getRoomBySocketId[", socket.id, "] ", getRoomBySocketId[socket.id])
       return;
     }
     var player = rooms[getRoomBySocketId[socket.id]].players[socket.id] || {};
@@ -179,14 +168,29 @@ function processCreateRoom(socket, roomName){
     console.log("player list in room", rooms[roomName].players)
     console.log("first player in room", rooms[roomName].players[0])
   }else{
-    var warning = "Room has already been taken";
-    socket.emit('room data', warning);
+    // var warning = "Room has already been taken";
+    // socket.emit('room data', warning);
+    joinRoom(socket, roomName)
   }
 
 }
 
-function joinRoom(){
-
+function joinRoom(socket, roomName){
+  if(rooms[roomName] != undefined){
+    socket.join(roomName);
+    getRoomBySocketId[socket.id] = roomName;
+    rooms[roomName].players[socket.id] = {};
+    rooms[roomName].numPlayers++;
+    io.to(roomName).emit('room data', rooms[roomName]);
+    console.log("player list in room", rooms[roomName].players)
+    console.log("first player in room", rooms[roomName].players[0])
+  }else if(rooms[roomName].gameState == "game"){
+    var warning = "Room currently in game";
+    socket.emit('room data', warning);
+  }else{
+    var warning = "Room does not exist";
+    socket.emit('room data', warning);
+  }
 }
 
 function processDisconnect(socket){
@@ -222,6 +226,8 @@ function initGameStart(socket){
   initLevel(socket, roomName);
   emitLevelInfo(socket, roomName);
   createInGamePlayer(socket.id, roomName, socket.id);
+  recieveMapImageSrcToServer(socket);
+  deliverMapImageSrcToClient(socket);
   console.log("in game data: " + rooms[roomName]);
 }
 
@@ -229,6 +235,7 @@ function initGameStart(socket){
 function giveEmptyRoomData() {
   //Players object will contain all information about each player's position,
   var room = {}
+  room.gameState = "menu";
   room.owner;
 
   room.players = {
@@ -302,15 +309,15 @@ function initLevel(socket, roomName){
   console.log("rooms[roomName]: " + rooms[roomName])
   rooms[roomName].mapData = processor.constructFromData(mapDataFromFile);
   console.log("\trooms[roomName].mapData: " + rooms[roomName].mapData)
+  rooms[roomName].gameState = "game"
   //console.log(mapData);///////*******
-
 }
 
 function emitLevelInfo(socket, roomName){
-  socket.emit("grid size", GRID_SIZE);
+  io.to(roomName).emit("grid size", GRID_SIZE);
   console.log("\tplayer list in room", rooms[roomName].players)
   console.log("\tfirst player in room", rooms[roomName].players[0])
-  socket.emit('create map', rooms[roomName].mapData);
+  socket.to(rooms[roomName].owner).emit('create map', rooms[roomName].mapData);//change
   console.log('numPlayers: ', rooms[roomName].numPlayers, ', create map called');
 }
 
@@ -324,6 +331,23 @@ function createInGamePlayer(id, roomName, uName) {
     damage: 5,
     speed: 3
   };
+}
+
+function recieveMapImageSrcToServer(socket){
+  socket.on("deliverMapImageSrcToServer", function(imageSrc){
+    console.log('deliverMapImageSrcToServer called');
+    // mapImageSrc = imageSrc;
+    rooms[getRoomBySocketId[socket.id]].mapImageSrc = imageSrc;
+    console.log("imageSrc " + imageSrc)
+  });
+}
+
+function deliverMapImageSrcToClient(socket){
+  socket.on("requestMapImageSrcFromServer", function(){
+    // console.log('imageSrc returned for request:', mapImageSrc);
+    // console.log('requestMapImageSrcFromServer called');
+    socket.emit("deliverMapImageSrcToClient", mapImageSrc);
+  });
 }
 
 
