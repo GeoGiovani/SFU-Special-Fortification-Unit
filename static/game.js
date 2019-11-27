@@ -4,6 +4,7 @@ var listUI = []; //reset every change in gameState
 var totalPlayers;
 var globalPlayers = [];
 var rooms;
+var roomData;
 // var myId = "";
 var audioList = {};
 
@@ -31,10 +32,10 @@ var globalDisplayArea = {
 }
 
 var roomDisplayArea = {
-  startX : 0,
-  startY : 0,
-  endX : 800,
-  endY : 150,
+  startX : canvasStartX + 5,
+  startY : canvasStartY + 10,
+  endX : canvasW,
+  endY : canvasStartY + 150,
 }
 
 
@@ -116,14 +117,14 @@ generalProcessor();
 
 function generalProcessor(){
   socket.on('main menu', function(){
-    menuProcessor();
+    clientMenuProcessor();
   });
-  socket.on('in game',function(data){
-    gameProcessor();
+  socket.on('in game',function(){//added roomData, concertn for inconsistency
+    clientGameProcessor();
   });
 }
 
-function menuProcessor(){
+function clientMenuProcessor(){
   console.log("socket.id = " + socket.id)//temporary
   console.log("main menu called");////temporary
   this.gameState = "menu";
@@ -148,7 +149,7 @@ function menuProcessor(){
       updateRoom(room);
     }
   });
-  updateUIDrawing();
+  // updateUIDrawing();
   // setTimeout(function(){
   //     context.clearRect(globalDisplayArea.startX, globalDisplayArea.startY, globalDisplayArea.endX, globalDisplayArea.endY);
   //   setTimeout(function(){
@@ -158,8 +159,8 @@ function menuProcessor(){
   // }, 2000)
 }
 
-function gameProcessor(){
-  this.gameState = "game";
+function clientGameProcessor(){
+
   console.log("in game called");
   // if (myId == "") {
   //   socket.emit('requestPassId');
@@ -167,27 +168,37 @@ function gameProcessor(){
   //     myId = socketID;
   //   })
   // }
+  socket.on('refresh data', function(){
+    this.gameState = "game";
+    listUI = {};
+    updateUIDrawing();
+  });
 
+  socket.emit('owner process map')
   socket.on("grid size", function(size){
+    console.log("received GRID_SIZE",GRID_SIZE)
     GRID_SIZE = size
     console.log("GRID_SIZE = " + size)
   });
-
-  socket.on('create map', function(mapData){
-    listUI = {};
-    console.log("create map called")
+  socket.on('draw map', function(mapData){
+    console.log("draw map called")
     processMapDrawing(mapData);
   });// last change: only room owner deliver mapImage, other will receieve mapImage from server
-  receiveMapImageFromServer(socket);
-  socket.on('state', function(players, projectiles, enemies) {
-    for(var player in players){
-      // console.log("player: " + player)
-    }
-    // console.log("myID: " + myId)
-    gameStateProcessor(players, projectiles, enemies)
+  socket.on('map request', function(){
+    requestMapImageFromServer(socket);
   });
+  socket.emit('character creation')
+  // socket.on('game loop', function(){
+    socket.on('state', function(players, projectiles, enemies) {
+      // for(var player in players){
+      //   // console.log("player: " + player)
+      // }
+      // console.log("myID: " + myId)
+      gameStateProcessor(players, projectiles, enemies)
+    });
+    playerInput();
+  // })
 
-  gameLoop();
 }
 
 /////////////////////// Support functions
@@ -233,6 +244,7 @@ function updateRoom(room){
   removeUIElements("Create Room")
   console.log("listUI after remove Create Room ",listUI)//last change: try to refresh createRoom button
   clearMenu(roomDisplayArea)
+  context.clearRect(5, 350, 200, 50)
   updateUIDrawing();
 }
 //update global players and rooms UI menu
@@ -315,6 +327,7 @@ function updateRoomData(room){
 // }
 
 function processMapDrawing(mapData){
+  console.log("processMapDrawing");
   var allMap = document.createElement("canvas")
   allMap.width = 500*GRID_SIZE;
   allMap.height = 500*GRID_SIZE;
@@ -359,10 +372,6 @@ function drawMap(allMapCtx, mapData){
   }
 }
 
-function clearMenu(areaName){
-  context.clearRect(areaName.startX, areaName.startY, areaName.endX, areaName.endY);
-}
-
 function deliverMapImageSrcToServer(allMap){
 
   mapImage.src = allMap.toDataURL();
@@ -370,19 +379,25 @@ function deliverMapImageSrcToServer(allMap){
   socket.emit("deliverMapImageSrcToServer", mapImage.src);
   // delete canvas;
   delete allMap;
-  if (mapImage.src == "") {
-    socket.emit("requestMapImageSrcFromServer");
-  }
 }
 
-function receiveMapImageFromServer(){
-  socket.on("deliverMapImageSrcToClient", function(imageSrc){
-    if (!mapImageLoaded && imageSrc != "") {
-      mapImage.src = imageSrc;
-      mapImageLoaded = true;
-      console.log("imageSrc recieved: " + imageSrc)
-    }
-  });
+function requestMapImageFromServer(){
+  if (mapImage.src == "") {
+    console.log("request mapImage")
+    socket.emit("requestMapImageSrcFromServer");
+    socket.on("deliverMapImageSrcToClient", function(imageSrc){
+      console.log("received mapImage")
+      if (!mapImageLoaded && imageSrc != "") {
+        mapImage.src = imageSrc;
+        mapImageLoaded = true;
+        console.log("imageSrc recieved: " + imageSrc)
+      }
+    });
+  }// needs request for delivery
+}
+
+function clearMenu(areaName){
+  context.clearRect(areaName.startX, areaName.startY, areaName.endX, areaName.endY);
 }
 
 function clearScreen(context){
@@ -446,7 +461,7 @@ function gameStateProcessor(players, projectiles, enemies){
     // lastLoop = thisLoop;
 }
 
-function gameLoop(){
+function playerInput(){
   setInterval(function() {
     socket.emit('movement', movement);
     socket.emit('shoot', shoot);
@@ -493,20 +508,18 @@ function drawUIElement(element){
   context.rect(element.x, element.y, element.width, element.height);
   context.fill();
   context.fillStyle = "white"; ///temp hardcoded
-  var text = element.name;
-  if(element.userName != undefined){
-    text = element.userName
-  }
+  var text = giveElementText(element);
   context.fillText(text, element.x + 10, element.y + 20);
   console.log("drawUIElement ", text, element.x, element.y, element.width, element.height)
   console.log("-------")
 }
 
 function giveElementText(element){
-  if(element.name == "Global Player" || element.name == "Teammate"){
+  if(element.userName != undefined){
     return element.userName;
+  }else{
+    return element.name;
   }
-  return element.name;
 }
 
 //process if clicked on an UI element

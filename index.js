@@ -47,7 +47,7 @@ const GRID_SIZE = 10;
 
 setInterval(function() {
   for (var rm in rooms) {
-    if(rooms[rm].gameState == "game"){
+    if(rooms[rm].gameState == "game" && rooms[rm].numPlayers > 0){
       console.log("Rooms[" + rm + "]: " + rooms[rm])
       console.log("Rooms[" + rm + "],players: " + rooms[rm].players)
       //  console.log("interval player")
@@ -72,22 +72,6 @@ io.on('connection', function(socket){/// needs function to remove globalPlayers/
   });
 });
 
-function generalProcessor(socket, gameState){
-  var data = {
-    totalPlayers,
-    globalPlayers,
-    rooms,
-    getRoomBySocketId
-  }
-  if(gameState == "menu"){
-    console.log("gameState = " + gameState);
-    mainMenuProcessor(socket, data);
-  }else if(gameState == "game"){
-    console.log("gameState = " + gameState);
-    inGameProcessor(socket, data);
-  }
-}
-
 function initConnection(socket){
   console.log("connection : " + socket.id)
   totalPlayers++;
@@ -100,7 +84,23 @@ function initConnection(socket){
   console.log(globalPlayers)
 }
 
-function mainMenuProcessor(socket, data){
+function generalProcessor(socket, gameState){
+  var data = {
+    totalPlayers,
+    globalPlayers,
+    rooms,
+    getRoomBySocketId
+  }
+  if(gameState == "menu"){
+    console.log("gameState = " + gameState);
+    serverMenuProcessor(socket, data);
+  }else if(gameState == "game"){
+    console.log("gameState = " + gameState);
+    serverGameProcessor(socket, data);
+  }
+}
+
+function serverMenuProcessor(socket, data){
   // var data = "placeholder"////temporary
   /// roomdata = current client room
   socket.emit('main menu');
@@ -118,7 +118,7 @@ function mainMenuProcessor(socket, data){
 }
 //processCreateRoom(roomName);
 
-function inGameProcessor(socket, data){
+function serverGameProcessor(socket, data){
   // socket.on('in game');
   // socket.emit("passId", socket.id);
   // socket.on('requestPassId', function(){
@@ -160,13 +160,15 @@ function processCreateRoom(socket, roomName){
     getRoomBySocketId[socket.id] = roomName;
     rooms[roomName] = giveEmptyRoomData(roomName);
     rooms[roomName].owner = socket.id;
-    rooms[roomName].players[socket.id] = {};
+    rooms[roomName].players[socket.id] = {
+      ready : false,
+    };
     rooms[roomName].numPlayers++;
     console.log("rooms[roomName]: " + rooms[roomName])
     console.log("LOGGING ROOMS", rooms[roomName]);
     io.to(roomName).emit('room data', rooms[roomName]);
+    console.log("room owner: ", rooms[roomName].owner)
     console.log("player list in room", rooms[roomName].players)
-    console.log("first player in room", rooms[roomName].players[0])
   }else{
     // var warning = "Room has already been taken";
     // socket.emit('room data', warning);
@@ -179,7 +181,9 @@ function joinRoom(socket, roomName){
   if(rooms[roomName] != undefined){
     socket.join(roomName);
     getRoomBySocketId[socket.id] = roomName;
-    rooms[roomName].players[socket.id] = {};
+    rooms[roomName].players[socket.id] = {
+      ready : false,
+    };
     rooms[roomName].numPlayers++;
     io.to(roomName).emit('room data', rooms[roomName]);
     console.log("player list in room", rooms[roomName].players)
@@ -220,15 +224,45 @@ function processDisconnect(socket){
 
 function initGameStart(socket){
   var roomName = getRoomBySocketId[socket.id];
-  io.to(roomName).emit('in game');
+  io.to(roomName).emit('in game');//, rooms[getRoomBySocketId[socket.id]]);// last change: only owner start game first but data not transmitted, game doesn't load bc missing data being emitted
   console.log("InitGameStart from player: " + socket.id + "\n\tat room: " + roomName);
   console.log("\trooms[roomName]: " + rooms[roomName])
-  initLevel(socket, roomName);
-  emitLevelInfo(socket, roomName);
-  createInGamePlayer(socket.id, roomName, socket.id);
-  recieveMapImageSrcToServer(socket);
+  // socket.emit('level init', function(){// last change: initlevel == room owner, mapReady
+  // console.log("level init")
+  io.to(roomName).emit('refresh data');
+  socket.on('owner process map', function(){
+    console.log("owner process map called")
+    if(socket.id == rooms[roomName].owner){
+      console.log("\troom owner process map")
+      initLevel(socket, roomName);
+      emitLevelInfo(socket, roomName);
+      receiveMapImageSrcToServer(socket);
+    }
+  });
+  socket.emit('map request');
   deliverMapImageSrcToClient(socket);
+  socket.on('character creation', function(){
+    createInGamePlayer(socket.id, roomName, socket.id);
+    // socket.emit('game loop');
+  });
+  // setInterval(function() {
+  //   for (var rm in rooms) {
+  //     if(rooms[rm].gameState == "game" && rooms[rm].numPlayers > 0){
+  //       console.log("Rooms[" + rm + "]: " + rooms[rm])
+  //       console.log("Rooms[" + rm + "],players: " + rooms[rm].players)
+  //       //  console.log("interval player")
+  //       moveProjectiles(rm);
+  //       moveEnemies(rm);
+  //       handleBulletCollisions(rm);
+  //       generateEnemies(rm);
+  //       //console.log("LOGGING rm", rm);
+  //       io.sockets.to(rm).emit('state', rooms[rm].players,
+  //       rooms[rm].projectiles, rooms[rm].enemies);
+  //     }
+  //   }
+  // }, 1000/120);
   console.log("in game data: " + rooms[roomName]);
+  // });
 }
 
 
@@ -237,15 +271,16 @@ function giveEmptyRoomData() {
   var room = {}
   room.gameState = "menu";
   room.owner;
+  room.mapReady = false;
 
+  room.numPlayers = 0;
   room.players = {
   };
-  room.numPlayers = 0;
 
   //Projectiles object will keep track of active projectiles
+  room.numProjectiles = 0;
   room.projectiles = {
   }
-  room.numProjectiles = 0;
   room.bulletCount = 0;
 
   //Enemies
@@ -317,7 +352,8 @@ function emitLevelInfo(socket, roomName){
   io.to(roomName).emit("grid size", GRID_SIZE);
   console.log("\tplayer list in room", rooms[roomName].players)
   console.log("\tfirst player in room", rooms[roomName].players[0])
-  socket.to(rooms[roomName].owner).emit('create map', rooms[roomName].mapData);//change
+  console.log("\temit level info to ",rooms[roomName].owner)
+  socket.emit('draw map', rooms[roomName].mapData);//change
   console.log('numPlayers: ', rooms[roomName].numPlayers, ', create map called');
 }
 
@@ -333,11 +369,13 @@ function createInGamePlayer(id, roomName, uName) {
   };
 }
 
-function recieveMapImageSrcToServer(socket){
+function receiveMapImageSrcToServer(socket){
   socket.on("deliverMapImageSrcToServer", function(imageSrc){
     console.log('deliverMapImageSrcToServer called');
+    var roomName = getRoomBySocketId[socket.id];
     // mapImageSrc = imageSrc;
-    rooms[getRoomBySocketId[socket.id]].mapImageSrc = imageSrc;
+    rooms[roomName].mapImageSrc = imageSrc;
+    rooms.mapReady = true;
     console.log("imageSrc " + imageSrc)
   });
 }
