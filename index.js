@@ -60,7 +60,7 @@ setInterval(function() {
       rooms[rm].projectiles, rooms[rm].enemies);
     }
   }
-}, 1000/30);// last change: create different functions for mapImage delivery, new condition for setInterval, rooms now have gameState
+}, 1000/1);// last change: create different functions for mapImage delivery, new condition for setInterval, rooms now have gameState
 
 io.on('connection', function(socket){/// needs function to remove globalPlayers/rooms elements when player disconnect
   var gameState = "menu"
@@ -131,6 +131,7 @@ function serverGameProcessor(socket, data){
 
   initGameStart(socket);
   // Responds to a movement event
+
   serverGameLogic(socket, data);
 }
 
@@ -220,6 +221,7 @@ function initGameStart(socket){
       initLevel(socket, roomName);
       emitLevelInfo(socket, roomName);
       receiveMapImageSrcToServer(socket);
+      console.log("/////////////////////////////////new mapImage from owner", rooms[roomName].mapImageSrc, "////////////////////////////////////////////////////////")
       sendMapImageEmitCount(socket, roomName);
       // sendMapProcessedSignal(socket, roomName);
     }

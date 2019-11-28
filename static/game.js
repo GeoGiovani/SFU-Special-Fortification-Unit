@@ -7,6 +7,7 @@ var rooms;
 var roomData;
 var mapImageEmitCount = 0;
 var maxMapImageEmitCount;
+var mapReady = false;
 // var myId = "";
 var audioList = {};
 
@@ -206,11 +207,28 @@ function clientGameProcessor(){
   socket.on('map image emit count', function(maxMapImageEmitCount){
     this.maxMapImageEmitCount = maxMapImageEmitCount;
   });
-  socket.on('state', function(players, projectiles, enemies) {
-
-    gameStateProcessor(players, projectiles, enemies)
-  });
-  playerInput();
+  // while(!mapImage.src.match('image/png')){
+  //   console.log("request loop")
+  //   setTimeout(function(){
+  //     // console.log("mapReady value", this.mapReady)
+  //     // if(!mapReady){
+  //     //   console.log("mapReady")
+  //     //   if(!mapImage.src.match('image/png')){
+  //     //     console.log("\trequest mapimage")
+  //         console.log("current mapImage", mapImage.src)
+  //         requestMapImageFromServer();
+  //         // if(mapImage.src.match('image/png')){
+  //         //   mapImageEmitCount++;
+  //         //   mapReady = true;
+  //         // }
+  //         //
+  //         console.log("\tmapImagesrc after request", mapImage.src)
+  //     //   }
+  //     // }
+  //     // console.log("\tmapReady after", this.mapReady)
+  //   }, 1000)
+  // }
+  clientGameLogic(socket);
     // for(var player in players){
       //   // console.log("player: " + player)
       // }
@@ -408,12 +426,12 @@ function requestMapImageFromServer(){
   console.log("request mapImage")
   socket.emit("requestMapImageSrcFromServer");
   socket.on("deliverMapImageSrcToClient", function(imageSrc, mapReady){
-    console.log("imageSrc received ", imageSrc)
-    console.log("mapReady received ", mapReady);
-    if(mapReady || imageSrc != '') {
+    // console.log("imageSrc received ", imageSrc)
+    // console.log("mapReady received ", mapReady);
+    // if(mapReady || imageSrc != '') {
       mapImage.src = imageSrc;
       mapImageLoaded = true;
-    }
+    // }
   });
   // var roomData = rooms[]
   // while (!roomData.mapReady) {
@@ -437,13 +455,18 @@ function clearScreen(context){
   context.clearRect(canvasStartX, canvasStartY, canvasW, canvasH);
 }
 
+function clientGameLogic(socket){
+  socket.on('state', function(players, projectiles, enemies) {
+
+    gameStateProcessor(players, projectiles, enemies)
+  });
+  playerInput();
+}
+
 function gameStateProcessor(players, projectiles, enemies){
   //console.log("socket event state called");
   // if(mapImageEmitCount < maxMapImageEmitCount * 20){
-    if(!mapImage.src.match('image/png')){
-      requestMapImageFromServer();
-      // mapImageEmitCount++;
-    }
+
   // }
   context.clearRect(canvasStartX, canvasStartY, canvasW, canvasH);
 
