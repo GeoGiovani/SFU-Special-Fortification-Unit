@@ -60,12 +60,12 @@ setInterval(function() {
       rooms[rm].projectiles, rooms[rm].enemies);
     }
   }
-}, 1000/120);// last change: create different functions for mapImage delivery, new condition for setInterval, rooms now have gameState
+}, 1000/30);// last change: create different functions for mapImage delivery, new condition for setInterval, rooms now have gameState
 
 io.on('connection', function(socket){/// needs function to remove globalPlayers/rooms elements when player disconnect
   var gameState = "menu"
   initConnection(socket);
-  generalProcessor(socket, gameState);
+  serverGeneralProcessor(socket, gameState);
 
   socket.on('disconnect', function() {
     processDisconnect(socket);
@@ -84,7 +84,7 @@ function initConnection(socket){
   console.log(globalPlayers)
 }
 
-function generalProcessor(socket, gameState){
+function serverGeneralProcessor(socket, gameState){
   var data = {
     totalPlayers,
     globalPlayers,
@@ -113,6 +113,9 @@ function serverMenuProcessor(socket, data){
 
   socket.on('ready', function(){
     processPlayerReady(socket);
+  });
+  socket.on('proceed start game', function(){
+    serverGeneralProcessor(socket, "game");
   });
 
 }
@@ -229,7 +232,7 @@ function initGameStart(socket){
   console.log("\trooms[roomName]: " + rooms[roomName])
   // socket.emit('level init', function(){// last change: initlevel == room owner, mapReady
   // console.log("level init")
-  io.to(roomName).emit('refresh data');
+  io.to(roomName).emit('refresh screen');
   socket.on('owner process map', function(){
     console.log("owner process map called")
     if(socket.id == rooms[roomName].owner){
@@ -237,10 +240,16 @@ function initGameStart(socket){
       initLevel(socket, roomName);
       emitLevelInfo(socket, roomName);
       receiveMapImageSrcToServer(socket);
+      io.to(roomName).emit('map processed');
     }
   });
-  socket.emit('map request');
-  deliverMapImageSrcToClient(socket);
+
+  socket.on("requestMapImageSrcFromServer", function(){
+    // console.log('imageSrc returned for request:', mapImageSrc);
+    console.log('requestMapImageSrcFromServer called');
+    socket.emit("deliverMapImageSrcToClient", mapImageSrc);
+  });
+
   socket.on('character creation', function(){
     createInGamePlayer(socket.id, roomName, socket.id);
     // socket.emit('game loop');
@@ -318,7 +327,8 @@ function processPlayerReady(socket){
 
 function processStartGame(socket){
   if(isGameStartable(socket)){
-    generalProcessor(socket, "game");
+    var roomName = getRoomBySocketId[socket.id];
+    io.to(roomName).emit('game startable');
   }
 }
 
@@ -380,13 +390,6 @@ function receiveMapImageSrcToServer(socket){
   });
 }
 
-function deliverMapImageSrcToClient(socket){
-  socket.on("requestMapImageSrcFromServer", function(){
-    // console.log('imageSrc returned for request:', mapImageSrc);
-    // console.log('requestMapImageSrcFromServer called');
-    socket.emit("deliverMapImageSrcToClient", mapImageSrc);
-  });
-}
 
 
 function moveProjectiles(rm) {

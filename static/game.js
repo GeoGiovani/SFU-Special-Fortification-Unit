@@ -113,9 +113,9 @@ window.addEventListener('mousemove', function (e) {
   mouseY = e.pageY;
 });
 
-generalProcessor();
+clientGeneralProcessor();
 
-function generalProcessor(){
+function clientGeneralProcessor(){
   socket.on('main menu', function(){
     clientMenuProcessor();
   });
@@ -149,6 +149,9 @@ function clientMenuProcessor(){
       updateRoom(room);
     }
   });
+  socket.on('game startable', function(){
+    socket.emit('proceed start game');
+  });
   // updateUIDrawing();
   // setTimeout(function(){
   //     context.clearRect(globalDisplayArea.startX, globalDisplayArea.startY, globalDisplayArea.endX, globalDisplayArea.endY);
@@ -168,7 +171,7 @@ function clientGameProcessor(){
   //     myId = socketID;
   //   })
   // }
-  socket.on('refresh data', function(){
+  socket.on('refresh screen', function(){
     this.gameState = "game";
     listUI = {};
     updateUIDrawing();
@@ -176,15 +179,16 @@ function clientGameProcessor(){
 
   socket.emit('owner process map')
   socket.on("grid size", function(size){
-    console.log("received GRID_SIZE",GRID_SIZE)
+    console.log("received GRID_SIZE",size)
     GRID_SIZE = size
-    console.log("GRID_SIZE = " + size)
+    console.log("GRID_SIZE = " + GRID_SIZE);
   });
   socket.on('draw map', function(mapData){
     console.log("draw map called")
     processMapDrawing(mapData);
   });// last change: only room owner deliver mapImage, other will receieve mapImage from server
-  socket.on('map request', function(){
+  socket.on('map processed', function(){
+    console.log("map is processed")
     requestMapImageFromServer(socket);
   });
   socket.emit('character creation')
@@ -382,17 +386,21 @@ function deliverMapImageSrcToServer(allMap){
 }
 
 function requestMapImageFromServer(){
-  if (mapImage.src == "") {
-    console.log("request mapImage")
-    socket.emit("requestMapImageSrcFromServer");
-    socket.on("deliverMapImageSrcToClient", function(imageSrc){
-      console.log("received mapImage")
-      if (!mapImageLoaded && imageSrc != "") {
-        mapImage.src = imageSrc;
-        mapImageLoaded = true;
-        console.log("imageSrc recieved: " + imageSrc)
-      }
-    });
+  console.log("inside request mapImg function with mapImg: ", mapImage.src)
+  while (!mapImage.src.match('image/png')) {
+    setTimeout(function(){
+      console.log("request mapImage")
+      socket.emit("requestMapImageSrcFromServer");
+      socket.on("deliverMapImageSrcToClient", function(imageSrc){
+        console.log("\treceived mapImage")
+        // if (!mapImageLoaded && imageSrc != "") {
+          mapImage.src = imageSrc;
+          mapImageLoaded = true;
+          console.log("\t\timageSrc recieved: " + imageSrc)
+          // }
+        });
+
+    }, 1000)
   }// needs request for delivery
 }
 
