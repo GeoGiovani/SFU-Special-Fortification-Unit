@@ -5,6 +5,8 @@ var totalPlayers;
 var globalPlayers = [];
 var rooms;
 var roomData;
+var mapImageEmitCount = 0;
+var maxMapImageEmitCount;
 // var myId = "";
 var audioList = {};
 
@@ -189,20 +191,36 @@ function clientGameProcessor(){
   });// last change: only room owner deliver mapImage, other will receieve mapImage from server
   socket.on('map processed', function(){
     console.log("map is processed")
-    requestMapImageFromServer(socket);
+    requestMapImageFromServer();
   });
   socket.emit('character creation')
   // socket.on('game loop', function(){
-    socket.on('state', function(players, projectiles, enemies) {
-      // for(var player in players){
+  socket.on("deliverMapImageSrcToClient", function(imageSrc, mapReady){
+    console.log("imageSrc received ", imageSrc)
+    console.log("mapReady received ", mapReady);
+    if(mapReady && imageSrc == '') {
+      mapImage.src = imageSrc;
+      mapImageLoaded = true;
+    }
+  });
+  socket.on('map image emit count', function(maxMapImageEmitCount){
+    this.maxMapImageEmitCount = maxMapImageEmitCount;
+  });
+  socket.on('state', function(players, projectiles, enemies) {
+
+    gameStateProcessor(players, projectiles, enemies)
+  });
+  playerInput();
+    // for(var player in players){
       //   // console.log("player: " + player)
       // }
       // console.log("myID: " + myId)
-      gameStateProcessor(players, projectiles, enemies)
-    });
-    playerInput();
   // })
-
+  // console.log("mapImageSrc", mapImage.src)
+  // console.log("mapImageSrmatch? ", mapImage.src.match('image/png'))
+  // if(mapImage.src.match('image/png') != true){
+  //   requestMapImageFromServer(socket);
+  // }
 }
 
 /////////////////////// Support functions
@@ -387,21 +405,28 @@ function deliverMapImageSrcToServer(allMap){
 
 function requestMapImageFromServer(){
   console.log("inside request mapImg function with mapImg: ", mapImage.src)
-  while (!mapImage.src.match('image/png')) {
-    setTimeout(function(){
-      console.log("request mapImage")
-      socket.emit("requestMapImageSrcFromServer");
-      socket.on("deliverMapImageSrcToClient", function(imageSrc){
-        console.log("\treceived mapImage")
-        // if (!mapImageLoaded && imageSrc != "") {
-          mapImage.src = imageSrc;
-          mapImageLoaded = true;
-          console.log("\t\timageSrc recieved: " + imageSrc)
-          // }
-        });
+  console.log("request mapImage")
+  socket.emit("requestMapImageSrcFromServer");
+  socket.on("deliverMapImageSrcToClient", function(imageSrc, mapReady){
+    console.log("imageSrc received ", imageSrc)
+    console.log("mapReady received ", mapReady);
+    if(mapReady || imageSrc != '') {
+      mapImage.src = imageSrc;
+      mapImageLoaded = true;
+    }
+  });
+  // var roomData = rooms[]
+  // while (!roomData.mapReady) {
+    // setTimeout(function(){
+        // console.log("\treceived mapImage")
+        // // if (!mapImageLoaded && imageSrc != "") {
+        //   mapImage.src = imageSrc;
+        //   mapImageLoaded = true;
+        //   console.log("\t\timageSrc recieved: " + imageSrc)
+        //   // }
 
-    }, 1000)
-  }// needs request for delivery
+    // }, 1000)
+  // }// needs request for delivery
 }
 
 function clearMenu(areaName){
@@ -414,6 +439,12 @@ function clearScreen(context){
 
 function gameStateProcessor(players, projectiles, enemies){
   //console.log("socket event state called");
+  // if(mapImageEmitCount < maxMapImageEmitCount * 20){
+    if(!mapImage.src.match('image/png')){
+      requestMapImageFromServer();
+      // mapImageEmitCount++;
+    }
+  // }
   context.clearRect(canvasStartX, canvasStartY, canvasW, canvasH);
 
   var middleX = players[socket.id].x - (canvasW)/2;
@@ -535,7 +566,7 @@ function processClick(mouseX, mouseY){
   var index = giveIndexCLickableUI(mouseX, mouseY);
   // console.log(this.listUI[0]);
   if(index != -1){
-    console.log("Found clickable index: " + index)
+    console.log("Found clickable index: ",index," name: ",listUI[index].name)
     this.listUI[index].interaction();
   }else if(index == -1){
     console.log("No clickable")
