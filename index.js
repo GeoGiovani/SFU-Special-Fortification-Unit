@@ -221,8 +221,8 @@ function initGameStart(socket){
       initLevel(socket, roomName);
       emitLevelInfo(socket, roomName);
       receiveMapImageSrcToServer(socket);
-      console.log("/////////////////////////////////new mapImage from owner", rooms[roomName].mapImageSrc, "////////////////////////////////////////////////////////")
-      sendMapImageEmitCount(socket, roomName);
+      // console.log("/////////////////////////////////new mapImage from owner", rooms[roomName].mapImageSrc, "////////////////////////////////////////////////////////")
+      // sendMapImageEmitCount(socket, roomName);
       // sendMapProcessedSignal(socket, roomName);
     }
   });
@@ -253,14 +253,14 @@ function initGameStart(socket){
 }
 
 function serverGameLogic(socket, data){
-  socket.on("requestMapImageSrcFromServer", function(){
-    // console.log('imageSrc returned for request:', mapImageSrc);
-    var roomData = rooms[getRoomBySocketId[socket.id]];
-    // console.log('requestMapImageSrcFromServer called from ',socket.id);
-    // console.log('---------deliver mapImageToClient', roomData.mapImageSrc,"------------------");
-    // console.log('--------mapReady', roomData.mapReady,"------------------");
-    socket.emit("deliverMapImageSrcToClient", roomData.mapImageSrc);//, roomData.mapReady);
-  });
+  // socket.on("requestMapImageSrcFromServer", function(){
+  //   // console.log('imageSrc returned for request:', mapImageSrc);
+  //   var roomData = rooms[getRoomBySocketId[socket.id]];
+  //   // console.log('requestMapImageSrcFromServer called from ',socket.id);
+  //   // console.log('---------deliver mapImageToClient', roomData.mapImageSrc,"------------------");
+  //   // console.log('--------mapReady', roomData.mapReady,"------------------");
+  //   socket.emit("deliverMapImageSrcToClient", roomData.mapImageSrc);//, roomData.mapReady);
+  // });
 
   socket.on('movement', function(data) {
     // var player = players[socket.id] || {};
@@ -405,9 +405,9 @@ function receiveMapImageSrcToServer(socket){
   });
 }
 
-function sendMapImageEmitCount(socket, roomName){
-  io.to(roomName).emit('map image emit count', rooms[roomName].mapImageEmitCount);
-}
+// function sendMapImageEmitCount(socket, roomName){
+//   io.to(roomName).emit('map image emit count', rooms[roomName].mapImageEmitCount);
+// }
 
 function removePlayerFromRoom(socket, roomName){
   console.log("rooms[roomName].players[socket.id]", rooms[roomName].players[socket.id])

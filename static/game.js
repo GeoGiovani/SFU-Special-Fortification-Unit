@@ -5,9 +5,9 @@ var totalPlayers;
 var globalPlayers = [];
 var rooms;
 var roomData;
-var mapImageEmitCount = 0;
-var maxMapImageEmitCount;
-var mapReady = false;
+// var mapImageEmitCount = 0;
+// var maxMapImageEmitCount;
+// var mapReady = false;
 // var myId = "";
 var audioList = {};
 
@@ -190,23 +190,23 @@ function clientGameProcessor(){
     console.log("draw map called")
     processMapDrawing(mapData);
   });// last change: only room owner deliver mapImage, other will receieve mapImage from server
-  socket.on('map processed', function(){
-    console.log("map is processed")
-    // requestMapImageFromServer();
-  });
+  // socket.on('map processed', function(){
+  //   console.log("map is processed")
+  //   // requestMapImageFromServer();
+  // });
   socket.emit('character creation')
   // socket.on('game loop', function(){
-  socket.on("deliverMapImageSrcToClient", function(imageSrc, mapReady){
-    console.log("imageSrc received ", imageSrc)
-    console.log("mapReady received ", mapReady);
-    if(mapReady && imageSrc == '') {
-      mapImage.src = imageSrc;
-      mapImageLoaded = true;
-    }
-  });
-  socket.on('map image emit count', function(maxMapImageEmitCount){
-    this.maxMapImageEmitCount = maxMapImageEmitCount;
-  });
+  // socket.on("deliverMapImageSrcToClient", function(imageSrc, mapReady){
+  //   console.log("imageSrc received ", imageSrc)
+  //   console.log("mapReady received ", mapReady);
+  //   if(mapReady && imageSrc == '') {
+  //     mapImage.src = imageSrc;
+  //     mapImageLoaded = true;
+  //   }
+  // });
+  // socket.on('map image emit count', function(maxMapImageEmitCount){
+  //   this.maxMapImageEmitCount = maxMapImageEmitCount;
+  // });
   // while(!mapImage.src.match('image/png')){
   //   console.log("request loop")
   //   setTimeout(function(){
