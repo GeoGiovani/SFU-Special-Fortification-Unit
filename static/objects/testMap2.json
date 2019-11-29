@@ -1655,7 +1655,7 @@
         "num": 8,
         "name": "Construction Mall",
         "description": "Meant to be Convocation Mall, however...",
-        "open": true,
+        "open": false,
         "memo": "zone locking thing. number should NEVER be 0!"
       },
       {

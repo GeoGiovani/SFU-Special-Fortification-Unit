@@ -1,6 +1,5 @@
 var searchBtn = document.getElementById('searchButton');
 var username = document.getElementById('username');
-console.log("HEREBB")
 username = username.innerHTML
 searchBtn.value = username;
 searchBtn.addEventListener('click', function(event) {

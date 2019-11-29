@@ -43,7 +43,7 @@ var questDescription = "";
 
 var socket = io();
 socket.on('message', function(data) {
-  // console.log(data);
+  showMessage(data);
 });
 
 //socket id of the client. players[myId] will return the specific player's data.
@@ -208,6 +208,7 @@ setInterval(function() {
   socket.emit('shoot', shoot);
   socket.emit('interact', action);
   shoot.shootBullet = false;
+
   //makeSound("bang");
 }, 1000 / 30);
 
@@ -230,7 +231,7 @@ window.addEventListener('mousemove', function (e) {
 });
 
   var context = canvas.getContext('2d');
-  socket.on('state', function(players, projectiles, enemies, zones) {
+  socket.on('state', function(players, projectiles, enemies, zones, teamQuests) {
     //console.log("socket event state called");
     if (players[myId] == 0) {
       //Died
@@ -268,6 +269,9 @@ window.addEventListener('mousemove', function (e) {
       context.beginPath();
       context.arc(player.x - middleX, player.y - middleY, GRID_SIZE/2 , 0, 2 * Math.PI);
       context.fill();
+
+      showHealthBarAbove(player.x - middleX, player.y - middleY, player.health, player.maxHealth);
+      showBulletBarAbove(player.x - middleX, player.y - middleY, player.clip, player.clipSize);
     }
 
     for (var id in projectiles) {
@@ -288,6 +292,8 @@ window.addEventListener('mousemove', function (e) {
       context.arc(enemy.x - middleX, enemy.y - middleY, GRID_SIZE/2, 0, 2 * Math.PI);
       context.fillStyle = 'red';
       context.fill();
+
+      showHealthBarAbove(enemy.x - middleX, enemy.y - middleY, enemy.health, enemy.maxHealth);
     }
 
     context.fillStyle = "rgba(100, 100, 100, 0.3)";
@@ -315,32 +321,16 @@ window.addEventListener('mousemove', function (e) {
     lastLoop = thisLoop;
 
     //showing Player health/score/etc.
-    var player = players[myId];
-    context.fillStyle = "#BBB";
-    context.beginPath();
-    context.rect(10, 60, 80, 15);
-    context.fill();
-    context.fillStyle = "red";
-    context.beginPath();
-    context.rect(10, 60, (player.health/player.maxHealth)*80, 15);
-    context.fill();
-
+    showMyData(players[myId]);
     var playerIndex = 1;
     for (var id in players) {
       if (id != myId && players[id] != 0 && players[id].health != undefined) {
-        player = players[id];
-        context.fillStyle = "#BBB";
-        context.beginPath();
-        context.rect(50+100*playerIndex, 40, 50, 10);
-        context.fill();
-        context.fillStyle = "red";
-        context.beginPath();
-        context.rect(50+100*playerIndex, 40, (player.health/player.maxHealth)*50, 10);
-        context.fill();
+        showOtherPlayerData(players[id], playerIndex);
         playerIndex += 1;
       }
     }
 
+    showQuests(players[myId], teamQuests);
 
     // related to function 'showMessage'.
     if (messageOn && messageQueue.length >= 1) {
@@ -367,7 +357,7 @@ window.addEventListener('mousemove', function (e) {
       var smallMapWidth = 200;
       var smallMapHeight = smallMapWidth*mapWHRatio;
 
-      var mapLeftCut = 0;
+      var mapLeftCut = 60*GRID_SIZE;
       var mapTopCut = 20*GRID_SIZE;
       var mapAreaWidth = 380*GRID_SIZE;
       var mapAreaHeight = mapAreaWidth*mapWHRatio;
@@ -514,6 +504,128 @@ window.addEventListener('mousemove', function (e) {
 
 
 // Support Functions ------------------------------------
+function showMyData(player) {
+  context.fillStyle = "#BBB";
+  context.beginPath();
+  context.rect(15, 70, 100, 15);
+  context.fill();
+  context.fillStyle = "red";
+  context.beginPath();
+  context.rect(15, 70, (player.health/player.maxHealth)*100, 15);
+  context.fill();
+  context.fillStyle = "white";
+  context.font = "bold italic 12px Arial";
+  context.fillText("HP (" + Math.round(player.health) + "/" + player.maxHealth + ")", 18, 82);
+  context.fillStyle = "#BBB";
+  context.beginPath();
+  context.rect(15, 90, 100, 15);
+  context.fill();
+  context.fillStyle = "blue";
+  context.beginPath();
+  context.rect(15, 90, (player.clip/player.clipSize)*100, 15);
+  context.fill();
+  context.fillStyle = "white";
+  context.font = "bold italic 12px Arial";
+  context.fillText("CLIP (" + player.clip + "/" + player.clipSize + ")", 18, 102);
+
+  context.fillStyle = "black";
+  context.font = "bold 35px Arial";
+  context.fillText(player.username, 17, 50);
+}
+function showOtherPlayerData(player, playerIndex) {
+  context.fillStyle = "#BBB";
+  context.beginPath();
+  context.rect(70+110*playerIndex, 55, 70, 10);
+  context.fill();
+  context.fillStyle = "red";
+  context.beginPath();
+  context.rect(70+110*playerIndex, 55, (player.health/player.maxHealth)*70, 10);
+  context.fill();
+  context.fillStyle = "#BBB";
+  context.beginPath();
+  context.rect(70+110*playerIndex, 68, 70, 10);
+  context.fill();
+  context.fillStyle = "blue";
+  context.beginPath();
+  context.rect(70+110*playerIndex, 68, (player.health/player.maxHealth)*70, 10);
+  context.fill();
+
+  context.fillStyle = "black";
+  context.font = "bold 20px Arial";
+  context.fillText(player.username, 70+110*playerIndex+2, 45);
+
+
+}
+function showQuests(player, teamQuests) {
+  var line = 0;
+  context.fillStyle = "#0AC";
+  context.strokeStyle = "rgb(255, 255, 255, 0.5)";
+  context.font = "16px Arial";
+  context.strokeText("Quests", 12, 150);
+  context.fillText("Quests", 12, 150);
+
+  context.fillStyle = "#0D8";
+  var i = 0;
+  for (; i < teamQuests.length; i++) {
+    if (teamQuests[i].display) {
+      if (teamQuests[i].isMainQuest) {
+          context.font = "bold italic 13px Arial";
+      }
+      else {
+          context.font = "italic 13px Arial";
+      }
+      context.strokeText("["+teamQuests[i].name + "] " + teamQuests[i].condition + " " + teamQuests[i].progressText, 10, 170+line*20);
+      context.fillText("["+teamQuests[i].name + "] " + teamQuests[i].condition + " " + teamQuests[i].progressText, 10, 170+line*20);
+      line += 1;
+      if (line > 10) {
+        break;
+      }
+    }
+  }
+
+  context.fillStyle = "#0AC";
+  context.strokeStyle = "rgb(255, 255, 255, 0.5)";
+  for (; i < player.quests.length+teamQuests.length; i++) {
+    var j = i-teamQuests.length;
+    if (player.quests[j].display) {
+      if (player.quests[j].isMainQuest) {
+          context.font = "bold italic 13px Arial";
+      }
+      else {
+          context.font = "italic 13px Arial";
+      }
+      context.strokeText("["+player.quests[j].name + "] " + player.quests[j].condition + " " + player.quests[j].progressText, 10, 170+line*20);
+      context.fillText("["+player.quests[j].name + "] " + player.quests[j].condition + " " + player.quests[j].progressText, 10, 170+line*20);
+      line += 1;
+      if (line > 10) {
+        break;
+      }
+    }
+  }
+}
+
+function showHealthBarAbove(x, y, health, maxHealth) {
+  context.fillStyle = "#BBB";
+  context.beginPath();
+  context.rect(x-20, y-30, 40, 6);
+  context.fill();
+  context.fillStyle = "red";
+  context.beginPath();
+  context.rect(x-20, y-30, (health/maxHealth)*40, 6);
+  context.fill();
+}
+function showBulletBarAbove(x, y, clip, clipSize) {
+  context.fillStyle = "#BBB";
+  context.beginPath();
+  context.rect(x-20, y-20, 40, 6);
+  context.fill();
+  context.fillStyle = "blue";
+  context.beginPath();
+  context.rect(x-20, y-20, (clip/clipSize)*40, 6);
+  context.fill();
+}
+
+
 function processMapDrawing(mapData){
   console.log(mapData);
   //called ONLY when numPlayers: 0 -> 1.
@@ -551,6 +663,11 @@ function processMapDrawing(mapData){
       // img.onload = function(){
       //   allMapCtx.drawImage(img, 300, 300, 300, 300);
       // }
+      var textureLoaded = false;
+      texture.onload = function(){
+        textureLoaded = true;
+      }
+
       if(mapData[x][y] != '' && mapData[x][y].name == "floor")
       {
         allMapCtx.beginPath();
@@ -565,10 +682,16 @@ function processMapDrawing(mapData){
         // var pattern = ctx.createPattern(source, "repeat");
         allMapCtx.beginPath();
         allMapCtx.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+        //TODO: MAPTEXTURE Problem here below lines!!
         // allMapCtx.fillStyle = texture.src;
         allMapCtx.fillStyle = "#333";
+        // while (!textureLoaded) {
+        //   console.log("waiting for the texture...");
+        // }
+
         allMapCtx.fill();
       }
+
 
       if (mapData[x][y] == ''){
         line += "0";
@@ -578,6 +701,7 @@ function processMapDrawing(mapData){
         line += "!";
       }
     }
+
   }
   //console.log(mapData);/////*****
   mapImage.src = allMap.toDataURL();
@@ -630,7 +754,11 @@ socket.on("questOver", function(qName, qCondition, qDescription) {
   questName = qName;
   questCondition = qCondition;
   questDescription = qDescription;
-  console.log("show quest: ", qName);
+  // console.log("show quest: ", qName);
+});
+
+socket.on("zoneOpen", function(zoneNum) {
+  console.log(zoneNum);
 });
 
 //=============================================================================

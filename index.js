@@ -226,10 +226,11 @@ io.on('connection', function(socket) {
       var rm = getRoomBySocketId[socket.id]
 
       //astar testing here
-      // console.log(aStarSearch([100,100], [200,200]));
-      if (!rooms[rm]) {
-        testAstar(rm);
-      }
+      // console.log(aStarSearch([100,100], [200,200], rm));
+
+      // if (rooms[rm]) {
+      //   testAstar(rm);
+      // }
 
 
       // console.log("emit sound");
@@ -269,6 +270,7 @@ io.on('connection', function(socket) {
       return;
     }
     //players[socket.id] = 0;
+    logOutPlayer(rooms[getRoomBySocketId[socket.id]].players[socket.id].username);
     delete rooms[getRoomBySocketId[socket.id]].players[socket.id];
     rooms[getRoomBySocketId[socket.id]].players.numPlayers -= 1;
     if (rooms[getRoomBySocketId[socket.id]].players.numPlayers <= 0) {
@@ -289,7 +291,7 @@ setInterval(function() {
         checkQuest(rm);
         //console.log("LOGGING rm", rm);
         io.sockets.to(rm).emit('state', rooms[rm].players,
-          rooms[rm].projectiles, rooms[rm].enemies, rooms[rm].zones);
+          rooms[rm].projectiles, rooms[rm].enemies, rooms[rm].zones, rooms[rm].teamQuests);
       }
   }
 }, 1000 / updatePerSecond);
@@ -306,8 +308,8 @@ function createPlayer(id, serverName, username) {
   rooms[serverName].players[id] = {
     playerID: rooms[serverName].players.numPlayers,
     username: username,
-    x: 211 * GRID_SIZE,
-    y: 147 * GRID_SIZE,
+    x: 259 * GRID_SIZE,
+    y: 169 * GRID_SIZE,
     maxHealth: 20,
     health: 20,
     healthRecoverRate: 1,
@@ -326,7 +328,68 @@ function createPlayer(id, serverName, username) {
       startTime: new Date(),
       q1Over: false,
       q2Over: false
-    }
+    },
+    quests: [
+    {
+      name: "Combat Ready",
+      isMainQuest: false,
+      isHidden: false,
+      condition: "Shoot 30 times",
+      description: "Ready for the fight?",
+      display: false,
+      checkCondition: function(player){
+        return (player.questData.bulletsTotal >= 30);
+      },
+      clear: false,
+      progress: function(player){
+        return "("+player.questData.bulletsTotal+"/"+30+")";
+      },
+      progressText: "",
+      trigger: []
+    },
+    {
+      name: "Newbie survivor",
+      isMainQuest: false,
+      isHidden: false,
+      condition: "Survive for 60 seconds",
+      description: "Hey, you're stil alive!",
+      display: true,
+      checkCondition: function(player){
+        var currentTime = new Date();
+        return (currentTime - player.questData.startTime > 60*1000);
+      },
+      clear: false,
+      progress: function(player){
+        var currentTime = new Date();
+        return "("+Math.round((currentTime-player.questData.startTime)/1000)+"/"+60+")";
+      },
+      progressText: "",
+      complete: function(player) {
+
+      },
+      trigger: ["Experienced survivor"]
+    },
+    {
+      name: "Experienced survivor",
+      isMainQuest: false,
+      condition: "Survive for 5 minutes",
+      description: "Hey, you're stil alive!",
+      display: false,
+      checkCondition: function(player){
+        var currentTime = new Date();
+        return (currentTime - player.questData.startTime > 5*60*1000);
+      },
+      clear: false,
+      progress: function(player){
+        var currentTime = new Date();
+        return "("+Math.round((currentTime-player.questData.startTime)/60000)+"/"+5+")";
+      },
+      progressText: "",
+      complete: function(player) {
+
+      },
+      trigger: []
+    }]
   };
 }
 
@@ -368,6 +431,98 @@ function roomData(serverName) {
   room.spawnRate = 2000;
 
   room.zones = {};
+
+  room.teamQuests = [
+    {
+      name: "Trapped on Mountain", //TODO: change after demo classroom decided!
+      isMainQuest: true,
+      isHidden: false,
+      condition: "Go to the Avocado Garden",
+      description: "The heart of the Special Fortification Unit",
+      display: true,
+      checkCondition: function(rm){
+        var isComplete = true;
+        for (var id in rooms[rm].players) {
+          var player = rooms[rm].players[id];
+          if (!player || !player.x) {
+            continue;
+          }
+          if (!(player.x > 268*GRID_SIZE && player.x < 307*GRID_SIZE
+            && player.y > 153*GRID_SIZE && player.y < 196*GRID_SIZE)) {
+            isComplete = false;
+          }
+        }
+        return isComplete;
+      },
+      clear: false,
+      progress: function(rm){
+        return "(Incomplete)";
+      },
+      progressText: "",
+      complete: function(rm) {
+        room = rooms[rm];
+        var qNum; //index of this quest
+        var player;
+
+        //giving values to qNum, player, and quest.
+        for (var id in room.players) {
+          //just choose one player and break
+          player = room.players[id];
+          if (!player || !player.quests) {
+            continue;
+          }
+          break;
+        }
+        for (var q in room.teamQuests) {
+          if (room.teamQuests[q].name == "Trapped on Mountain") {
+            qNum = q;
+          }
+        }
+        var quest = room.teamQuests[qNum];
+
+        //Complete ALL player's this quest, with scores for all.
+        for (var id in room.players) {
+          var otherPlayer = room.players[id];
+          if (!otherPlayer) {
+            continue;
+          }
+          if (!otherPlayer.quests) {
+            console.log(otherPlayer);
+            continue;
+          }
+          otherPlayer.score += 100;
+          //trigger next quests
+          for (var i = 0; i < quest.trigger.length; i++) {
+            for (var nextQ in otherPlayer.quests) {
+              if (otherPlayer.quests[nextQ].name == quest.trigger[i] && !otherPlayer.quests[nextQ].clear) {
+                otherPlayer.quests[nextQ].display = true;
+              }
+            }
+          }
+        }
+        io.sockets.to(rm).emit("message",
+          "Welcome, player.");
+        io.sockets.to(rm).emit("message",
+          "I am Avocado,\nOwner of S.F.U.");
+        io.sockets.to(rm).emit("message",
+          "What story should I write here? \nGimme ideas @channel");
+        io.sockets.to(rm).emit("message",
+          "Anyway! Go to Rotunda. I will open up the space for you.");
+        //construction mall open
+        var constructionMallZoneNum = 0;
+        for (var zoneNum in room.zones) {
+          if (room.zones[zoneNum].name == "Construction Mall") {
+            constructionMallZoneNum = zoneNum;
+            break;
+          }
+        }
+        if (!room.zones[constructionMallZoneNum].open) {
+          room.zones[constructionMallZoneNum].open = true;
+          io.sockets.to(rm).emit("zoneOpen", "Avocado quest complete!");
+        }
+      },
+      trigger: ["Combat Ready"]
+    }];
 
   return room
 }
@@ -448,7 +603,6 @@ function hasCollision(x, y, rm) {
   for (zoneNum in rooms[rm].zones) {
     if (!rooms[rm].zones[zoneNum].open
       && rooms[rm].zones[zoneNum].inside(gridX, gridY)) {
-      console.log("collision by zone"); /////*******
       return true;
     }
   }
@@ -456,7 +610,6 @@ function hasCollision(x, y, rm) {
     || rooms[rm].mapData[gridX] == undefined
     || rooms[rm].mapData[gridX][gridY] == undefined) {
     // console.log("collision " + gridX + ", " + gridY)
-    // console.log("RETURNING FALSE, ROOM MAPDATA PROBLEM");
     return false;
   } else if(rooms[rm].mapData[gridX][gridY].collision == true){
     // console.log("collision " + gridX + ", " + gridY)
@@ -477,6 +630,7 @@ function generateProjectile(id, data, rm) {
   if (!rooms[rm].players[id].clip) {
     return;
   }
+  rooms[rm].players[id].questData.bulletsTotal += 1;
   rooms[rm].projectiles.numProjectiles++;
 
   //Calculate projectile trajectory
@@ -522,18 +676,29 @@ function spawnRandomObject(rm) {
   // will be A or B, we say if the random# is 0-.49 we
   // create A and if the random# is .50-1.00 we create B
 
+  spawnX = Math.random() * 350 + 1600;
+  spawnY = Math.random() * 350 + 1600;
+
+  while(hasCollision(spawnX, spawnY, rm)) {
+    spawnX = Math.random() * 350 + 1600;
+    spawnY = Math.random() * 350 + 1600;
+  }
+
+
+
   // add the new object to the objects[] array
   if (rooms[rm].enemies.numEnemies < 1) {
     rooms[rm].enemies[rooms[rm].enemyID] = {
       // type: t,
       // set x randomly but at least 15px off the canvas edges
-      x: Math.random() * 350 + 1600,
+      x: spawnX,
       // set y to start on the line where objects are spawned
-      y: Math.random() * 300 + 2000,
+      y: spawnY,
       vx: 5,
       vy: 5,
       speed: .8*50,
-      health: 4
+      health: 4,
+      maxHealth: 4
     }
     rooms[rm].enemies.numEnemies++;
     rooms[rm].enemyID++;
@@ -573,24 +738,75 @@ function recoverPlayerHealth(rm) {
 }
 
 function checkQuest(rm) {
-//checking quest conditions! This part will be very hard to refactor, don't try....
+  for (var qNum in rooms[rm].teamQuests) {
+    if (!rooms[rm].teamQuests[qNum].clear && rooms[rm].teamQuests[qNum].display) {
+      var quest = rooms[rm].teamQuests[qNum];
+      rooms[rm].teamQuests[qNum].progressText = quest.progress(player);
+      if (quest.checkCondition(rm)) {
+        //quest complete!
+        rooms[rm].teamQuests[qNum].clear = true;
+        rooms[rm].teamQuests[qNum].display = false;
+        //trigger next quests
+        for (var i = 0; i < quest.trigger.length; i++) {
+          for (var nextQ in rooms[rm].teamQuests) {
+            if (rooms[rm].teamQuests[nextQ].name == quest.trigger[i] && !rooms[rm].teamQuests[nextQ].clear) {
+              rooms[rm].teamQuests[nextQ].display = true;
+              continue;
+            }
+          }
+          for (var id in rooms[rm].players) {
+            var player = rooms[rm].players[id];
+            for (var nextQ in player.quests) {
+              if (player.quests[nextQ].name == quest.trigger[i] && !player.quests[nextQ].clear) {
+                player.quests[nextQ].display = true;
+                continue;
+              }
+            }
+          }
+
+        }
+        quest.complete(rm);
+        console.log("***first main quest complete!!!***");
+        io.sockets.to(rm).emit("questOver", quest.name, quest.condition, quest.description);
+      }
+
+    }
+  }
+
+  //checking quest conditions! This part will be very hard to refactor, don't try....
   for (var id in rooms[rm].players) {
     var player = rooms[rm].players[id];
-
 
     if (player == undefined || player.questData == undefined) {
       continue;
     }
-    if (!player.questData.q1Over && player.questData.bulletsTotal == 30) {
-      io.sockets.to(id).emit("questOver", "Combat Ready", "Shoot 30 times", "Ready for the fight?");
-      player.questData.q1Over = true;
-    }
-
-    currentTime = new Date();
-    if (!player.questData.q2Over && currentTime - player.questData.startTime > 10*1000) {
-      io.sockets.to(id).emit("questOver", "Newbie survivor", "Survive for 10 seconds", "Hey, you're stil alive!");
-      player.questData.q2Over = true;
-      console.log("emit new survivor");
+    for (var qNum in player.quests) {
+      if (!player.quests[qNum].clear && player.quests[qNum].display) {
+        var quest = player.quests[qNum];
+        player.quests[qNum].progressText = quest.progress(player);
+        if (quest.checkCondition(player)) {
+          //quest complete!
+          player.quests[qNum].clear = true;
+          player.quests[qNum].display = false;
+          //trigger next quests
+          for (var i = 0; i < quest.trigger.length; i++) {
+            for (var nextQ in rooms[rm].teamQuests) {
+              if (rooms[rm].teamQuests[nextQ].name == quest.trigger[i] && !rooms[rm].teamQuests[nextQ].clear) {
+                rooms[rm].teamQuests[nextQ].display = true;
+                continue;
+              }
+            }
+            for (var nextQ in player.quests) {
+              if (player.quests[nextQ].name == quest.trigger[i] && !player.quests[nextQ].clear) {
+                player.quests[nextQ].display = true;
+                continue;
+              }
+            }
+          }
+          quest.complete(player);
+          io.sockets.to(id).emit("questOver", quest.name, quest.condition, quest.description);
+        }
+      }
     }
 
   }
@@ -783,7 +999,7 @@ function youFailed(player, rm) {
 
 }
 
-function aStarSearch(startState, goal) {
+function aStarSearch(startState, goal, rm) {
   var explored = [];
   var parents = {};
   var fringe = new PriorityQueue();
@@ -812,8 +1028,18 @@ function aStarSearch(startState, goal) {
     }
 
     //Expand new successors
-    successors = getSuccessors(current[0]);
+    successors = getSuccessors(current[0], rm);
     for (successor in successors) {
+      // if(successors = [0,0,0,0]) {
+      //   console.log("successors", successors)
+      //   console.log("A* path got stuck");
+      //   break;
+      // }
+      if(successors[successor] == 0) {
+        console.log("successors", successors);
+        console.log("collision detected", successor);
+        continue;
+      }
       expandedState = successors[successor];
       stateCoords = expandedState[0]
       if (!explored.find( function(item) {
@@ -825,27 +1051,52 @@ function aStarSearch(startState, goal) {
       }
     }
   }
-
   return [];
 }
 
 //Return successors of state
-function getSuccessors(state) {
+//Modify this to avoid walls
+function getSuccessors(state, rm) {
   //Use 5 as arbitraty number
-  stateL = [[state[0] - (4 * GRID_SIZE), state[1]], "left", 1];
-  stateR = [[state[0] + (4 * GRID_SIZE), state[1]], "right", 1];
-  stateU = [[state[0], state[1] - (4 * GRID_SIZE)], "up", 1];
-  stateD = [[state[0], state[1] + (4 * GRID_SIZE)], "down", 1];
+  stateL = [[state[0] - (1 * GRID_SIZE), state[1]], "left", 1];
+  // stateL = [[state[0] - (5), state[1]], "left", 1];
+  console.log(rm);
+  if(hasCollision(stateL[0], stateL[1], rm)) {
+    console.log("has collision");
+    stateL = 0;
+  }
+
+  stateR = [[state[0] + (1 * GRID_SIZE), state[1]], "right", 1];
+  // stateR = [[state[0] + (5), state[1]], "right", 1];
+  if(hasCollision(stateR[0], stateR[1], rm)) {
+    console.log("has collision");
+    stateR = 0
+  }
+
+  stateU = [[state[0], state[1] - (1 * GRID_SIZE)], "up", 1];
+  // stateU = [[state[0], state[1] - (5)], "up", 1];
+  if(hasCollision(stateU[0], stateU[1], rm)) {
+    console.log("has collision");
+    stateU = 0
+  }
+
+  stateD = [[state[0], state[1] + (1 * GRID_SIZE)], "down", 1];
+  // stateD = [[state[0], state[1] + (5)], "down", 1];
+  if(hasCollision(stateD[0], stateD[1], rm)) {
+    console.log("has collision");
+    stateD = 0
+  }
+
   var states = [stateL, stateR, stateU, stateD];
   return states;
 }
 
 //Return true if goal state at state
 function isGoalState(state, goal) {
-  goalx = Math.floor(goal[0] / (4 * GRID_SIZE));
-  goaly = Math.floor(goal[1] / (4 * GRID_SIZE));
-  statex = Math.floor(state[0] / (4 * GRID_SIZE));
-  statey = Math.floor(state[1] / (4 * GRID_SIZE));
+  goalx = Math.floor(goal[0] / (1 * GRID_SIZE));
+  goaly = Math.floor(goal[1] / (1 * GRID_SIZE));
+  statex = Math.floor(state[0] / (1 * GRID_SIZE));
+  statey = Math.floor(state[1] / (1 * GRID_SIZE));
 
   if ( (goalx == statex) && (goaly == statey) ) {
     return true;
@@ -858,8 +1109,8 @@ function isGoalState(state, goal) {
 //Return the manhattan distance between position and goal
 function manhattanHeuristic(position, goal) {
   // console.log("position", position, "goal", goal);
-  var xy1 = [(position[0] / (4 * GRID_SIZE)), (position[1] / (4 * GRID_SIZE))];
-  var xy2 = [(goal[0] / (4 * GRID_SIZE)), (goal[1] / (4 * GRID_SIZE))];
+  var xy1 = [(position[0] / (1 * GRID_SIZE)), (position[1] / (1 * GRID_SIZE))];
+  var xy2 = [(goal[0] / (1 * GRID_SIZE)), (goal[1] / (1 * GRID_SIZE))];
   return Math.abs(xy1[0] - xy2[0]) + Math.abs(xy1[1] - xy2[1]);
 }
 
@@ -911,7 +1162,7 @@ function testAstar(rm) {
   for (var id in rooms[rm].enemies) {
     console.log("running A*");
     enemy = rooms[rm].enemies[id];
-    var path = aStarSearch( [enemy.x, enemy.y], [player.x, player.y] );
+    var path = aStarSearch( [enemy.x, enemy.y], [player.x, player.y], rm );
     console.log("Astar generated path: ", path);
     return;
   }
@@ -1110,70 +1361,78 @@ app.get('/', function(request, response)
 app.post('/checkAccount', (request, response)=>{
   var uname = request.body.username;
   var pw = request.body.password;
+  //fetch account info
+  const fetchQ = `SELECT * FROM account WHERE username ='${uname}';`;
+  pool.query(fetchQ, (error,results)=>{
+    if (error)
+    {
+      console.log('Authorizing failed - Fetching account info failed');
+      throw(error);
+    };
+    // console.log(results);
+    var account = results.rows[0];
+    if (account)
+    {
+      console.log('Account info\n'+account);
+      const authorQ =
+    `SELECT (password=crypt('${pw}','${account.password}')) AS password FROM account WHERE username ='${uname}';`;
+  //Compare hashed pw with input pw
+      pool.query(authorQ,(error,authen)=>
+      {
+        if (error)
+        {
+          console.log('Authorization failed - Failed to compare hased password');
+          throw(error);
+        };
+        //varification succeeded
+        if (authen.rows[0]){
+          console.log('Hased pw == pw');
+          if (account.online) {
+            console.log("Redundant login attempt for user $1", [uname]);
+            var message ={'message':'Account is already logged in!'};
+            response.render('pages/login',message);
+          };
 
-  //Admin user
-  if (uname == "ADMIN301254694") {
-    pool.query('SELECT password FROM account WHERE username=$1',[uname], (error,results)=>{
-      if (error) {
-        throw(error);
-      }
-      //Check for password match
-      var result = (results.rows == '') ? '':results.rows[0].password;
-      if (result == String(pw)) {
-        //Password matched, extract all table information
-        pool.query("SELECT * FROM account;", (error,results) => {
-          if (error) {
-            throw(error);
-          }
-          var results = {'rows': results.rows };
-          response.render('pages/admin', results);
-        });
-      }
-      //Password does not match
-      else {
-        var message ={'message':'Account is not existing'};
-        response.render('pages/login', message);
-      }
-    });
-  }
-  else {
-   pool.query(
-     'SELECT password, online FROM account WHERE username=$1',[uname], (error,results)=>{
-       if (error)
-       {
-         throw(error);
-       }
-
-       var result = (results.rows == '') ? '':results.rows[0].password;
-       if (result == String(pw))
-       {
-         //If user already online, reject login attempt
-         if (results.rows[0].online) {
-          console.log("Redundant login attempt for user $1", [uname]);
-          var message ={'message':'Account is already logged in!'};
-          response.render('pages/login',message);
-         }
-         var user = {'username':uname};
-
-        //Upade online status
-        pool.query(
-          'UPDATE account SET online = true WHERE username=$1',[uname], (error,results)=>{
-            if (error)
-            {
-              throw(error);
+          if (uname == "ADMIN301254694") {
+              //Extract all table information
+              pool.query("SELECT * FROM account;", (error,results) => {
+                if (error) {
+                  throw(error);
+                }
+                var results = {'rows': results.rows };
+                response.render('pages/admin', results);
+              });
             }
-        });
-        //Log in user
-        // response.render('pages/index', user);
-        console.log(`logging in ${uname}`);
-        response.render('pages/matchmaking', user);
-       }
-       else {
-        var message ={'message':'Account is not existing'};
-        response.render('pages/login', message);
-       }
-     });
-  }
+          else {
+              var user = {'username':uname};
+
+             //Upade online status
+             pool.query(
+               'UPDATE account SET online = true WHERE username=$1',[uname], (error,results)=>{
+                 if (error)
+                 {
+                   throw(error);
+                 }
+             });
+             //Log in user
+             // response.render('pages/index', user);
+             console.log(`logging in ${uname}`);
+             response.render('pages/matchmaking', user);
+           };
+
+        }
+        else {
+          console.log('Hased pw != pw');
+          var message ={'message':'Account is not existing'};
+          response.render('pages/login', message);
+        };
+      });
+    }
+    else {
+      var message ={'message':'Account is not existing'};
+      response.render('pages/login', message);
+    }
+  });
 });
 
 //Cheking gmail data with database
@@ -1295,6 +1554,7 @@ app.post('/register', (request,response)=>{
                    response.end(error);
                  };
                  console.log("INSERT ACCOUNT COMPLETED");
+                 encryptPW(uname);
                  var message = {'message':'Sign-up Completed'};
                  response.render('pages/login',message)
                });
@@ -1305,6 +1565,33 @@ app.post('/register', (request,response)=>{
      };
    });
 });
+
+// ENcrpting password when resgister
+function encryptPW(uname) {
+  const query = `SELECT password FROM account WHERE username ='${uname}';`
+  pool.query(query, (error, results)=>{
+    if (error)
+    {
+      console.log('Encryption failed - failed to get password');
+      throw (error);
+    }
+    var pw = results.rows[0];
+    //Encrypting
+    const encryptQ =
+  `UPDATE account SET password = crypt('${pw}',gen_salt('md5')) WHERE username ='${uname}'`;
+
+    pool.query(encryptQ,(error, results)=>{
+      if (error)
+      {
+        console.log('Encryption failed - failed to encrypted');
+        throw(error);
+      }
+      console.log('Encryption Completed');
+    });
+  });
+};
+
+
 //=============================================================================
 
 //=============================================================================
