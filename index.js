@@ -60,7 +60,7 @@ setInterval(function() {
       rooms[rm].projectiles, rooms[rm].enemies);
     }
   }
-}, 1000/1);// last change: create different functions for mapImage delivery, new condition for setInterval, rooms now have gameState
+}, 1000/30);// last change: create different functions for mapImage delivery, new condition for setInterval, rooms now have gameState
 
 io.on('connection', function(socket){/// needs function to remove globalPlayers/rooms elements when player disconnect
   var gameState = "menu"
@@ -366,7 +366,7 @@ function initLevel(socket, roomName){
   console.log("roomName = " + roomName)
   console.log("rooms[roomName]: " + rooms[roomName])
   rooms[roomName].mapData = processor.constructFromData(mapDataFromFile);
-  console.log("\trooms[roomName].mapData: " + rooms[roomName].mapData)
+  // console.log("\trooms[roomName].mapData: " + rooms[roomName].mapData)
   rooms[roomName].gameState = "game"
   //console.log(mapData);///////*******
 }
@@ -400,7 +400,8 @@ function receiveMapImageSrcToServer(socket){
     rooms[roomName].mapImageSrc = imageSrc;
     rooms[roomName].mapImageEmitCount++;
     // console.log("received imageSrc ")// + imageSrc)
-    // console.log("rooms[",roomName,"].mapImageSrc ",rooms[roomName].mapImageSrc)
+    io.to(roomName).emit("deliverMapImageSrcToClient", imageSrc);
+    console.log("inside receive map for rooms[",roomName,"].mapImageSrc ",rooms[roomName].mapImageSrc)
   });
 }
 

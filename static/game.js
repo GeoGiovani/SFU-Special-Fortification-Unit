@@ -192,7 +192,7 @@ function clientGameProcessor(){
   });// last change: only room owner deliver mapImage, other will receieve mapImage from server
   socket.on('map processed', function(){
     console.log("map is processed")
-    requestMapImageFromServer();
+    // requestMapImageFromServer();
   });
   socket.emit('character creation')
   // socket.on('game loop', function(){
@@ -425,14 +425,7 @@ function requestMapImageFromServer(){
   console.log("inside request mapImg function with mapImg: ", mapImage.src)
   console.log("request mapImage")
   socket.emit("requestMapImageSrcFromServer");
-  socket.on("deliverMapImageSrcToClient", function(imageSrc, mapReady){
-    // console.log("imageSrc received ", imageSrc)
-    // console.log("mapReady received ", mapReady);
-    // if(mapReady || imageSrc != '') {
-      mapImage.src = imageSrc;
-      mapImageLoaded = true;
-    // }
-  });
+
   // var roomData = rooms[]
   // while (!roomData.mapReady) {
     // setTimeout(function(){
@@ -456,6 +449,14 @@ function clearScreen(context){
 }
 
 function clientGameLogic(socket){
+  socket.on("deliverMapImageSrcToClient", function(imageSrc){
+    // console.log("imageSrc received ", imageSrc)
+    // console.log("mapReady received ", mapReady);
+    // if(mapReady || imageSrc != '') {
+      mapImage.src = imageSrc;
+      mapImageLoaded = true;
+    // }
+  });
   socket.on('state', function(players, projectiles, enemies) {
 
     gameStateProcessor(players, projectiles, enemies)
