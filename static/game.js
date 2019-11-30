@@ -457,7 +457,7 @@ function clientGameLogic(socket){
       mapImageLoaded = true;
     // }
   });
-  socket.on('state', function(players, projectiles, enemies) {
+  socket.on('state', function(players, projectiles, enemies, zones, teamQuests) {
 
     gameStateProcessor(players, projectiles, enemies)
   });
