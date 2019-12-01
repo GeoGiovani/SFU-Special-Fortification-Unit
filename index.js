@@ -165,6 +165,7 @@ setInterval(function() {
       if(!rooms[rm.boss]) releaseTheBeast(rm);
       //console.log("LOGGING rm", rm);
       var room = rooms[rm]
+      // console.log('room.players', room.players)
       io.sockets.to(rm).emit('state', room.players, room.numPlayers,
       room.projectiles, room.numProjectiles, room.enemies, room.numEnemies, room.zones, room.teamQuests);
     }
@@ -852,8 +853,8 @@ function moveEnemies(rm) {
   //Enemy movement handler
   for (var id in rooms[rm].enemies) {
    //Find closest players
-   if ( rooms[rm].players.numPlayers > 0 ) {
-   // if ( (players.numPlayers > 0) && (enemies.numEnemies > 0) ) {
+   if ( rooms[rm].numPlayers > 0 ) {
+   // if ( (numPlayers > 0) && (numEnemies > 0) ) {
      var closestPlayer;
      var closestPlayerDistance = Infinity;
      for (var player in rooms[rm].players) {
@@ -975,7 +976,7 @@ function spawnEnemies(rm) {
     }
 
     // add the new object to the objects[] array
-    if (rooms[rm].enemies.numEnemies < 30) {
+    if (rooms[rm].numEnemies < 30) {
       rooms[rm].enemies[rooms[rm].enemyID] = {
         x: spawnX,
         y: spawnY,
@@ -985,7 +986,7 @@ function spawnEnemies(rm) {
         health: 10,
         maxHealth: 10
       }
-      rooms[rm].enemies.numEnemies++;
+      rooms[rm].numEnemies++;
       rooms[rm].enemyID++;
     }
     // console.log(rooms[rm].enemies)
@@ -1104,7 +1105,7 @@ function generateProjectile(id, data, rm) {
     return;
   }
   rooms[rm].players[id].questData.bulletsTotal += 1;
-  rooms[rm].projectiles.numProjectiles++;
+  rooms[rm].numProjectiles++;
 
   //Calculate projectile trajectory
   mouseX = data.x;
@@ -1385,7 +1386,7 @@ function makeList(parents, goal) {
 
 //Find/return position of player closest to enemy
 function closestPlayerXY(rm, enemy) {
-  if (rooms[rm].players.numPlayers > 0) {
+  if (rooms[rm].numPlayers > 0) {
       var closestPlayer;
       var closestPlayerDistance = Infinity;
       for (var player in rooms[rm].players) {

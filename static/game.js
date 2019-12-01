@@ -646,7 +646,7 @@ function clientGameLogic(socket){
 function gameStateProcessor(players, numPlayers, projectiles, numProjectiles, enemies, numEnemies, zones, teamQuests, boss){
   //console.log("socket event state called");
   // if(mapImageEmitCount < maxMapImageEmitCount * 20){
-
+  // console.log("players", players)
   // }
   if (players[socket.id] == 0) {
     //Died
@@ -682,7 +682,7 @@ function gameStateProcessor(players, numPlayers, projectiles, numProjectiles, en
 
     var bossImg = document.getElementById("boss");
     // context.drawImage(bossImg, boss.x - middleX, boss.y - middleY, 100, 130);
-
+    // console.log("projectiles",projectiles)
     for (var id in projectiles) {
       var projectile = projectiles[id];
       //Determines how the bullets look
