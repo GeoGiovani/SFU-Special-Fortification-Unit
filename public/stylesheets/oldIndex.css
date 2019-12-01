@@ -1,0 +1,19 @@
+body{
+    background-image: url(../image/sfuHelp.png);
+    background-position: right;
+}
+
+#wrapper{
+  text-align: justify;
+}
+
+#canvas{
+    /* padding-right: 0;
+    padding-left: 0;
+    margin-right: auto;
+    margin-left: auto;
+    display: block;
+    width: 800px; */
+    background-color: white;
+    background-image: url(../image/darkbackground.jpg);
+}

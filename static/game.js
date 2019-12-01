@@ -42,19 +42,50 @@ var questCondition = "";
 var questDescription = "";
 
 var socket = io();
-socket.on('message', function(data) {
-  showMessage(data);
-});
+var gameState; //determine the listUI elements
+var listUI = []; //reset every change in gameState
+var totalPlayers;
+var globalPlayers = [];
+var rooms;
+var roomData;
+// var mapImageEmitCount = 0;
+// var maxMapImageEmitCount;
+// var mapReady = false;
+// var socket.id = "";
+var audioList = {};
 
-//socket id of the client. players[myId] will return the specific player's data.
-var myId = "";
-socket.on("passId", function(id){
-  console.log('socket passId called');
-  console.log(id);
-  if (myId == "") {
-    myId = id;
-  }
-});
+var canvas = document.getElementById('canvas');
+var context = canvas.getContext('2d');
+var mapImage = new Image();
+mapImage.src = "";
+var mapImageLoaded = false;
+var GRID_SIZE;
+var canvasStartX = 0;
+var canvasStartY = 0;
+var canvasW = 800;
+var canvasH = 600;
+canvas.width = canvasW;
+canvas.height = canvasH;
+
+var mouseX = 0;
+var mouseY = 0;
+
+var lastLoop = new Date();  //this is used for getting fps
+// var socket.id = "";
+
+var globalDisplayArea = {
+  startX : canvasStartX + 5,
+  startY : canvasStartY + 400,
+  endX : canvasW,
+  endY : canvasH,
+}
+
+var roomDisplayArea = {
+  startX : canvasStartX + 5,
+  startY : canvasStartY + 10,
+  endX : canvasW,
+  endY : canvasStartY + 150,
+}
 
 var movement = {
   up: false,
@@ -81,23 +112,8 @@ var sound = {
   hit: null
 }
 
-var xPos = 0;
-var yPos = 0;
-var GRID_SIZE = 10; ///temporary variable
-
-var mapImage = new Image();
-mapImage.src = "";
-var mapImageLoaded = false;
-socket.on("deliverMapImageSrcToClient", function(imageSrc){
-  // console.log('deliverMapImageSrcToClient called');
-  if (!mapImageLoaded && imageSrc != "") {
-    mapImage.src = imageSrc;
-    mapImageLoaded = true;
-  }
-  //console.log('image source set to:', mapImage.src);
-});
-
 document.addEventListener('keydown', function(event) {
+  console.log(event.keyCode)
   switch (event.keyCode) {
     case 65: // A
       movement.left = true;
@@ -134,16 +150,8 @@ document.addEventListener('keydown', function(event) {
   }
 });
 
-canvas.addEventListener('click', function(event) {
-  var newAudio = sound.shoot.cloneNode()
-  newAudio.volume = 0.05;
-  newAudio.play()
-  shoot.shootBullet = true;
-  shoot.x = xPos;
-  shoot.y = yPos;
-});
-
 document.addEventListener('keyup', function(event) {
+  console.log(event.keyCode)
   switch (event.keyCode) {
     case 65: // A
       movement.left = false;
@@ -168,23 +176,40 @@ document.addEventListener('keyup', function(event) {
   }
 });
 
+canvas.addEventListener('click', function (e) {
+  mouseX = e.pageX;
+  mouseY = e.pageY;
+  processClick(mouseX, mouseY);
+  console.log("shoot bullet")
+  var newAudio = sound.shoot.cloneNode()
+  newAudio.volume = 0.05;
+  newAudio.play()
+  shoot.shootBullet = true;
+  shoot.x = mouseX;
+  shoot.y = mouseY;
+});
+
+canvas.addEventListener('mousemove', function (e) {
+  mouseX = e.pageX;
+  mouseY = e.pageY;
+});
+
 function makeSound(sound){
+  var newAudio = new Audio();
   switch (sound) {
     case "shoot":
-      sound.shoot.play();
+      newAudio = sound.shoot.cloneNode()
+      newAudio.play();
       break;
     case "reload":
-      sound.reload.play();
+      newAudio = sound.reload.cloneNode()
+      newAudio.play();
       break;
     break;
   }
 }
 
 function initSound(){
-  // var audio = new Audio();
-  // for(var aSound in sound){
-  //   aSound = audio;
-  // }
   sound.background = new Audio();
   sound.shoot = new Audio();
   sound.reload = new Audio();
@@ -194,73 +219,456 @@ function initSound(){
   sound.reload.src = "../static/audio/reload.mp3";
   sound.hit.src = "../static/audio/HITMARKER.mp3";
 }
-// socket.on('sound', function(sound){
-//   makeSound(sound);
-// });
 
-socket.on('grid-size', function(gridSize){
-  GRID_SIZE = gridSize;
-})
-newPlayerData = {"username" : username, "servername" : servername};
-socket.emit('new player', username, servername);
+clientGeneralProcessor();
 
-setInterval(function() {
-  socket.emit('movement', movement);
-  socket.emit('shoot', shoot);
-  socket.emit('interact', action);
-  shoot.shootBullet = false;
+function clientGeneralProcessor(){
+  initLogOutButton();
+  socket.on('main menu', function(){
+    initSound();
+    this.gameState = "menu";
+    clientMenuProcessor();
+  });
+  socket.on('in game',function(){//added roomData, concertn for inconsistency
+    this.gameState = "game"
+    clientGameProcessor();
+  });
+}
 
-  //makeSound("bang");
-}, 1000 / 30);
+function initLogOutButton(){
+  var logoutButton = document.getElementById('log_out_button' );
+  logoutButton.addEventListener('click', function(event) {
+    logoutButton.value = username;
+  });
+}
 
-  //Moved canvas var to top so shoot could use it - GG
-  // var canvas = document.getElementById('canvas');
-  var startX = 0;
-  var startY = 0;
-  var canvasW = 800;
-  var canvasH = 600;
-  canvas.width = canvasW;
-  canvas.height = canvasH;
-  // canvas.cursor = "none"; //hide the original cursor
-  var lastLoop = new Date();  //this is used for getting fps
+function clientMenuProcessor(){
+  console.log("socket.id = " + socket.id)//temporary
+  console.log("main menu called");////temporary
+  initBasicMenuUI()
+  // socket.on("passId", function(socketID){
+  //   this.socket.id = socketID;
+  // })
 
-window.addEventListener('mousemove', function (e) {
-  xPos = e.pageX;
-  yPos = e.pageY;
-  // console.log(xPos);
-  // console.log(yPos);
-});
-
-  var context = canvas.getContext('2d');
-  socket.on('state', function(players, projectiles, enemies, zones, teamQuests, boss) {
-    //console.log("socket event state called");
-    if (players[myId] == 0) {
-      //Died
-      showDeadScreen();
-      return;
+  socket.on('global data', function(totalPlayers, globalPlayers){
+    console.log("update global data called")
+    // this.totalPlayers = totalPlayers;
+    // this.globalPlayers = globalPlayers;]
+    console.log("\ttotalPlayers received:", totalPlayers)
+    console.log("\tglobalPlayers received:", globalPlayers)
+    updateGlobal(globalPlayers);
+  });
+  socket.on('room data', function(room){
+    if(room == "Room has already been taken"){
+      alert("Room has already been taken");
+    }else if(room == "Room does not exist"){
+      alert("Room does not exist");
+    }else if(room == "Room currently in game"){
+      alert("Room currently in game");
+    }else{
+      console.log("received room data:", room)
+      updateRoom(room);
     }
-    if (myId == "") {
-      socket.emit('requestPassId');
-      return;
+  });
+  socket.on('game startable', function(){
+    socket.emit('proceed start game');
+  });
+  // updateUIDrawing();
+  // setTimeout(function(){
+  //     context.clearRect(globalDisplayArea.startX, globalDisplayArea.startY, globalDisplayArea.endX, globalDisplayArea.endY);
+  //   setTimeout(function(){
+  //     updateUIDrawing();
+  //     console.log("listUI",listUI)
+  //   }, 2000)
+  // }, 2000)
+}
+
+function clientGameProcessor(){
+
+  console.log("in game called");
+  // if (socket.id == "") {
+  // }
+
+  socket.on('message', function(data) {
+    showMessage(data);
+  });
+
+  socket.on('refresh screen', function(){
+    this.gameState = "game";
+    listUI = {};
+    updateUIDrawing();
+  });
+
+  socket.emit('owner process map')
+  socket.on("grid size", function(size){
+    console.log("received GRID_SIZE",size)
+    GRID_SIZE = size
+    console.log("GRID_SIZE = " + GRID_SIZE);
+  });
+  socket.on('draw map', function(mapData){
+    console.log("draw map called")
+    processMapDrawing(mapData);
+  });// last change: only room owner deliver mapImage, other will receieve mapImage from server
+  // socket.on('map processed', function(){
+  //   console.log("map is processed")
+  //   // requestMapImageFromServer();
+  // });
+  socket.emit('character creation')
+  // socket.on('game loop', function(){
+  // socket.on("deliverMapImageSrcToClient", function(imageSrc, mapReady){
+  //   console.log("imageSrc received ", imageSrc)
+  //   console.log("mapReady received ", mapReady);
+  //   if(mapReady && imageSrc == '') {
+  //     mapImage.src = imageSrc;
+  //     mapImageLoaded = true;
+  //   }
+  // });
+  // socket.on('map image emit count', function(maxMapImageEmitCount){
+  //   this.maxMapImageEmitCount = maxMapImageEmitCount;
+  // });
+  // while(!mapImage.src.match('image/png')){
+  //   console.log("request loop")
+  //   setTimeout(function(){
+  //     // console.log("mapReady value", this.mapReady)
+  //     // if(!mapReady){
+  //     //   console.log("mapReady")
+  //     //   if(!mapImage.src.match('image/png')){
+  //     //     console.log("\trequest mapimage")
+  //         console.log("current mapImage", mapImage.src)
+  //         requestMapImageFromServer();
+  //         // if(mapImage.src.match('image/png')){
+  //         //   mapImageEmitCount++;
+  //         //   mapReady = true;
+  //         // }
+  //         //
+  //         console.log("\tmapImagesrc after request", mapImage.src)
+  //     //   }
+  //     // }
+  //     // console.log("\tmapReady after", this.mapReady)
+  //   }, 1000)
+  // }
+  clientGameLogic(socket);
+    // for(var player in players){
+      //   // console.log("player: " + player)
+      // }
+      // console.log("socket.id: " + socket.id)
+  // })
+  // console.log("mapImageSrc", mapImage.src)
+  // console.log("mapImageSrmatch? ", mapImage.src.match('image/png'))
+  // if(mapImage.src.match('image/png') != true){
+  //   requestMapImageFromServer(socket);
+  // }
+}
+
+/////////////////////// Support functions
+
+//create basic UI such as create room, search,etc..
+function initBasicMenuUI(){
+  var createRoom = new CreateRoom(5, 350, 200, 50, "black", socket);
+  listUI.push(createRoom);
+}
+
+//update room UI menu
+function updateGlobal(globalPlayers){
+  console.log("updateGlobal")
+  console.log("\tglobalPlayers",globalPlayers)
+  // for(var l = 0; l < globalPlayers.length; l++){
+  //   console.log("\tglobalData[",l,"]",globalData[l]);
+  //   for(var i = 0; i < globalData[l].length; i++){
+  //     console.log("\t\tglobalData[",l, "][",i,"] ", globalData[i]);
+  //   }
+  // }
+
+  updateGlobalData(globalPlayers);
+  clearMenu(globalDisplayArea);
+  // clearScreen(context);
+  updateUIDrawing();
+}
+
+function updateRoom(room){
+  // console.log("room called")
+  // console.log(socket.id)
+  // for(var player in room.players){
+  //   console.log("\tplayer " + player)
+  // }
+  // console.log("projefctiles" + room.projectiles)
+  // console.log("bulletCount " + room.bulletCount)
+  // console.log("enemies " + room.enemies)
+  // console.log("enesocket.id " + room.enesocket.id)
+  // console.log("mapImageSrc " + room.mapImageSrc)
+  // console.log("mapData " + room.mapData)
+  // console.log("lastSpawn " + room.lastSpawn)
+  // console.log("spawnRate " + room.spawnRate)
+  updateRoomData(room);
+  removeUIElements("Create Room")
+  console.log("listUI after remove Create Room ",listUI)//last change: try to refresh createRoom button
+  clearMenu(roomDisplayArea)
+  context.clearRect(5, 350, 200, 50)
+  updateUIDrawing();
+}
+//update global players and rooms UI menu
+
+
+function updateGlobalData(globalPlayers){
+  removeUIElements("Global Player")
+  initGlobalData(globalPlayers);
+}
+
+function removeUIElements(name){
+  for(var i = 0; i < listUI.length; i++){
+    if(listUI[i].name == name){
+      listUI.splice(i, 1);
+      i--
     }
-    if (mapImage.src == "") {
-      socket.emit("requestMapImageSrcFromServer");
-      return;
+  }
+}
+
+// function removeOldGlobalData(){
+//   // var elementName = 'Global Player'
+//   console.log("rremoveOldGlobalData")
+//   console.log("\tlistUI before remove old data: ")
+//   for(var ui in listUI){
+//     console.log("\t",ui);
+//   }
+//   for(var i = 0; i < listUI.length; i++){
+//     if(listUI[i].name == "Global Player"){
+//       listUI.splice(i, 1);
+//       i--;
+//     }
+//   }
+//   // listUI = listUI.filter();
+//   console.log("\tlistUI after remove old data: ")
+//   for(var ui in listUI){
+//     console.log("\t",ui);
+//   }
+// }
+
+function initGlobalData(globalPlayers){
+  var x = globalDisplayArea.startX;
+  var y = globalDisplayArea.startY;
+  var width = 40;
+  var height = 40;
+  console.log("\tglobalPlayers",globalPlayers)
+  for(var playerID in globalPlayers.players){
+    var player = new GlobalPlayer(globalPlayers.players[playerID], x, y, width, height, 'orange', socket);
+    console.log("\tnewly player created ", player);
+    listUI.push(player);
+    x += width * 2;
+    if(x >= globalDisplayArea.endX){
+      x = globalDisplayArea.startX;
+      y += height * 2;
     }
-    context.clearRect(startX, startY, canvasW, canvasH);
+  }
+}
 
-    var middleX = players[myId].x - (canvasW)/2;
-    var middleY = players[myId].y - (canvasH)/2;
-    shoot.middleX = middleX;
-    shoot.middleY = middleY;
+function updateRoomData(room){
+  var x = 5;
+  var y = 10;
+  var width = 50;
+  var height = 100;
+  for(var playerID in room.players){
+    console.log("updateRoomData: ",room.players[playerID])
+    var player = new Teammate(playerID, x, y, width, height, 'grey', socket);
+    console.log(player);
+    listUI.push(player);
+    x += width * 2;
+    if(x >= canvasW){
+      x = 5;
+      y += height * 2;
+    }
+  }
+  var element = new Ready(350, 350, 50, 50, "purple", socket);
+  listUI.push(element);
+}
 
-    //'zoom' functionality. It's not done yet! Please just leave it =1..
-    //It only works on map-drawing, NOT collision.
-    var zoom = 1;
+// function removeCreateRoomUI(){
+//   removeUIElements("Create Room")
+// }
 
-    //drawing the map from mapURL
-    context.drawImage(mapImage, middleX, middleY,
-      canvasW, canvasH, 0, 0, canvasW*zoom, canvasH*zoom);
+function processMapDrawing(mapData){
+  console.log("processMapDrawing");
+  var allMap = document.createElement("canvas")
+  allMap.width = 500*GRID_SIZE;
+  allMap.height = 500*GRID_SIZE;
+  var allMapCtx = allMap.getContext('2d');
+  drawMap(allMapCtx, mapData)
+  deliverMapImageSrcToServer(allMap)
+}
+
+function drawMap(allMapCtx, mapData){
+  clearScreen(context);
+  for (var x = 0; x < mapData.length; x++) {
+    var line = "";
+    for (var y = 0; y < mapData[mapData.length - 1].length; y++){
+      // var textureLoaded = false;
+      // texture.onload = function(){
+      //   textureLoaded = true;
+      // }
+      var wall = document.getElementById("wall")
+      if(mapData[x][y] != '' && mapData[x][y].name == "floor")
+      {
+        allMapCtx.beginPath();
+        allMapCtx.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+        allMapCtx.fillStyle = mapData[x][y].color;
+        allMapCtx.fill();
+      }
+      else if(mapData[x][y] != '' && mapData[x][y].name == "wall")
+      {
+        // var source = mapData[x][y].textureSrc;
+        // console.log(source)
+        // var pattern = ctx.createPattern(source, "repeat");
+        // allMapCtx.beginPath();
+        // allMapCtx.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+        // //TODO: MAPTEXTURE Problem here below lines!!
+        // // allMapCtx.fillStyle = texture.src;
+        // allMapCtx.fillStyle = "#333";
+        allMapCtx.drawImage(wall, x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+        // while (!textureLoaded) {
+        //   console.log("waiting for the texture...");
+        // }
+
+        allMapCtx.fill();
+      }
+
+      if (mapData[x][y] == ''){
+        line += "0";
+      }else if(mapData[x][y].name == "wall"){
+        line += "1";
+      }else{
+        line += "!";
+      }
+    }
+  }
+}
+
+function showMessage(messageString) {
+  messageOn = true;
+  messageQueue.push(messageString);
+}
+
+function showDeadScreen() {
+  if (dead) {
+    return;
+  }
+  dead = true;
+  context.clearRect(startX, startY, canvasW, canvasH);
+  context.beginPath();
+  context.fillStyle = "#BB0000";
+  context.rect(0, 0, canvasW, canvasH);
+  context.fill();
+
+  context.fillStyle = "white";
+  context.font = "80px Arial";
+  context.fillText("You Failed!", canvasW/2-200, canvasH/2-50);
+
+  context.fillStyle = "white";
+  context.font = "20px Arial";
+  var messageNum = Math.random() * deadMessage.length;
+  console.log(messageNum);
+  var deadMsg = deadMessage[Math.floor(messageNum)];
+  var lines = deadMsg.split('\n');
+  for (var i = 0; i<lines.length; i++) {
+    context.fillText(lines[i], 120, canvasH/2 + 50 + 30*i);
+  }
+}
+
+function deliverMapImageSrcToServer(allMap){
+
+  mapImage.src = allMap.toDataURL();
+  console.log('socket event create map called: URL set to', mapImage.src);/////*****
+  socket.emit("deliverMapImageSrcToServer", mapImage.src);
+  // delete canvas;
+  delete allMap;
+}
+
+function requestMapImageFromServer(){
+  console.log("inside request mapImg function with mapImg: ", mapImage.src)
+  console.log("request mapImage")
+  socket.emit("requestMapImageSrcFromServer");
+
+  // var roomData = rooms[]
+  // while (!roomData.mapReady) {
+    // setTimeout(function(){
+        // console.log("\treceived mapImage")
+        // // if (!mapImageLoaded && imageSrc != "") {
+        //   mapImage.src = imageSrc;
+        //   mapImageLoaded = true;
+        //   console.log("\t\timageSrc recieved: " + imageSrc)
+        //   // }
+
+    // }, 1000)
+  // }// needs request for delivery
+}
+
+function clearMenu(areaName){
+  context.clearRect(areaName.startX, areaName.startY, areaName.endX, areaName.endY);
+}
+
+function clearScreen(context){
+  context.clearRect(canvasStartX, canvasStartY, canvasW, canvasH);
+}
+
+function clientGameLogic(socket){
+  socket.on("deliverMapImageSrcToClient", function(imageSrc){
+    // console.log("imageSrc received ", imageSrc)
+    // console.log("mapReady received ", mapReady);
+    // if(mapReady || imageSrc != '') {
+      mapImage.src = imageSrc;
+      mapImageLoaded = true;
+    // }
+  });
+
+  socket.on("zoneChange", function(num){
+    //zone changed!
+    zoneChangeOn = true;
+    zoneChangeOnTime = new Date();
+    zoneNum = num;
+  });
+
+  socket.on("questOver", function(qName, qCondition, qDescription) {
+    questMessageOn = true;
+    questMessageOnTime = new Date();
+    questName = qName;
+    questCondition = qCondition;
+    questDescription = qDescription;
+    // console.log("show quest: ", qName);
+  });
+
+  socket.on("zoneOpen", function(zoneNum) {
+    console.log(zoneNum);
+  });
+
+  socket.on('state', function(players, numPlayers, projectiles, numProjectiles, enemies, numEnemies, zones, teamQuests, boss) {
+    gameStateProcessor(players, numPlayers, projectiles, numProjectiles, enemies, numEnemies, zones, teamQuests, boss)
+  });
+  playerInput();
+}
+
+function gameStateProcessor(players, numPlayers, projectiles, numProjectiles, enemies, numEnemies, zones, teamQuests, boss){
+  //console.log("socket event state called");
+  // if(mapImageEmitCount < maxMapImageEmitCount * 20){
+  // console.log("players", players)
+  // }
+  if (players[socket.id] == 0) {
+    //Died
+    showDeadScreen();
+    return;
+  }
+
+  context.clearRect(canvasStartX, canvasStartY, canvasW, canvasH);
+
+  var middleX = players[socket.id].x - (canvasW) / 2;
+  var middleY = players[socket.id].y - (canvasH) / 2;
+  shoot.middleX = middleX;
+  shoot.middleY = middleY;
+
+  //'zoom' functionality. It's not done yet! Please just leave it =1..
+  //It only works on map-drawing, NOT collision.
+  var zoom = 1;
+
+  //drawing the map from mapURL
+  context.drawImage(mapImage, middleX, middleY,
+    canvasW, canvasH, 0, 0, canvasW*zoom, canvasH*zoom);
 
     context.fillStyle = 'green';
     for (var id in players) {
@@ -270,16 +678,14 @@ window.addEventListener('mousemove', function (e) {
       context.beginPath();
       context.arc(player.x - middleX, player.y - middleY, GRID_SIZE/2 , 0, 2 * Math.PI);
       context.fill();
-
       showHealthBarAbove(player.x - middleX, player.y - middleY, player.health, player.maxHealth);
       showBulletBarAbove(player.x - middleX, player.y - middleY, player.clip, player.clipSize);
     }
 
-    //Draw the bawss
     var bossImg = document.getElementById("boss");
-    context.drawImage(bossImg, boss.x - middleX + 20, boss.y - middleY - 100, 100, 130);
-    showHealthBarAbove(boss.x - middleX + 20, boss.y - middleY - 100, boss.health, boss.maxHealth);
-
+    // context.drawImage(bossImg, boss.x - middleX, boss.y - middleY, 100, 130);
+    // showHealthBarAbove(boss.x - middleX + 20, boss.y - middleY - 100, boss.health, boss.maxHealth);
+    // console.log("projectiles",projectiles)
     for (var id in projectiles) {
       var projectile = projectiles[id];
       //Determines how the bullets look
@@ -291,7 +697,6 @@ window.addEventListener('mousemove', function (e) {
     }
 
     for (var id in enemies) {
-
       var enemy = enemies[id];
       //Determines how the bullets look // old radius = 6
       context.drawImage(bossImg, enemy.x - middleX + 5, enemy.y - middleY - 40, 50, 65);
@@ -299,7 +704,6 @@ window.addEventListener('mousemove', function (e) {
       // context.arc(enemy.x - middleX, enemy.y - middleY, GRID_SIZE/2, 0, 2 * Math.PI);
       // context.fillStyle = 'red';
       // context.fill();
-
       showHealthBarAbove(enemy.x - middleX, enemy.y - middleY, enemy.health, enemy.maxHealth);
     }
 
@@ -314,11 +718,11 @@ window.addEventListener('mousemove', function (e) {
     }
 
     context.font = "15px Arial";
-    if(players[myId].clip) {
+    if(players[socket.id].clip) {
       context.fillStyle = "red";
-      context.fillText("AMMO: " + players[myId].clip + "/" + players[myId].clipSize, canvasW-100, canvasH-70);
+      context.fillText("AMMO: " + players[socket.id].clip + "/" + players[socket.id].clipSize, canvasW-100, canvasH-70);
     }
-    if(!players[myId].clip) {
+    if(!players[socket.id].clip) {
       context.fillStyle = "red";
       context.fillText("RELOAD",  canvasW-70, canvasH-70);
     }
@@ -328,16 +732,16 @@ window.addEventListener('mousemove', function (e) {
     lastLoop = thisLoop;
 
     //showing Player health/score/etc.
-    showMyData(players[myId]);
+    showMyData(players[socket.id]);
     var playerIndex = 1;
     for (var id in players) {
-      if (id != myId && players[id] != 0 && players[id].health != undefined) {
+      if (id != socket.id && players[id] != 0 && players[id].health != undefined) {
         showOtherPlayerData(players[id], playerIndex);
         playerIndex += 1;
       }
     }
 
-    showQuests(players[myId], teamQuests);
+    showQuests(players[socket.id], teamQuests);
 
     // related to function 'showMessage'.
     if (messageOn && messageQueue.length >= 1) {
@@ -369,6 +773,8 @@ window.addEventListener('mousemove', function (e) {
       var mapAreaWidth = 380*GRID_SIZE;
       var mapAreaHeight = mapAreaWidth*mapWHRatio;
 
+
+
       //drawing black box behind the map
       context.beginPath();
       context.rect(mapX-mapMargin, mapY-mapMargin, smallMapWidth+2*mapMargin,
@@ -391,16 +797,17 @@ window.addEventListener('mousemove', function (e) {
       //showing player and mouse coordinates.
       context.fillStyle = "blue";
       context.font = "15px Arial";
-      context.fillText("Player: x: " + (players[myId].x/GRID_SIZE) + ", y: "
-        + (players[myId].y/GRID_SIZE), mapX+10, mapY+smallMapHeight+30);
-      context.fillText("Mouse: x: " + (xPos+middleX)/GRID_SIZE + ", y: "
-        + (yPos+middleY)/GRID_SIZE, mapX+10, mapY+smallMapHeight+50);
+      context.fillText("Player: x: " + (players[socket.id].x/GRID_SIZE) + ", y: "
+        + (players[socket.id].y/GRID_SIZE), mapX+10, mapY+smallMapHeight+30);
+      context.fillText("Mouse: x: " + (mouseX+middleX)/GRID_SIZE + ", y: "
+        + (mouseY+middleY)/GRID_SIZE, mapX+10, mapY+smallMapHeight+50);
 
       //show players on small map
+
       for (var id in players) {
         var player = players[id];
         context.fillStyle = 'green';
-        if (id == myId) {
+        if (id == socket.id) {
           context.fillStyle = '#BBAA22';
         }
         context.beginPath();
@@ -409,6 +816,7 @@ window.addEventListener('mousemove', function (e) {
           GRID_SIZE/3 , 0, 2 * Math.PI);
         context.fill();
       }
+
     }
 
     //zone Change show
@@ -489,24 +897,124 @@ window.addEventListener('mousemove', function (e) {
       context.font = "normal";
     }
 
-
-    if (players[myId].health < players[myId].maxHealth) {
+    if (players[socket.id].health < players[socket.id].maxHealth) {
       context.fillStyle = `rgba(255, 0, 0,
-        ${0.3*((players[myId].maxHealth-players[myId].health)/players[myId].maxHealth)})`;
+        ${0.3*((players[socket.id].maxHealth-players[socket.id].health)/players[socket.id].maxHealth)})`;
         context.beginPath();
         context.rect(0, 0, canvasW, canvasH);
         context.fill();
+      }
+}
+
+function playerInput(){
+  setInterval(function() {
+    socket.emit('movement', movement);
+    socket.emit('shoot', shoot);
+    socket.emit('interact', action);
+    shoot.shootBullet = false;
+  }, 1000 / 30);
+}
+
+//input orignal canvas size and desired position based on canavs scaling to get actual position
+//used for scaling
+//ex: want to get position x = 50% of canvas width
+function giveOnCanvasPos(size, percent){
+  return position = size * (percent / 100);
+}
+
+//input position percentage of width, height of canvas to initialize element
+function initElement(percentX, percentY){
+  // console.log("interaction function")
+  // var x = 10;
+  // var hasTexture = false;
+  // var src = null;
+  // var color = 'red';
+  // var text = 'Int';
+  // var clickable = true
+  // var element = new Ready(x, x, x, x, hasTexture, src, color, text, clickable);
+  // console.log(element);
+}
+
+function updateUIDrawing(name){
+  for (var i = 0; i < listUI.length; i++) {
+    var element = listUI[i];
+    // console.log("listUI[",i,"] ",listUI[i])
+    // if(element.name == something that is from room)
+    if(element.name == name || name == undefined || name == ""){
+      drawUIElement(element)
     }
-  });
+  }
+}
+
+//read and draw UIElement onto canvas
+function drawUIElement(element){
+  context.font = "800 15px Verdana";
+  context.fillStyle = element.color;
+  context.beginPath();
+  context.rect(element.x, element.y, element.width, element.height);
+  context.fill();
+  context.fillStyle = "white"; ///temp hardcoded
+  var text = giveElementText(element);
+  context.fillText(text, element.x + 10, element.y + 20);
+  console.log("drawUIElement ", text, element.x, element.y, element.width, element.height)
+  console.log("-------")
+}
+
+function giveElementText(element){
+  if(element.userName != undefined){
+    return element.userName;
+  }else{
+    return element.name;
+  }
+}
+
+//process if clicked on an UI element
+function processClick(mouseX, mouseY){
+  var index = giveIndexCLickableUI(mouseX, mouseY);
+  // console.log(this.listUI[0]);
+  console.log("gameState", gameState)
+  if(index != -1){
+    console.log("Found clickable index: ",index," name: ",listUI[index].name)
+    this.listUI[index].interaction();
+  }else if(index == -1){
+    console.log("No clickable")
+    // if(gameState == "game"){
+    //   console.log("shoot bullet")
+    //   makeSound("shoot");
+    //   shoot.shootBullet = true;
+    //   shoot.x = mouseX;
+    //   shoot.y = mouseY;
+    // }
+  }else{
+    console.log("Error finding element. Index: " + index)
+  }
+}
+
+//find index of a clickable UI element, return -1 if none
+function giveIndexCLickableUI(mouseX, mouseY){
+  for(var i = 0; i < listUI.length; i++){
+    if(hasClickableUI(mouseX, mouseY, listUI[i])){
+      return i;
+    }
+  }
+  return -1;
+}
 
 
-  socket.on("create map", function(mapData){
-    initSound();
-    processMapDrawing(mapData);
-  });
+//search UI element with a simple array because there aren't many elements -> wont impact performance much
+function hasClickableUI(mouseX, mouseY, element){
+  if(mouseX >= element.x && mouseY >= element.y){
+    if(mouseX <= (element.x + element.width) && mouseY < (element.y + element.height)){
+      if(element.clickable == true){
+        return true;
+      }else if(element.clickable == undefined || element.clickable == null){
+        console.log("Error in clickable element: " + element);
+      }
+    }
+  }
+  return false;
+}
 
-
-// Support Functions ------------------------------------
 function showMyData(player) {
   context.fillStyle = "#BBB";
   context.beginPath();
@@ -629,263 +1137,11 @@ function showBulletBarAbove(x, y, clip, clipSize) {
 }
 
 
-function processMapDrawing(mapData){
-  console.log(mapData);
-  //called ONLY when numPlayers: 0 -> 1.
-  //draws the whole canvas, and saves to images file.
-  /*
-  This creates the map to 'image', hence the collision control is separate
-  this map. when there is a revision to map (e.g. door open)
-  */
-  //shows only wall now.
-   // TODO: change this to variable, not constant literal!
-  //const margin = 300;
-  var allMap = document.createElement("canvas");
-  allMap.width = 500*GRID_SIZE;
-  allMap.height = 500*GRID_SIZE;
-  var allMapCtx = allMap.getContext('2d');
 
-  //context.clearRect(startX, startY, canvasW, canvasH);
-  /*
-  aqImage = new Image();
-  aqImage.src = '../image/aq.jpeg';
-  aqImage.onload = function(){
-    context.drawImage(aqImage, 0, 0);
-  }*/
-  var texture = new Image();
-  texture.src = "/objects/wall.png"
-  for (var x = 0; x < mapData.length; x++) {
-    var line = "";
-    for (var y = 0; y < mapData[mapData.length - 1].length; y++){
-      // console.log("\tMapdata[" + x + "][" + y + "]"); ////*****
-      // var source = mapData[x][y].textureSrc;
-      // console.log(source)
-      // var pattern = ctx.createPattern(source, "repeat");
-      // var img = new Image();
-      // img.src = "static/objects/player1.jpg";
-      // img.onload = function(){
-      //   allMapCtx.drawImage(img, 300, 300, 300, 300);
-      // }
-      var textureLoaded = false;
-      texture.onload = function(){
-        textureLoaded = true;
-      }
-
-      if(mapData[x][y] != '' && mapData[x][y].name == "floor")
-      {
-        allMapCtx.beginPath();
-        allMapCtx.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
-        allMapCtx.fillStyle = mapData[x][y].color;
-        allMapCtx.fill();
-      }
-      else if(mapData[x][y] != '' && mapData[x][y].name == "wall")
-      {
-        // var source = mapData[x][y].textureSrc;
-        // console.log(source)
-        // var pattern = ctx.createPattern(source, "repeat");
-        allMapCtx.beginPath();
-        allMapCtx.rect(x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
-        //TODO: MAPTEXTURE Problem here below lines!!
-        // allMapCtx.fillStyle = texture.src;
-        allMapCtx.fillStyle = "#333";
-        // while (!textureLoaded) {
-        //   console.log("waiting for the texture...");
-        // }
-
-        allMapCtx.fill();
-      }
-
-
-      if (mapData[x][y] == ''){
-        line += "0";
-      }else if(mapData[x][y].name == "wall"){
-        line += "1";
-      }else{
-        line += "!";
-      }
-    }
-
-  }
-  //console.log(mapData);/////*****
-  mapImage.src = allMap.toDataURL();
-  console.log('socket event create map called: URL set to', mapImage.src);/////*****
-  socket.emit("deliverMapImageSrcToServer", mapImage.src);
-  delete allMap;
-}
-
-function showMessage(messageString) {
-  messageOn = true;
-  messageQueue.push(messageString);
-}
-
-function showDeadScreen() {
-  if (dead) {
-    return;
-  }
-  dead = true;
-  context.clearRect(startX, startY, canvasW, canvasH);
-  context.beginPath();
-  context.fillStyle = "#BB0000";
-  context.rect(0, 0, canvasW, canvasH);
-  context.fill();
-
-  context.fillStyle = "white";
-  context.font = "80px Arial";
-  context.fillText("You Failed!", canvasW/2-200, canvasH/2-50);
-
-  context.fillStyle = "white";
-  context.font = "20px Arial";
-  var messageNum = Math.random() * deadMessage.length;
-  console.log(messageNum);
-  var deadMsg = deadMessage[Math.floor(messageNum)];
-  var lines = deadMsg.split('\n');
-  for (var i = 0; i<lines.length; i++) {
-    context.fillText(lines[i], 120, canvasH/2 + 50 + 30*i);
-  }
-}
-
-socket.on("zoneChange", function(num){
-  //zone changed!
-  zoneChangeOn = true;
-  zoneChangeOnTime = new Date();
-  zoneNum = num;
-});
-
-socket.on("questOver", function(qName, qCondition, qDescription) {
-  questMessageOn = true;
-  questMessageOnTime = new Date();
-  questName = qName;
-  questCondition = qCondition;
-  questDescription = qDescription;
-  // console.log("show quest: ", qName);
-});
-
-socket.on("zoneOpen", function(zoneNum) {
-  console.log(zoneNum);
-});
-
-//=============================================================================
-// George Workpace
-var logoutButton = document.getElementById('log_out_button' );
-logoutButton.addEventListener('click', function(event) {
-  logoutButton.value = username;
-});
-
-//=============================================================================
-
-  // Fazal' Workstation -------------------------------------------------------------------------
-  // var enemyContext = canvas.getContext('2d');
-  // socket.on('enemyState', function(enemies) {
-  //   context.clearRect(0, 0, 800, 600);
-  //   context.fillStyle = 'red';
-  //   for (var id in enemies) {
-  //     var enemy = enemies[id];
-  //     //Determines how the characters look
-  //     context.beginPath();
-  //     context.arc(enemy, enemy, 10, 0, 2 * Math.PI);
-  //     context.fill();
-  //   }
-  // });
-
-  // get a refrence to the canvas and its context
-// var canvas = document.getElementById("canvas");
-// var context = canvas.getContext("2d");
-
-// newly spawned objects start at Y=25
-// var spawnLineY = 25;
-
-// // spawn a new object every 1500ms
-// var spawnRate = 1500;
-
-// // set how fast the objects will fall
-// var spawnRateOfDescent = 0.50;
-
-// // when was the last object spawned
-// var lastSpawn = -1;
-
-// // this array holds all spawned object
-// // var objects = [];
-// var enemies = {
-//   numEnemies: 0
+//
+// //gameState used to know whether game is in main menu or in-game
+// function hasUIElement(x, y){
+//
+//   console.log("wrong gameState");
+//   return false;
 // }
-
-// save the starting time (used to calc elapsed time)
-// var startTime = Date.now();
-
-// // start animating
-// animate();
-
-// var enemyID = 0;
-
-// function spawnRandomObject() {
-
-//     // select a random type for this new object
-//     var t;
-
-    // About Math.random()
-    // Math.random() generates a semi-random number
-    // between 0-1. So to randomly decide if the next object
-    // will be A or B, we say if the random# is 0-.49 we
-    // create A and if the random# is .50-1.00 we create B
-
-//     if (Math.random() < 0.50) {
-//         t = "red";
-//     } else {
-//         t = "blue";
-//     }
-
-//     // create the new object
-//     var enemy = {
-//         // set this objects type
-//         type: t,
-//         // set x randomly but at least 15px off the canvas edges
-//         x: Math.random() * (canvas.width - 30) + 15,
-//         // set y to start on the line where objects are spawned
-//         y: spawnLineY,
-//     }
-
-//     // add the new object to the objects[] array
-//     enemies[enemyID] = enemy;
-//     enemyID++;
-// }
-
-// spawnRandomObject();
-
-// function animate() {
-
-//     // get the elapsed time
-//     var time = Date.now();
-
-    // // see if its time to spawn a new object
-    // if (time > (lastSpawn + spawnRate)) {
-    //     lastSpawn = time;
-    //     spawnRandomObject();
-    // }
-
-//     // request another animation frame
-//     requestAnimationFrame(animate);
-
-//     // clear the canvas so all objects can be
-//     // redrawn in new positions
-//     context.clearRect(0, 0, canvas.width, canvas.height);
-
-//     // draw the line where new objects are spawned
-//     context.beginPath();
-//     context.moveTo(0, spawnLineY);
-//     context.lineTo(canvas.width, spawnLineY);
-//     context.stroke();
-
-//     // move each object down the canvas
-//     for (var i = 0; i < objects.length; i++) {
-//         var object = objects[i];
-//         object.y += spawnRateOfDescent;
-//         context.beginPath();
-//         context.arc(object.x, object.y, 8, 0, Math.PI * 2);
-//         context.closePath();
-//         context.fillStyle = object.type;
-//         context.fill();
-//     }
-
-// }
-
-// -----------------------------------------------------------------------

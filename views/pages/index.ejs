@@ -28,7 +28,6 @@
       <canvas class='weather_animation' id='moon'></canvas>
       <canvas class='weather_animation' id ='snow'></canvas>
     </div>
-    <!-- <canvas class='weather_animation' id ='sun'></canvas> -->
     <div id ='content' style ='position:absolute; z-index:1;'>
       <div id='sun' class="sun"><div class="sunshine"></div></div>
       <div id ='wrapper'>
@@ -37,7 +36,8 @@
       </div>
       <form action="/logout" method='post'>
         <p id="username" name="username" hidden><%=user%></p>
-        <p id="servername" name="servername" hidden><%=server%></p>
+        <!-- <p id="servername" name="servername" hidden><%=server%></p> -->
+        <p id="servername" name="servername" hidden>Placeholder</p>
         <input type="submit" id="log_out_button" value="LOGOUT" name="username"/>
       </form>
 
@@ -45,9 +45,14 @@
         <source src="../static/audio/Attack on Titan S3 OST - ətˈæk 0N tάɪtn ＜WMId＞.mp3" type="audio/mpeg" />
       </audio id="volume">
     </div>
-
-    <a><img src="image/zoombie.png" id="boss" alt="wheredIGo??"></a>
+    <a><img src="image/George.jpeg" id="boss" alt="wheredIGo??"></a>
+    <a><img src="image/wall.png" id="wall" alt="black"></a>
 
   </body>
-  <script src="/static/game.js"></script>
+  <script src="/static/UIElement.js">
+    export *;
+  </script>
+  <script src="/static/game.js">
+    import * from './static/UIElement.js';
+  </script>
 </html>

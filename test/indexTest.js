@@ -405,7 +405,7 @@ describe('Index', function(){
             });
     });
   });
-  
+
   // Test whether the enemy spawns
   describe('Spawn Boss', ()=> {
     result = index.testBossSpawn();
