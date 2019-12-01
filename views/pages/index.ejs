@@ -1,21 +1,59 @@
 <html>
   <head>
+
+    <script data-ad-client="ca-pub-8609426266077695"
+    async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js">
+    </script>
+
     <title>A Multiplayer Game</title>
     <link rel="stylesheet" href="stylesheets/index.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src = "/static/weatherAPI.js" defer></script>
     <style>
-      canvas {
+      #canvas {
         width: 800px; /*original = 800 x 600*/
         height: 600px;
         border: 5px solid black;
-        margin-left: auto;
-        margin-right: auto;
+        /* margin-left: auto; */
+        /* margin-right: auto; */
       }
     </style>
     <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
-    <canvas id="canvas"></canvas>
+    <!-- <div id ='animation_wrapper' style ='position:absolute; z-index:0;'>
+      <canvas class="weather_animation" id="rain1"></canvas>
+      <canvas class='weather_animation' id="rain2"></canvas>
+      <canvas class='weather_animation' id="rain3"></canvas>
+      <canvas class='weather_animation' id='moon'></canvas>
+      <canvas class='weather_animation' id ='snow'></canvas>
+    </div> -->
+    <!-- <canvas class='weather_animation' id ='sun'></canvas> -->
+    <div id ='content' style ='position:absolute; z-index:1;'>
+      <div id='sun' class="sun"><div class="sunshine"></div></div>
+      <div id ='wrapper'>
+        <span><canvas id="canvas"></canvas></span>
+        <span id = weather-container> <img id = 'icon'></span>
+      </div>
+      <form action="/logout" method='post'>
+        <p id="username" name="username" hidden><%=user%></p>
+        <!-- <p id="servername" name="servername" hidden><%=server%></p> -->
+        <p id="servername" name="servername" hidden>Placeholder</p>
+        <input type="submit" id="log_out_button" value="LOGOUT" name="username"/>
+      </form>
+
+      <audio controls autoplay loop>
+        <source src="../static/audio/Attack on Titan S3 OST - ətˈæk 0N tάɪtn ＜WMId＞.mp3" type="audio/mpeg" />
+      </audio id="volume">
+    </div>
+    <a><img src="image/George.jpeg" id="boss" alt="wheredIGo??"></a>
+    <a><img src="image/wall.png" id="wall" alt="black"></a>
+
   </body>
-  <p id="roomName"><%=server%></p>
-  <script src="/static/game.js"></script>
+  <script src="/static/UIElement.js">
+    export *;
+  </script>
+  <script src="/static/game.js">
+    import * from './static/UIElement.js';
+  </script>
 </html>
