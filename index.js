@@ -196,12 +196,12 @@ pool = new Pool({
 
 app.use('/static', express.static(__dirname + '/static'));// Ring
 //
-app.get('/', function(request, response) {
-  // response.sendFile(path.join(__dirname, 'index.html'));
-  var data = {"server" : "placeholder 2", "user": 'uname'};
-  response.render('pages/index', data);
-
-});// Starts the server.
+// app.get('/', function(request, response) {
+//   // response.sendFile(path.join(__dirname, 'index.html'));
+//   var data = {"server" : "placeholder 2", "user": 'uname'};
+//   response.render('pages/index', data);
+//
+// });// Starts the server.
 
 server.listen(PORT, function() {
   console.log('Starting server on port 5000');
@@ -1608,8 +1608,9 @@ app.post('/checkAccount', (request, response)=>{
               });
             }
           else {
-              var user = {'username':uname};
-
+              // var user = {'username':uname};
+              var user = {"server":request.body.serverName,
+                          "username":uname};
              //Upade online status
              pool.query(
                'UPDATE account SET online = true WHERE username=$1',[uname], (error,results)=>{
