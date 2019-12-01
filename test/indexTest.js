@@ -23,19 +23,7 @@ testPlayerAmmoResult = index.testPlayerAmmo();
 testPlayerHealthResult = index.testPlayerHealth();
 testPlayerReloadResult = index.testPlayerReload();
 testMiniMapResult = index.testMiniMap();
-<<<<<<< HEAD
-testZone1Result = index.testZone1();
-testZone2Result = index.testZone2();
-testZone3Result = index.testZone3();
-testZone4Result = index.testZone4();
-testZone6Result = index.testZone6();
-testZone7Result = index.testZone7();
-testZone8Result = index.testZone8();
-testZone9Result = index.testZone9();
-=======
-testWeatherAPIResult = index.testWeatherAPI();
 
->>>>>>> 9817f7d9bc5f174cbee82a4eb5d9105c87bbc20d
 //roomsResult = index.rooms('test');
 
 describe('Index', function(){
@@ -229,10 +217,6 @@ describe('Index', function(){
             assert.equal(testEnemyMovementResult, 5);
         });
     });
-<<<<<<< HEAD
-
-=======
->>>>>>> 9817f7d9bc5f174cbee82a4eb5d9105c87bbc20d
 
     // Test cases for Player Shoot
     describe('testPlayerShoot()', function(){
@@ -295,22 +279,6 @@ describe('Index', function(){
 
         it('testMiniMap() speed is atleast 2', function(){
             assert.equal(testMiniMapResult, 2);
-        });
-    });
-
-    // Test cases for Weather API
-    describe('testWeatherAPI()', function(){
-
-        it('testWeatherAPI() exists', function(){
-            assert.isOk(testWeatherAPIResult);
-        });
-
-        it('testWeatherAPI() is of type int', function(){
-            assert.notTypeOf(testWeatherAPIResult, 'string');
-        });
-
-        it('testWeatherAPI() speed is atleast 1', function(){
-            assert.equal(testWeatherAPIResult, 1);
         });
     });
 
