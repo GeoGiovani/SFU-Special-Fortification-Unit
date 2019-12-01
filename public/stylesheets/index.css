@@ -3,6 +3,10 @@ body{
     background-position: right;
 }
 
+#wrapper{
+  text-align: justify;
+}
+
 #canvas{
     /* padding-right: 0;
     padding-left: 0;
@@ -13,3 +17,102 @@ body{
     background-color: white;
     background-image: url(../image/darkbackground.jpg);
 }
+
+.weather_animation{
+  /* visibility:hidden; */
+  position:absolute;
+  top:0;
+  left:0;
+}
+
+.tracker{
+    color: aliceblue;
+}
+
+#log_out_button {
+    /* line-height: 100px; */
+    width: 100px;
+    height:50px;
+
+    /* margin-top: 30px; */
+    font-size: 14pt;
+    font-family: tahoma;
+    margin-top: 10px;
+    margin-left: 710px;
+    position:absolute;
+    border-radius: 5px;
+    /* top:100; */
+
+    background-color: rgba(15, 14, 14, 0.842);
+    color: rgb(66, 196, 236);
+    border: solid white 1px;
+
+}
+
+
+#icon{
+  margin-left:40px;
+  position:absolute;
+  width: 100px;
+  height: 60px;
+  border: 2px solid;
+  border-radius: 100%;
+  background-color: rgba(15, 14, 14, 0.842);
+  margin:auto;
+}
+
+#boss {
+  margin-left: 75%;
+  display: none;
+}
+
+/* ========== SUN ============  */
+.sunshine::before {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    background-color: yellow;
+    border-radius: 50%;
+    box-shadow: 0 0 3px 2px yellow, 0 0 5px 4px rgb(220, 165, 0);
+    content: '';
+    animation: shine 10s ease-in-out infinite;
+}
+
+.sunshine {
+    display: block;
+    position: relative;
+    background-color: yellow;
+    border-radius: 50%;
+    border: 1px solid yellow;
+    width: 150px;
+    height: 150px;
+}
+
+.sunshine::after {
+    position: absolute;
+    min-width: 10px;
+    min-height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 -px -px rgb(225,240,150);
+    content: ' ';
+}
+
+@keyframes shine {
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.sun {
+  visibility:hidden;
+  right: 100px;
+  position: fixed;
+  padding: 75px;
+  .sunshine {
+    transform: scale(3.0);
+  }
+}
+/* ========== END SUN ==========  */

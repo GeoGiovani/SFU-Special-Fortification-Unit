@@ -148,7 +148,7 @@ var globalPlayers = {
 var rooms = {};
 var getRoomBySocketId = {};
 var mapImageSrc = "";
-const GRID_SIZE = 10;
+const GRID_SIZE = 20;
 
 setInterval(function() {
   for (var rm in rooms) {
@@ -608,8 +608,8 @@ function createInGamePlayer(id, roomName, uName) {
   rooms[roomName].players[id] = {
     playerID: rooms[roomName].numPlayers,
     username: uName,
-    x: 100 * GRID_SIZE,
-    y: 55 * GRID_SIZE,
+    x: 259 * GRID_SIZE,
+    y: 169 * GRID_SIZE,
     maxHealth: 20,
     health: 20,
     healthRecoverRate: 1,
