@@ -3,6 +3,7 @@
 // <head>
 // <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 // </head>
+
 function getTime(position)
 {
   console.log('Search time....')
@@ -101,12 +102,13 @@ function getWeather(position,time) {
           moon();
         break;
     }
+  return weather;
   });
 };
 
 function rain() {
   console.log('rain() called');
-  var canvas = $('#rain1')[0];
+  var canvas = document.getElementByID('rain1');
 
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -817,9 +819,9 @@ function disableWeather(){
 }
 // ============ END SNOW =============
 //When the document is ready, evoke the followed function
-$(document).ready(function(){
-  getLocation();
-  setInterval(getLocation,30000);
+$(document).ready(()=>{
+    getLocation();
+    setInterval(getLocation,30000);
   // moon();
   // rain();
   // rainLightning();

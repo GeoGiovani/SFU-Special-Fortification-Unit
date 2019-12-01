@@ -2,6 +2,7 @@ const assert = require('chai').assert;
 //const sayHello = require('../index').sayHello;
 //const addNumbers = require('../index').addNumbers;
 const index = require('../index');
+
 // chai-http and server access
 var chai = require('chai');
 var chaiHttp = require('chai-http');
@@ -22,7 +23,6 @@ testPlayerAmmoResult = index.testPlayerAmmo();
 testPlayerHealthResult = index.testPlayerHealth();
 testPlayerReloadResult = index.testPlayerReload();
 testMiniMapResult = index.testMiniMap();
-testWeatherAPIResult = index.testWeatherAPI();
 
 //roomsResult = index.rooms('test');
 
@@ -279,22 +279,6 @@ describe('Index', function(){
 
         it('testMiniMap() speed is atleast 2', function(){
             assert.equal(testMiniMapResult, 2);
-        });
-    });
-
-    // Test cases for Weather API
-    describe('testWeatherAPI()', function(){
-
-        it('testWeatherAPI() exists', function(){
-            assert.isOk(testWeatherAPIResult);
-        });
-
-        it('testWeatherAPI() is of type int', function(){
-            assert.notTypeOf(testWeatherAPIResult, 'string');
-        });
-
-        it('testWeatherAPI() speed is atleast 1', function(){
-            assert.equal(testWeatherAPIResult, 1);
         });
     });
 
