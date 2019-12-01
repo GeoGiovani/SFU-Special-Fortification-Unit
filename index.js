@@ -1278,7 +1278,7 @@ function spawnRandomObject(rm) {
       rooms[rm].numEnemies++;
       rooms[rm].enemyID++;
     }
-}
+};
 
   //Find the optimal path to closest player using A*
   // goal = [rooms[rm].players[closestPlayer].x, rooms[rm].players[closestPlayer].y];
