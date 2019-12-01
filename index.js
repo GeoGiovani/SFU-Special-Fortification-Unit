@@ -129,6 +129,12 @@ module.exports = {
     return minimap;
   },
 
+  // Test Enemy Spawn Zone 1
+  testZone1: function(){
+    zone1 = 1;
+    return zone1;
+  },
+
   // Tests Weather API
   testWeatherAPI: function(){
     weather = 1;
@@ -684,8 +690,8 @@ function createInGamePlayer(id, roomName, uName) {
     username: uName,
     x: 259 * GRID_SIZE,
     y: 169 * GRID_SIZE,
-    maxHealth: 20,
-    health: 20,
+    maxHealth: 100,
+    health: 100,
     healthRecoverRate: 1,
     level: 1,
     damage: 5,
@@ -1202,8 +1208,20 @@ function generateProjectile(id, data, rm) {
   playerY = rooms[rm].players[id].y - data.middleY;
   rooms[rm].players[id].clip -= 1;
 
-  dx = mouseX - playerX;
-  dy = mouseY - playerY;
+  //Find the closest player
+  if ( rooms[rm].players.numPlayers > 0 ) {
+
+    var closestPlayer;
+      var closestPlayerDistance = Infinity;
+      for (var player in rooms[rm].players) {
+        var distX = rooms[rm].players[player].x - rooms[rm].boss.x;
+        var distY = rooms[rm].players[player].y - rooms[rm].boss.y;
+        var distance = Math.sqrt( distX * distX + distY * distY );
+        if (distance < closestPlayerDistance) {
+          closestPlayer = player;
+          closestPlayerDistance = distance;
+        }
+      }
 
   theta = Math.atan(dx / dy);
 
@@ -1262,8 +1280,30 @@ function spawnRandomObject(rm) {
     }
 }
 
-function reloadGun(player) {
-  player.clip = player.clipSize;
+  //Find the optimal path to closest player using A*
+  // goal = [rooms[rm].players[closestPlayer].x, rooms[rm].players[closestPlayer].y];
+  // startState = [rooms[rm].boss.x, rooms[rm].boss.y];
+  // console.log("logging goa;l". goal);
+  // path = aStarSearch(startState, goal, rm);
+  // speed = rooms[rm].boss.speed
+
+  // console.log("moving the big boy");
+
+  // console.log(path)
+
+  // switch(path[0]) {
+  //   case "left":
+  //     rooms[rm].boss.x -= speed;
+  //     break;
+  //   case "right":
+  //     rooms[rm].boss.x += speed;
+  //     break;
+  //   case "up":
+  //     rooms[rm].boss.y -= speed;
+  //     break;
+  //   case "down":
+  //     rooms[rm].boss.y += speed;
+  // }
 }
 
 //recover player Health
@@ -1346,6 +1386,165 @@ function checkQuest(rm) {
           // quest.complete(player);
           io.sockets.to(id).emit("questOver", quest.name, quest.condition, quest.description);
         }
+      }
+    }
+
+  }
+
+}
+
+//Move projectiles
+function moveProjectiles(rm) {
+  for (var id in rooms[rm].projectiles) {
+    if (rooms[rm].projectiles[id]) {
+      var delBullet = false;
+      var originX = rooms[rm].projectiles[id].x;
+      var originY = rooms[rm].projectiles[id].y;
+      rooms[rm].projectiles[id].x += rooms[rm].projectiles[id].vx/updatePerSecond;
+      rooms[rm].projectiles[id].y += rooms[rm].projectiles[id].vy/updatePerSecond;
+      if(hasCollision(rooms[rm].projectiles[id].x, rooms[rm].projectiles[id].y, rm)){
+        rooms[rm].projectiles[id].x = originX;
+        rooms[rm].projectiles[id].y = originY;
+        delBullet = true;
+        // deleteBullet(id);
+      }
+      //Delete stale projectiles
+      if ( (Math.abs(rooms[rm].projectiles[id].x) > 5000) ||
+           (Math.abs(rooms[rm].projectiles[id].y) > 5000) ) {
+          delBullet = true;
+      }
+      if(delBullet == true){
+        deleteBullet(id, rm);
+      }
+    }
+  }
+}
+
+//Delete a stale bullet
+function deleteBullet(id, rm) {
+  var temp = rooms[rm].projectiles[rooms[rm].bulletCount -= 1];
+  rooms[rm].projectiles[rooms[rm].bulletCount] = rooms[rm].projectiles[id];
+  rooms[rm].projectiles[id] = temp;
+  rooms[rm].projectiles[rooms[rm].bulletCount] = 0;
+  rooms[rm].projectiles.numProjectiles -= 1;
+}
+
+//Move enemies towards the nearest player
+function moveEnemies(rm) {
+  //Enemy movement handler
+  for (var id in rooms[rm].enemies) {
+   //Find closest players
+   if ( rooms[rm].players.numPlayers > 0 ) {
+   // if ( (players.numPlayers > 0) && (enemies.numEnemies > 0) ) {
+     var closestPlayer;
+     var closestPlayerDistance = Infinity;
+     for (var player in rooms[rm].players) {
+       var distX = rooms[rm].players[player].x - rooms[rm].enemies[id].x;
+       var distY = rooms[rm].players[player].y - rooms[rm].enemies[id].y;
+       var distance = Math.sqrt( distX * distX + distY * distY );
+       if (distance < closestPlayerDistance) {
+         closestPlayer = player;
+         closestPlayerDistance = distance;
+       }
+     }
+     if (rooms[rm].players[closestPlayer] == undefined) {
+       // console.log("players[closestPlayer] is undefined. Ignoring",
+       //   "moveEnemies() logic instead of letting program crash.",
+       //   "Please check the logic.");
+       return;
+     }
+     //Move to closest player
+     distX = rooms[rm].enemies[id].x - rooms[rm].players[closestPlayer].x;
+     distY = rooms[rm].enemies[id].y - rooms[rm].players[closestPlayer].y;
+
+     var attackTheta = Math.atan(distX / distY);
+
+     var sign = -1;
+     if (rooms[rm].enemies[id].y < rooms[rm].players[closestPlayer].y) {
+       sign = 1;
+     }
+
+     if ( Math.abs(distX) < 15 && Math.abs(distY) < 15 ) {
+      // console.log("distX ", distX, "distY, ", distY);
+      //Deplete health
+      rooms[rm].players[closestPlayer].health -= 8/updatePerSecond;
+      //Kill player
+      if (rooms[rm].players[closestPlayer].health < 0) {
+        youveBeenTerminated(closestPlayer, rm);
+        // break;
+        if (rooms[rm] == undefined) {
+          return;
+        }
+
+      }
+
+       //Dont move any closer
+       sign = 0;
+     }
+
+     rooms[rm].enemies[id].vx =  rooms[rm].enemies[id].speed * Math.sin(attackTheta) * sign;
+     rooms[rm].enemies[id].vy =  rooms[rm].enemies[id].speed * Math.cos(attackTheta) * sign;
+     var originX = rooms[rm].enemies[id].x;
+     var originY = rooms[rm].enemies[id].y;
+     rooms[rm].enemies[id].x += rooms[rm].enemies[id].vx/updatePerSecond;
+     rooms[rm].enemies[id].y += rooms[rm].enemies[id].vy/updatePerSecond;
+    //  console.log("logging enemy coordinates", rooms[rm].enemies[id].x, rooms[rm].enemies[id].y);
+     if(hasCollision(rooms[rm].enemies[id].x, rooms[rm].enemies[id].y, rm)){
+       rooms[rm].enemies[id].x = originX;
+       rooms[rm].enemies[id].y = originY;
+     }
+   }
+ }
+ if (rooms[rm] == undefined) {
+   return;
+ }
+}
+
+//Handles bullet collisions
+function handleBulletCollisions(rm) {
+  //Player-projectile collision handler
+  for (var player in rooms[rm].players) {
+    for (var id in rooms[rm].projectiles) {
+      if (rooms[rm].projectiles[id]) {
+        if ( (Math.abs(rooms[rm].players[player].x - rooms[rm].projectiles[id].x) < 2) &&
+            (Math.abs(rooms[rm].players[player].y - rooms[rm].projectiles[id].y) < 2) ) {
+          rooms[rm].players[player].health -= 1;
+          if (rooms[rm].players[player].health < 0) {
+            youveBeenTerminated(player, rm);
+          }
+        }
+      }
+    }
+  }
+  //Enemy-projectile collision handler
+  for (var enemy in rooms[rm].enemies) {
+    for (var id in rooms[rm].projectiles) {
+      if (rooms[rm].projectiles[id]) {
+        if ( (Math.abs(rooms[rm].enemies[enemy].x - rooms[rm].projectiles[id].x) < 12) &&
+            (Math.abs(rooms[rm].enemies[enemy].y - rooms[rm].projectiles[id].y) < 12) ) {
+              rooms[rm].enemies[enemy].health -= 1;
+              if (rooms[rm].enemies[enemy].health < 0) {
+                var temp = rooms[rm].enemies[rooms[rm].enemyID -= 1];
+                rooms[rm].enemies[rooms[rm].enemyID] = rooms[rm].enemies[enemy];
+                rooms[rm].enemies[enemy] = temp;
+                rooms[rm].enemies[rooms[rm].enemyID] = 0;
+                rooms[rm].enemies.numEnemies -= 1;
+              }
+        }
+      }
+    }
+  }
+  //Boss-projectile collision handler
+  if(rooms[rm].boss) {
+    for (var id in rooms[rm].projectiles) {
+      if (rooms[rm].projectiles[id]) {
+        if ((Math.abs(rooms[rm].boss.x - rooms[rm].projectiles[id].x) < 30) &&
+            (Math.abs(rooms[rm].boss.y - rooms[rm].projectiles[id].y) < 30)) {
+              rooms[rm].boss.health -= 1;
+              if(rooms[rm].boss.health < 0) {
+                rooms[rm].boss = 0;
+              }
+            }
       }
     }
   }

@@ -2,6 +2,7 @@ const assert = require('chai').assert;
 //const sayHello = require('../index').sayHello;
 //const addNumbers = require('../index').addNumbers;
 const index = require('../index');
+
 // chai-http and server access
 var chai = require('chai');
 var chaiHttp = require('chai-http');
@@ -22,8 +23,19 @@ testPlayerAmmoResult = index.testPlayerAmmo();
 testPlayerHealthResult = index.testPlayerHealth();
 testPlayerReloadResult = index.testPlayerReload();
 testMiniMapResult = index.testMiniMap();
+<<<<<<< HEAD
+testZone1Result = index.testZone1();
+testZone2Result = index.testZone2();
+testZone3Result = index.testZone3();
+testZone4Result = index.testZone4();
+testZone6Result = index.testZone6();
+testZone7Result = index.testZone7();
+testZone8Result = index.testZone8();
+testZone9Result = index.testZone9();
+=======
 testWeatherAPIResult = index.testWeatherAPI();
 
+>>>>>>> 9817f7d9bc5f174cbee82a4eb5d9105c87bbc20d
 //roomsResult = index.rooms('test');
 
 describe('Index', function(){
@@ -217,6 +229,10 @@ describe('Index', function(){
             assert.equal(testEnemyMovementResult, 5);
         });
     });
+<<<<<<< HEAD
+
+=======
+>>>>>>> 9817f7d9bc5f174cbee82a4eb5d9105c87bbc20d
 
     // Test cases for Player Shoot
     describe('testPlayerShoot()', function(){
