@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html> -->
 
 <html lang="en">
 <head>
@@ -11,18 +11,25 @@
     <h1 class="title"> S . F . U </h1>
     <h2 class="title"> Special Fortification Unit</h2>
   </section>
+
+  <section id="disconnect_space">
+    <form action='/disconnect' method='post'>
+      <input type="submit" id="disconnect_btn" value="DISCONNECT"/>
+    </form>
+  </section>
+
   <section id="login_box">
 
     <!-- display table(s) -->
     <div id="Datatable">
             <table class="dataTable">
-                <% rows.forEach((r) => { %> 
+                <% rows.forEach((r) => { %>
                 <tbody>
                     <tr class="row">
                         <td>user_id</td><td id="idOut"><%=r.user_id%></td>
                         <td>username</td><td id="usernameOut"><%=r.username%></td>
                     </tr>
-        
+
                     <tr class="row">
                         <td>score</td><td id="scoreOut"><%=r.score%></td>
                         <td>gmail</td><td id="gmailOut"><%=r.gmail%></td>
@@ -33,6 +40,7 @@
         </div>
     </div>
 </section>
+
 </body>
 </html>
 
@@ -43,4 +51,3 @@
       alert(msg.innerHTML);
     };
 </script>
-

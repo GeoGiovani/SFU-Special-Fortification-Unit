@@ -18,21 +18,21 @@
     background-size: cover;
     top:0;
   }
-  
+
   #page_title{
     text-align:center;
   }
-  
+
   h1{
     font-family:pacfont;
     font-size: 3.5vw;
   }
-  
+
   h2{
     font-size: 2.5vw;
   }
-  
-  
+
+
   #login_box{
     padding-top:2vh;
     margin-left: auto;
@@ -43,8 +43,8 @@
     background:rgba(255,255,255,0.39);
     text-align:center;
   }
-  
-  
+
+
   #log_in_photo{
     width: 30%;
     height: 20%;
@@ -53,7 +53,7 @@
     display:block;
     margin:auto;
     }
-  
+
   #username{
     margin:auto;
     margin-top:2vh;
@@ -64,7 +64,7 @@
     background:transparent;
     border:none;
   }
-  
+
   #password{
     margin:auto;
     width:60%;
@@ -76,7 +76,7 @@
     background:transparent;
     border:none;
   }
-  
+
   #sign_in_button{
     display:block;
     margin:auto;
@@ -87,37 +87,51 @@
     margin:auto;
     margin-bottom:3vh;
   }
-  
-  
+
+
   .sign_in_options_box{
     margin: auto;
     border-radius: 1%;
   }
-  
+
+  #disconnect_space{
+    text-align:center;
+  }
+
+  #disconnect_btn{
+    font-size: 10pt;
+    font-family: tahoma;
+    width: 100px;
+    height:50px;
+    background-color: rgba(15, 14, 14, 0.842);
+    color: rgb(66, 196, 236);
+    border: solid white 1px;
+  }
+
   #gmail{
     width:3vw;
     height:4vh;
     text-align:center;
   }
-  
-  
+
+
   .dataTable {
     width: 95%;
     margin-left: 2.5%;
     table-layout: fixed;
     border-collapse: collapse;
     text-align: center;
-  
+
     background-color: rgba(15, 14, 14, 0.753);
     color: rgb(66, 196, 236);
   }
-  
+
   .dataTable td {
     width: 25%;
-  
+
     font-size: 20px;
-    font-family: 'pokemon-font', monospace; 
+    font-family: 'pokemon-font', monospace;
     /* font source: https://github.com/Superpencil/pokemon-font */
-  
-    border: solid white 1px; 
+
+    border: solid white 1px;
   }

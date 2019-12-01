@@ -12,15 +12,17 @@
       }
     </style>
     <script src="/socket.io/socket.io.js"></script>
-    <!-- <audio type="audio/mpeg" src="static\sound\HITMARKER.mp3" id="hitmarker"><audio> -->
   </head>
   <body>
     <canvas id="canvas"></canvas>
+    <div class="tracker">
+      <h1>Score: </h1>
+      <h1>Health: </h1>
+      <audio controls autoplay loop id="music"><source src="../static/sound/Attack on Titan S3 OST - ətˈæk 0N tάɪtn ＜WMId＞.mp3" type="audio/mpeg" /></audio>
+    </div>
+    <button id="button">
+      <a href="../settings/options.html">Options</a>
+    </button>
   </body>
-  <script src="/static/UIElement.js">
-    export *;
-  </script>
-  <script src="/static/game.js">
-    import * from './static/UIElement.js';
-  </script>
+  <script src="/static/game.js"></script>
 </html>

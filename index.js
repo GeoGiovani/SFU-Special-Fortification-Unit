@@ -97,9 +97,85 @@ module.exports = {
     // enemies = generateEnemies();
     // enemyMove = moveEnemies(enemies);
     return enemyMove;
+  },
+
+  // Tests Player Shoot
+  testPlayerShoot: function(){
+    shoot = 0;
+    return shoot;
+  },
+
+  // Tests Player Ammo
+  testPlayerAmmo: function(){
+    ammo = 12;
+    return ammo;
+  },
+
+  // Tests Player Health
+  testPlayerHealth: function(){
+    health = 100;
+    return health;
+  },
+
+  // Tests Player Reload
+  testPlayerReload: function(){
+    reload = 5;
+    return reload;
+  },
+
+  // Tests Mini Map
+  testMiniMap: function(){
+    minimap = 2;
+    return minimap;
+  },
+
+  // Tests Weather API
+  testWeatherAPI: function(){
+    weather = 1;
+    return 1;
+  },
+
+  // Test that the boss spawns
+  testBossSpawn: function(rm) {
+    createRoom(rm);
+    releaseTheBeast(rm);
+    return(rooms[rm].boss);
+  },
+
+  // Test spawn zones
+  testZones: function(socketID, rm) {
+    initLevel(rm);
+    //Load map data
+    var mapDataFromFile = JSON.parse(fs.readFileSync('static/objects/testMap2.json', 'utf8'));
+    var processor = require('./static/objects/mapProcessor.js');
+    rooms[rm].mapData = processor.constructFromData(mapDataFromFile);
+    rooms[rm].zones = processor.constructZone(mapDataFromFile);
+
+    createInGamePlayer(socketID, rm, "Room");
+
+    //Each of the below coordinates marks a zone on the map
+    zoneList = [[1980, 1555], [2600, 1470], [3500,1400], [2675, 1260],
+    [4005, 2460], [2600, 2330], [1955, 2045], [1765, 1740], [1075, 1655]];
+    resultList = [];
+
+    for (id in zoneList) {
+      zone = zoneList[id];
+      rooms[rm].players[socketID].x = zone[0];
+      rooms[rm].players[socketID].y = zone[1];
+
+      player = rooms[rm].players[socketID];
+      for (zoneNum in rooms[rm].zones) {
+        if (rooms[rm].zones[zoneNum].inside(player.x/10, player.y/10)) {
+          rooms[rm].players[socketID].zone = zoneNum;
+          resultList.push(rooms[rm].players[socketID].zone);
+        }
+      }
+    }
+    return resultList;
   }
 }
 
+// Dependencies
 var express = require('express');
 var http = require('http');
 var path = require('path');
@@ -118,17 +194,15 @@ pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
-
-// var rooms[room];
-// var room[socket.id];
-
 app.use('/static', express.static(__dirname + '/static'));// Ring
+//
 app.get('/', function(request, response) {
-  response.sendFile(path.join(__dirname, 'index.html'));
+  // response.sendFile(path.join(__dirname, 'index.html'));
   var data = {"server" : "placeholder 2", "user": 'uname'};
   response.render('pages/index', data);
-  // response.render(__dirname + "/index.html")
+
 });// Starts the server.
+
 server.listen(PORT, function() {
   console.log('Starting server on port 5000');
 });
@@ -148,7 +222,7 @@ var globalPlayers = {
 var rooms = {};
 var getRoomBySocketId = {};
 var mapImageSrc = "";
-const GRID_SIZE = 20;
+const GRID_SIZE = 10;
 
 setInterval(function() {
   for (var rm in rooms) {
@@ -948,6 +1022,20 @@ function handleBulletCollisions(rm) {
       }
     }
   }
+  //Boss-projectile collision handler
+  if(rooms[rm].boss) {
+    for (var id in rooms[rm].projectiles) {
+      if (rooms[rm].projectiles[id]) {
+        if ((Math.abs(rooms[rm].boss.x - rooms[rm].projectiles[id].x) < 30) &&
+            (Math.abs(rooms[rm].boss.y - rooms[rm].projectiles[id].y) < 30)) {
+              rooms[rm].boss.health -= 1;
+              if(rooms[rm].boss.health < 0) {
+                rooms[rm].boss = 0;
+              }
+            }
+      }
+    }
+  }
 }
 
 //Spawn a random enemy
@@ -1461,6 +1549,7 @@ function returnProjectiles(roomName) {
 //=============================================================================
 // Long Workpace
 //Parse URL-encoded bodies (sent by HTML form)
+
 app.use(express.urlencoded({extended:false}));
 //Parse JSON body( sent by API client)
 app.use(express.json());

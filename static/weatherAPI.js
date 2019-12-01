@@ -57,7 +57,7 @@ function getWeather(position,time) {
     var weather = data.weather[0].main;
     var icon = `http://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
       // $('#label').html(weather);
-    const nighttime ='18:00:00';
+    const nighttime ='17:00:00';
     if (icon)
       $("#icon").attr("src",icon);
     else {
@@ -105,7 +105,9 @@ function getWeather(position,time) {
 };
 
 function rain() {
+  console.log('rain() called');
   var canvas = $('#rain1')[0];
+
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   canvas.style.visibility = "visible";
@@ -165,6 +167,7 @@ function rain() {
 
 
 function rainLightning() {
+    console.log('rainLightning() evoked');
     var canvas1 = document.getElementById('rain1');
     var canvas2 = document.getElementById('rain2');
     var canvas3 = document.getElementById('rain3');
@@ -372,7 +375,7 @@ function rainLightning() {
 
 
 function moon(){
-
+  console.log('moon() called');
 	var meteorSky = document.getElementById('moon');
   meteorSky.style.visibility = 'visible';
   meteorSky.width = window.innerWidth;
@@ -381,9 +384,12 @@ function moon(){
 	var h = meteorSky.height;//document.body.clientHeight;
 
 	var sky = new nightSky(meteorSky, w, h, {
-		silverRiverNum : 1000,
-		lineNumMax: 30,
-		middleNum:7,
+		// silverRiverNum : 1000,
+		// lineNumMax: 30,
+		// middleNum:7,
+    silverRiverNum : 0,
+		lineNumMax: 0,
+		middleNum:0,
 	});
 }
 
@@ -667,6 +673,7 @@ function nightSky(id, w, h, options) {
 // ========== MOON ===============
 // =========== SUN =============
 function sun(){
+  console.log('Sun() called');
   document.querySelector('#sun').style.visibility = 'visible';
 
   // var game = document.getElementById('canvas');
@@ -680,7 +687,7 @@ function sun(){
 // ============= END SUN ============
 // =========== SNOW ================
 function snowy() {
-
+  console.log('snowy() evoked');
   (function() {
       var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame ||
       function(callback) {

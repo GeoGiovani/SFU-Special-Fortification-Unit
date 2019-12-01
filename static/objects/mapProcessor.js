@@ -1,12 +1,26 @@
+/*This file reads and constructs the elements in the .json data file for the map.
+  This file is only called when initializing the map.
+   other purpose, please create another .js file.
+*/
+
+//'fs' is required for only readFile, which is moved to index.js now,
+//but I will leave it here.
 const fs = require('fs');
 //when accessing classes in objects, call: objects.<OBJECTNAME>(<parameters>)
-var objects = require('./MapObject.js');
+var objects = require('./objects.js');
 
-// Process JSON files into 2d array of map objects
+// This functions receives single JSON data (which is already parsed)
+// and constructs the elements, finally returns the containers that holds
+// other containers, which holds each objects in the map.
 // code for calling this function [in index.js]
+// var mapDataFromFile =
+// JSON.parse(fs.readFileSync('static/objects/testMap.json', 'utf8'));
+// var processor = require('./static/objects/mapProcessor.js');
+// mrftapData = processor.constructFromData(mapDataFromFile);
 var constructFromData = function(jsonContent){
   var largestPosition = findLargestPosition(jsonContent);
   var mapData = giveEmptyMap(largestPosition);
+  mapData = initFloorMap(mapData, jsonContent);
   mapData = initWallMap(mapData, jsonContent);
   //NEED more functions here for other objects
   return mapData;
@@ -22,6 +36,21 @@ function findLargestPosition(json){
     var y = json.map.wall[i].y;
     var width = json.map.wall[i].width;
     var height = json.map.wall[i].height;
+    var lastX = x + width - 1;
+    var lastY = y + height - 1;
+    if(lastX > largestX){
+      largestX = lastX;
+    }
+    if(lastY > largestY){
+      largestY = lastY
+    }
+    //console.log(obj.name);
+  }
+  for (var i = 0; i < json.map.floor.length; i++) {
+    var x = json.map.floor[i].x;
+    var y = json.map.floor[i].y;
+    var width = json.map.floor[i].width;
+    var height = json.map.floor[i].height;
     var lastX = x + width - 1;
     var lastY = y + height - 1;
     if(lastX > largestX){
@@ -60,6 +89,18 @@ function initWallMap(mapData, json){
   return mapData;
 }
 
+function initFloorMap(mapData, json){
+  for (var i = 0; i < json.map.floor.length; i++) {
+    var x = json.map.floor[i].x;
+    var y = json.map.floor[i].y;
+    var width = json.map.floor[i].width;
+    var height = json.map.floor[i].height;
+    var color = json.map.floor[i].color;
+    mapData = insertFloorIntoArray(mapData, x, y, width, height, color);
+  }
+  return mapData;
+}
+
 function insertWallIntoArray(mapData, x, y, width, height){
   var endX = x + width;
   var endY = y + height;
@@ -84,6 +125,20 @@ function insertWallIntoArray(mapData, x, y, width, height){
   //   console.log(line);
   // }
   // /////*****
+  return mapData;
+}
+
+function insertFloorIntoArray(mapData, x, y, width, height, color){
+  var endX = x + width;
+  var endY = y + height;
+  for (var mapX = x; mapX < endX; mapX++){
+    for (var mapY = y; mapY < endY; mapY++){
+      if (mapData[mapX][mapY] != '') {
+        delete mapData[mapX][mapY];
+      }
+      mapData[mapX][mapY] = new objects.Floor(color);
+    }
+  }
   return mapData;
 }
 
@@ -119,3 +174,23 @@ function givePlayerArray(json){
   return array;
 }
 module.exports.constructFromData = constructFromData;
+
+//=====================================================
+
+var constructZone = function(json) {
+  var zones = {};
+  for (var i = 0; i < json.map.zone.length; i++) {
+    var num = json.map.zone[i].num;
+    var x = json.map.zone[i].x;
+    var y = json.map.zone[i].y;
+    var width = json.map.zone[i].width;
+    var height = json.map.zone[i].height;
+    var open = json.map.zone[i].open;
+    var name = json.map.zone[i].name;
+    var description = json.map.zone[i].description;
+    zones[num] = new objects.Zone(num, x, y, width, height, open, name, description);
+  }
+  return zones;
+}
+
+module.exports.constructZone = constructZone;

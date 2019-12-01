@@ -5,20 +5,26 @@
   "main": "index.js",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "ejs": "^2.7.1",
+    "ejs": "^2.7.4",
     "express": "^4.17.1",
     "fs": "0.0.1-security",
     "html": "^1.0.0",
     "http": "0.0.0",
-    "pg": "^7.12.1",
+    "js-priority-queue": "^0.1.5",
+    "pg": "^7.14.0",
     "pkg": "^4.4.0",
     "request": "^2.88.0",
     "require": "^2.4.20",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.3.0",
+    "tape": "^4.11.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "mocha": "^6.2.2"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",

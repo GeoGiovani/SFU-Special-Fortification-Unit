@@ -144,7 +144,7 @@ document.addEventListener('keydown', function(event) {
         }
       }
       break;
-    case 77:
+    case 77: //M
       mapOn = !mapOn;
       break;
   }
@@ -182,6 +182,7 @@ canvas.addEventListener('click', function (e) {
   processClick(mouseX, mouseY);
   console.log("shoot bullet")
   var newAudio = sound.shoot.cloneNode()
+  newAudio.volume = 0.05;
   newAudio.play()
   shoot.shootBullet = true;
   shoot.x = mouseX;
@@ -671,6 +672,7 @@ function gameStateProcessor(players, numPlayers, projectiles, numProjectiles, en
 
     context.fillStyle = 'green';
     for (var id in players) {
+
       var player = players[id];
       //Determines how the characters look
       context.beginPath();
@@ -682,6 +684,7 @@ function gameStateProcessor(players, numPlayers, projectiles, numProjectiles, en
 
     var bossImg = document.getElementById("boss");
     // context.drawImage(bossImg, boss.x - middleX, boss.y - middleY, 100, 130);
+    // showHealthBarAbove(boss.x - middleX + 20, boss.y - middleY - 100, boss.health, boss.maxHealth);
     // console.log("projectiles",projectiles)
     for (var id in projectiles) {
       var projectile = projectiles[id];
@@ -696,7 +699,7 @@ function gameStateProcessor(players, numPlayers, projectiles, numProjectiles, en
     for (var id in enemies) {
       var enemy = enemies[id];
       //Determines how the bullets look // old radius = 6
-      context.drawImage(bossImg, enemy.x - middleX, enemy.y - middleY, GRID_SIZE, GRID_SIZE);
+      context.drawImage(bossImg, enemy.x - middleX + 5, enemy.y - middleY - 40, 50, 65);
       // context.beginPath();
       // context.arc(enemy.x - middleX, enemy.y - middleY, GRID_SIZE/2, 0, 2 * Math.PI);
       // context.fillStyle = 'red';

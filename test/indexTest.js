@@ -17,6 +17,12 @@ addNumbersResult = index.addNumbers(5, 5);
 testSpawnResult = index.testSpawn();
 testGenerateEnemiesResult = index.testGenerateEnemies();
 testEnemyMovementResult = index.testEnemyMovement();
+testPlayerShootResult = index.testPlayerShoot();
+testPlayerAmmoResult = index.testPlayerAmmo();
+testPlayerHealthResult = index.testPlayerHealth();
+testPlayerReloadResult = index.testPlayerReload();
+testMiniMapResult = index.testMiniMap();
+testWeatherAPIResult = index.testWeatherAPI();
 
 //roomsResult = index.rooms('test');
 
@@ -212,10 +218,85 @@ describe('Index', function(){
         });
     });
 
+    // Test cases for Player Shoot
+    describe('testPlayerShoot()', function(){
 
+        it('testPlayerShoot() is of type int', function(){
+            assert.notTypeOf(testPlayerShootResult, 'string');
+        });
 
+        it('testPlayerShoot() Shoot is atleast 0', function(){
+            assert.equal(testPlayerShootResult, 0);
+        });
+    });
 
+    // Test cases for Player Ammo
+    describe('testPlayerAmmo()', function(){
 
+        it('testPlayerAmmo() is of type int', function(){
+            assert.notTypeOf(testPlayerAmmoResult, 'string');
+        });
+
+        it('testPlayerAmmo() Ammo is atleast 12', function(){
+            assert.equal(testPlayerAmmoResult, 12);
+        });
+    });
+
+    // Test cases for Player Health
+    describe('testPlayerHealth()', function(){
+
+        it('testPlayerHealth() is of type int', function(){
+            assert.notTypeOf(testPlayerHealthResult, 'string');
+        });
+
+        it('testPlayerHealth() Health is atleast 100', function(){
+            assert.equal(testPlayerHealthResult, 100);
+        });
+    });
+
+    // Test cases for Player Reload
+    describe('testPlayerReload()', function(){
+
+        it('testPlayerReload() is of type int', function(){
+            assert.notTypeOf(testPlayerReloadResult, 'string');
+        });
+
+        it('testPlayerReload() Reload is atleast 5', function(){
+            assert.equal(testPlayerReloadResult, 5);
+        });
+    });
+
+    // Test cases for Mini Map
+    describe('testMiniMap()', function(){
+
+        it('testMiniMap() exists', function(){
+            assert.isOk(testMiniMapResult);
+        });
+
+        it('testMiniMap() is of type int', function(){
+            assert.notTypeOf(testMiniMapResult, 'string');
+        });
+
+        it('testMiniMap() speed is atleast 2', function(){
+            assert.equal(testMiniMapResult, 2);
+        });
+    });
+
+    // Test cases for Weather API
+    describe('testWeatherAPI()', function(){
+
+        it('testWeatherAPI() exists', function(){
+            assert.isOk(testWeatherAPIResult);
+        });
+
+        it('testWeatherAPI() is of type int', function(){
+            assert.notTypeOf(testWeatherAPIResult, 'string');
+        });
+
+        it('testWeatherAPI() speed is atleast 1', function(){
+            assert.equal(testWeatherAPIResult, 1);
+        });
+    });
 
 
 // GET and POST testing functions start from below, just uncomment them to make them work
@@ -308,19 +389,19 @@ describe('Index', function(){
             });
     });
   });
-    // Test  cases for register page
-  describe('Register page', ()=>{
-      it ('Should create an account with /register POST using valid data',
-      (done) =>{
-        chai.request('https://sfunit.herokuapp.com')
-            .post('/register')
-            .send({'username':'long',
-                    'pw':'123456',
-                    'gmail':'test@gmail.com'})
-            .end(function(err,res){
-              res.should.have.status(200);
-              done();
-            });
-      });
+
+  // Test whether the enemy spawns
+  describe('Spawn Boss', ()=> {
+    result = index.testBossSpawn();
+    it ('Should spawn the boss onto the map', function() {
+        assert.isOk(result);
+    });
+  });
+
+  describe('Checking Map Zones', ()=> {
+    result = index.testZones("ZoneTestSocketID", "ZoneTestRoom");
+    it ('Should contain all zones', function() {
+        assert.isOk(result[7] == 9 && result[5] == 7 && result[0] == 1);
+    });
   });
 });

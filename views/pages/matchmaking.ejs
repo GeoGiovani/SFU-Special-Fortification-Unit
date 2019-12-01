@@ -6,27 +6,38 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Tokidex</title>
     <link rel="stylesheet" href="/stylesheets/matchmaking.css">
-
+    
 <body>
     <div id="mainCard">
         <h1 id="pageTitle">Search for Server</h1>
 
         <div id="searchBar">
             <form class="innerSearchBar" action="/gameroom" method="post">
-                <input id="roomName" name="roomName" input type="string"
+                <input id="serverName" name="serverName" input type="string"
                     input type="string" 
-                    pattern="^[a-zA-Z0-9]*$"
+                    pattern="^[a-zA-Z0-9]*$" 
                     maxlength="12"
                     oninvalid="this.setCustomValidity('Use alphanumerals only')"
                     onchange="try{setCustomValidity('')}catch(e){}"
-                    oninput="setCustomValidity(' ')"
-                    placeholder="PLEASE ENTER SERVER NAME"
+                    oninput="setCustomValidity(' ')" 
+                    placeholder="PLEASE ENTER SERVER NAME" 
                     onfocus="this.placeholder = ''"
                     onblur="this.placeholder = 'PLEASE ENTER SERVER NAME'" >
-
-                <input id="searchButton" type="submit" name="" value="JOIN">
+                <p id="username" name="username" hidden><%=username%></p>
+                <input id="searchButton" type="submit" name="uname" value="JOIN"/>
             </form>
         </div>
     </div>
 </body>
+<!-- <script src="../../static/matchmaking.js"></script> -->
+
+
+<script>
+    var searchBtn = document.getElementById('searchButton');
+    var username = document.getElementById('username');
+    username = username.innerHTML
+    searchBtn.addEventListener('click', function(event) {
+        searchBtn.value = username;
+    });
+</script>
 </html>
