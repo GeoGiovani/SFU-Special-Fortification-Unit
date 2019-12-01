@@ -2052,7 +2052,7 @@
         "num": 1,
         "name": "W.A.C. Library",
         "description": "Words without Any Clues, W.A.C. Bennett Library.",
-        "open": true,
+        "open": false,
         "memo": "zone locking thing. number should NEVER be 0!"
       },
       {
@@ -2118,7 +2118,7 @@
         "num": 7,
         "name": "Mysterious Beseiged Citadel",
         "description": "Where the overpriced bookstore is located",
-        "open": true,
+        "open": false,
         "memo": "zone locking thing. number should NEVER be 0!"
       },
       {
@@ -2129,7 +2129,7 @@
         "num": 8,
         "name": "Construction Mall",
         "description": "Meant to be Convocation Mall, however...",
-        "open": true,
+        "open": false,
         "memo": "zone locking thing. number should NEVER be 0!"
       },
       {
@@ -2140,7 +2140,7 @@
         "num": 9,
         "name": "Rotunda",
         "description": "Gimme ideas.......-Hailey",
-        "open": true,
+        "open": false,
         "memo": "zone locking thing. number should NEVER be 0!"
       }
     ],

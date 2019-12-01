@@ -307,10 +307,12 @@ window.addEventListener('mousemove', function (e) {
       context.fillStyle = 'red';
       context.fill();
 
-      showHealthBarAbove(enemy.x - middleX, enemy.y - middleY, enemy.health, enemy.maxHealth);
+      if (enemy.health < enemy.maxHealth) {
+        showHealthBarAbove(enemy.x - middleX, enemy.y - middleY, enemy.health, enemy.maxHealth);
+      }
     }
 
-    context.fillStyle = "rgba(100, 100, 100, 0.3)";
+    context.fillStyle = "rgba(120, 100, 100, 0.6)";
     for (var id in zones) {
       var zone = zones[id];
       if (!zone.open) {
@@ -545,6 +547,11 @@ function showMyData(player) {
   context.fillStyle = "black";
   context.font = "bold 35px Arial";
   context.fillText(player.username, 17, 50);
+
+  //score
+  context.fillStyle = "black";
+  context.font = "bold 15px Arial";
+  context.fillText("Score: "+player.score, 17, 120);
 }
 function showOtherPlayerData(player, playerIndex) {
   context.fillStyle = "#BBB";
@@ -591,7 +598,12 @@ function showQuests(player, teamQuests) {
       context.strokeText("["+teamQuests[i].name + "] " + teamQuests[i].condition + " " + teamQuests[i].progressText, 10, 170+line*20);
       context.fillText("["+teamQuests[i].name + "] " + teamQuests[i].condition + " " + teamQuests[i].progressText, 10, 170+line*20);
       line += 1;
-      if (line > 10) {
+      if (teamQuests[i].completeDescription) {
+        context.strokeText("     "+teamQuests[i].completeDescription, 10, 170+line*20);
+        context.fillText("     "+teamQuests[i].completeDescription, 10, 170+line*20);
+        line += 1;
+      }
+      if (line > 20) {
         break;
       }
     }

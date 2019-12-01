@@ -159,7 +159,7 @@ module.exports = {
     weather = 1;
     return 1;
   }
-  
+
 }
 
 // Dependencies
@@ -355,8 +355,8 @@ function createPlayer(id, serverName, username) {
     username: username,
     x: 259 * GRID_SIZE,
     y: 169 * GRID_SIZE,
-    maxHealth: 20,
-    health: 20,
+    maxHealth: 40,
+    health: 40,
     healthRecoverRate: 1,
     level: 1,
     damage: 5,
@@ -390,7 +390,10 @@ function createPlayer(id, serverName, username) {
         return "("+player.questData.bulletsTotal+"/"+30+")";
       },
       progressText: "",
-      trigger: []
+      complete: function(player) {
+        player.score += 100;
+      },
+      trigger: ["Noisy neighbor"]
     },
     {
       name: "Newbie survivor",
@@ -410,7 +413,7 @@ function createPlayer(id, serverName, username) {
       },
       progressText: "",
       complete: function(player) {
-
+        player.score += 100;
       },
       trigger: ["Experienced survivor"]
     },
@@ -431,7 +434,26 @@ function createPlayer(id, serverName, username) {
       },
       progressText: "",
       complete: function(player) {
-
+        player.score += 300;
+      },
+      trigger: []
+    },
+    {
+      name: "Noisy neighbor",
+      isMainQuest: false,
+      condition: "Shoot 100 times",
+      description: "Bang! x100",
+      display: false,
+      checkCondition: function(player){
+        return (player.questData.bulletsTotal >= 100);
+      },
+      clear: false,
+      progress: function(player){
+        return "("+player.questData.bulletsTotal+"/"+100+")";
+      },
+      progressText: "",
+      complete: function(player) {
+        player.score += 200;
       },
       trigger: []
     }]
@@ -566,7 +588,139 @@ function roomData(serverName) {
           io.sockets.to(rm).emit("zoneOpen", "Avocado quest complete!");
         }
       },
-      trigger: ["Combat Ready"]
+      trigger: ["Progress to the Escape 1"]
+    },
+    {
+      name: "Progress to the Escape 1", //TODO: change after demo classroom decided!
+      isMainQuest: true,
+      isHidden: false,
+      condition: "Achieve total score 300",
+      description: "",
+      display: false,
+      currentTotal: 0,
+      checkCondition: function(rm){
+        var totalScore = 0;
+        for (var id in rooms[rm].players) {
+          var player = rooms[rm].players[id];
+          if (!player || !player.score) {
+            continue;
+          }
+          totalScore += player.score;
+        }
+        this.totalScore = totalScore;
+        return (totalScore >= 500);
+      },
+      clear: false,
+      progress: function(rm){
+        return "("+this.totalScore+"/"+300+")";
+      },
+      progressText: "",
+      completeDescription: "Open - W.A.C. Library",
+      complete: function(rm) {
+
+        //Complete ALL player's this quest, with scores for all.
+        for (var id in room.players) {
+          var otherPlayer = room.players[id];
+          if (!otherPlayer) {
+            continue;
+          }
+          if (!otherPlayer.quests) {
+            console.log(otherPlayer);
+            continue;
+          }
+          otherPlayer.score += 300;
+          //trigger next quests
+          //trigger next quests
+          for (var i = 0; i < quest.trigger.length; i++) {
+            for (var nextQ in otherPlayer.quests) {
+              if (otherPlayer.quests[nextQ].name == quest.trigger[i] && !otherPlayer.quests[nextQ].clear) {
+                otherPlayer.quests[nextQ].display = true;
+              }
+            }
+          }
+        }
+        io.sockets.to(rm).emit("message",
+          "Well done! Proceed to the library. Now our goal is 800.");
+        //library mall open
+        var libraryZoneNum = 0;
+        for (var zoneNum in room.zones) {
+          if (room.zones[zoneNum].name == "W.A.C. Library") {
+            libraryZoneNum = zoneNum;
+            break;
+          }
+        }
+        if (!room.zones[libraryZoneNum].open) {
+          room.zones[libraryZoneNum].open = true;
+          io.sockets.to(rm).emit("zoneOpen", "quest complete!");
+        }
+      },
+      trigger: ["Progress to the Escape 2"]
+    },
+    {
+      name: "Progress to the Escape 2", //TODO: change after demo classroom decided!
+      isMainQuest: true,
+      isHidden: false,
+      condition: "Achieve total score 800",
+      description: "",
+      display: false,
+      currentTotal: 0,
+      checkCondition: function(rm){
+        var totalScore = 0;
+        for (var id in rooms[rm].players) {
+          var player = rooms[rm].players[id];
+          if (!player || !player.score) {
+            continue;
+          }
+          totalScore += player.score;
+        }
+        this.totalScore = totalScore;
+        return (totalScore >= 500);
+      },
+      clear: false,
+      progress: function(rm){
+        return "("+this.totalScore+"/"+800+")";
+      },
+      progressText: "",
+      completeDescription: "Open - Mysterious Beseiged Citadel",
+      complete: function(rm) {
+
+        //Complete ALL player's this quest, with scores for all.
+        for (var id in room.players) {
+          var otherPlayer = room.players[id];
+          if (!otherPlayer) {
+            continue;
+          }
+          if (!otherPlayer.quests) {
+            console.log(otherPlayer);
+            continue;
+          }
+          otherPlayer.score += 300;
+          //trigger next quests
+          //trigger next quests
+          for (var i = 0; i < quest.trigger.length; i++) {
+            for (var nextQ in otherPlayer.quests) {
+              if (otherPlayer.quests[nextQ].name == quest.trigger[i] && !otherPlayer.quests[nextQ].clear) {
+                otherPlayer.quests[nextQ].display = true;
+              }
+            }
+          }
+        }
+        io.sockets.to(rm).emit("message",
+          "Well done! Proceed to the MBC. Now our goal is 100.");
+        //library mall open
+        var libraryZoneNum = 0;
+        for (var zoneNum in room.zones) {
+          if (room.zones[zoneNum].name == "Mysterious Beseiged Citadel") {
+            libraryZoneNum = zoneNum;
+            break;
+          }
+        }
+        if (!room.zones[libraryZoneNum].open) {
+          room.zones[libraryZoneNum].open = true;
+          io.sockets.to(rm).emit("zoneOpen", "quest complete!");
+        }
+      },
+      trigger: []
     }];
 
   return room
@@ -710,7 +864,9 @@ function generateProjectile(id, data, rm) {
     x: rooms[rm].players[id].x + (1 * velX/updatePerSecond),
     y: rooms[rm].players[id].y + (1 * velY/updatePerSecond),
     vx: velX,
-    vy: velY
+    vy: velY,
+    ownerID: id,
+    ownerName: rooms[rm].players[id].playerID
   };
   rooms[rm].bulletCount++;
 
@@ -744,7 +900,7 @@ function spawnEnemies(rm) {
       spawnX = Math.random() * 150 + spawn[0];
       spawnY = Math.random() * 150 + spawn[1];
     }
-    
+
     // add the new object to the objects[] array
     if (rooms[rm].enemies.numEnemies < 30) {
       rooms[rm].enemies[rooms[rm].enemyID] = {
@@ -1058,7 +1214,10 @@ function handleBulletCollisions(rm) {
             (Math.abs(rooms[rm].players[player].y - rooms[rm].projectiles[id].y) < 2) ) {
           rooms[rm].players[player].health -= 1;
           if (rooms[rm].players[player].health < 0) {
+            processKillScore(rooms[rm].players[rooms[rm].projectiles[id].ownerID],
+              "player", player, "player");
             youveBeenTerminated(player, rm);
+
           }
         }
       }
@@ -1072,16 +1231,34 @@ function handleBulletCollisions(rm) {
             (Math.abs(rooms[rm].enemies[enemy].y - rooms[rm].projectiles[id].y) < 12) ) {
               rooms[rm].enemies[enemy].health -= 1;
               if (rooms[rm].enemies[enemy].health < 0) {
+                processKillScore(rooms[rm].players[rooms[rm].projectiles[id].ownerID],
+                  "player", "(this parameter is not used for enemy)", "enemy");
                 var temp = rooms[rm].enemies[rooms[rm].enemyID -= 1];
                 rooms[rm].enemies[rooms[rm].enemyID] = rooms[rm].enemies[enemy];
                 rooms[rm].enemies[enemy] = temp;
                 rooms[rm].enemies[rooms[rm].enemyID] = 0;
                 rooms[rm].enemies.numEnemies -= 1;
+
               }
         }
       }
     }
   }
+}
+
+function processKillScore(killer, killerType, dead, deadType) {
+  //possible types: "player", "enemy".
+  //player kill enemy: processKillScore(playerObject, "player", playerObject, "player");
+  if (killerType == "player") {
+    if (deadType == "player") {
+      //Team kill!!
+      killer.score -= 9999999;  //don't kill teammate lol
+    }
+    else if (deadType == "enemy") {
+      killer.score += 10;
+    }
+  }
+
 }
 
 //Sets a disconnecting players online status to false
