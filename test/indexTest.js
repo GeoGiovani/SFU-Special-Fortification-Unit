@@ -23,19 +23,6 @@ testPlayerAmmoResult = index.testPlayerAmmo();
 testPlayerHealthResult = index.testPlayerHealth();
 testPlayerReloadResult = index.testPlayerReload();
 testMiniMapResult = index.testMiniMap();
-<<<<<<< HEAD
-testZone1Result = index.testZone1();
-testZone2Result = index.testZone2();
-testZone3Result = index.testZone3();
-testZone4Result = index.testZone4();
-testZone6Result = index.testZone6();
-testZone7Result = index.testZone7();
-testZone8Result = index.testZone8();
-testZone9Result = index.testZone9();
-=======
-testWeatherAPIResult = index.testWeatherAPI();
-
->>>>>>> 9817f7d9bc5f174cbee82a4eb5d9105c87bbc20d
 //roomsResult = index.rooms('test');
 
 describe('Index', function(){
@@ -229,10 +216,6 @@ describe('Index', function(){
             assert.equal(testEnemyMovementResult, 5);
         });
     });
-<<<<<<< HEAD
-
-=======
->>>>>>> 9817f7d9bc5f174cbee82a4eb5d9105c87bbc20d
 
     // Test cases for Player Shoot
     describe('testPlayerShoot()', function(){
@@ -314,42 +297,6 @@ describe('Index', function(){
         });
     });
 
-
-// GET and POST testing functions start from below, just uncomment them to make them work
-    // George & Fazal testing
-    // // Test cases for GET as in home page
-    // describe('GET Home', () => {
-    //     it('Should return found', (done) => {
-    //         chai.request('http://localhost:5000')
-    //             .get('/')
-    //             .end(function (err, res) {
-    //                 res.should.have.status(200);
-    //                 done();
-    //             });
-    //     });
-
-    // // Test cases for POST as in check Account
-    // describe('POST checkAccount, POST logout', () => {
-    //     it('/checkAccount post request succesfully logs in user', function(done) {
-    //         // chai.request('../index')
-    //         chai.request('http://localhost:5000')
-    //             .post('/checkAccount')
-    //             .send({'username': 'ggiovani', 'password': '12345' })
-    //             .end(function(err, res){
-    //                 res.should.have.status(200);
-    //                 done();
-    //             });
-    //     });
-    //     it('/logout post request successfully logs out user', function(done) {
-    //         chai.request('http://localhost:5000')
-    //             .post('/logout')
-    //             .send({'username': 'ggiovani'})
-    //             .end(function(err, res){
-    //                 res.should.have.status(200);
-    //                 done();
-    //             });
-    //     });
-    // });
 
   //Test cases for login page
   describe('Login page', ()=>{

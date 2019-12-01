@@ -129,18 +129,6 @@ module.exports = {
     return minimap;
   },
 
-  // Test Enemy Spawn Zone 1
-  testZone1: function(){
-    zone1 = 1;
-    return zone1;
-  },
-
-  // Tests Weather API
-  testWeatherAPI: function(){
-    weather = 1;
-    return 1;
-  },
-
   // Test that the boss spawns
   testBossSpawn: function(rm) {
     createRoom(rm);
@@ -443,6 +431,12 @@ function initGameStart(socket){
   console.log("in game data: " + rooms[roomName]);
   // });
 }
+
+//Reload players gun
+function reloadGun(player) {
+  player.clip = player.clipSize;
+}
+
 
 function serverGameLogic(socket, data){
   // socket.on("requestMapImageSrcFromServer", function(){
@@ -1179,11 +1173,10 @@ function generateEnemies(rm) {
   }
   // get the elapsed time
   var time = Date.now();
-
   // see if its time to spawn a new object
   if (time > (rooms[rm].lastSpawn + rooms[rm].spawnRate)) {
     rooms[rm].lastSpawn = time;
-    spawnRandomObject(rm);
+    spawnEnemies(rm);
     //console.log('emeny spawned. spawnRate: ', spawnRate);
   }
 }
