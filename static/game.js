@@ -325,7 +325,7 @@ window.addEventListener('mousemove', function (e) {
       }
     }
 
-    context.fillStyle = "rgba(120, 100, 100, 0.6)";
+    context.fillStyle = "rgba(30, 10, 10, 0.6)";
     for (var id in zones) {
       var zone = zones[id];
       if (!zone.open) {

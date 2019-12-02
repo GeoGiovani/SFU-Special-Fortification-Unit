@@ -366,7 +366,7 @@ rooms[serverName].players[id] = {
   level: 1,
   damage: 5,
   speed: 3*50,
-  score: 800,
+  score: 0,
   gun: "pistol",
   clip: 12,
   clipSize: 12,
@@ -425,17 +425,38 @@ rooms[serverName].players[id] = {
   {
     name: "Experienced survivor",
     isMainQuest: false,
-    condition: "Survive for 5 minutes",
+    condition: "Survive for 3 minutes",
     description: "Hey, you're stil alive!",
     display: false,
     checkCondition: function(player){
       var currentTime = new Date();
-      return (currentTime - player.questData.startTime > 5*60*1000);
+      return (currentTime - player.questData.startTime > 3*60*1000);
     },
     clear: false,
     progress: function(player){
       var currentTime = new Date();
-      return "("+Math.round((currentTime-player.questData.startTime)/60000)+"/"+5+")";
+      return "("+Math.round((currentTime-player.questData.startTime)/60000)+"/"+3+")";
+    },
+    progressText: "",
+    complete: function(player) {
+      player.score += 300;
+    },
+    trigger: ["Survived half of the demo"]
+  },
+  {
+    name: "Survived half of the demo",
+    isMainQuest: false,
+    condition: "Survive for 6 minutes",
+    description: "So we didn't die in the middle of the demo! Great!",
+    display: false,
+    checkCondition: function(player){
+      var currentTime = new Date();
+      return (currentTime - player.questData.startTime > 6*60*1000);
+    },
+    clear: false,
+    progress: function(player){
+      var currentTime = new Date();
+      return "("+Math.round((currentTime-player.questData.startTime)/60000)+"/"+6+")";
     },
     progressText: "",
     complete: function(player) {
@@ -505,7 +526,13 @@ room.spawnRate = 2000;
 room.zones = {};
 
 room.specialObjects = {
-  rotundaBoss: undefined
+  rotundaBoss: undefined,
+  RCBBoss1: undefined,
+  RCBBoss2: undefined
+}
+
+room.questData = {
+  RCBSpawn: false
 }
 
 room.teamQuests = [
@@ -932,13 +959,179 @@ room.teamQuests = [
         }
       }
 
-        room.zones[rcbZoneNum].open = true;
-        io.sockets.to(rm).emit("zoneOpen", "quest complete!");
+      room.zones[rcbZoneNum].open = true;
+      io.sockets.to(rm).emit("zoneOpen", "quest complete!");
 
 
       //spawing rotunda boss!
     },
+    trigger: ["Find the Wine Room"]
+  },
+  {
+    name: "Find the Wine Room", //TODO: change after demo classroom decided!
+    isMainQuest: true,
+    isHidden: false,
+    condition: "Enter the small room on North East side of RCB",
+    description: "",
+    display: false,
+    currentTotal: 0,
+    checkCondition: function(rm){
+      var isComplete = true;
+      for (var id in rooms[rm].players) {
+        var player = rooms[rm].players[id];
+        if (!player || !player.x) {
+          continue;
+        }
+        if (!(player.x > 302*GRID_SIZE && player.x < 77*GRID_SIZE
+          && player.y > 317*GRID_SIZE && player.y < 85*GRID_SIZE)) {
+          isComplete = false;
+        }
+      }
+      return isComplete;
+    },
+    clear: false,
+    progress: function(rm){
+      return "(Incomplete)";
+    },
+    progressText: "",
+    completeDescription: "RCB battle begins.",
+    complete: function(rm) {
+      room = rooms[rm];
+      var qNum; //index of this quest
+      var player;
+
+      //giving values to qNum, player, and quest.
+      for (var id in room.players) {
+        //just choose one player and break
+        player = room.players[id];
+        if (!player || !player.quests) {
+          continue;
+        }
+        break;
+      }
+      for (var q in room.teamQuests) {
+        if (room.teamQuests[q].name == "Find the Wine Room") {
+          qNum = q;
+        }
+      }
+      var quest = room.teamQuests[qNum];
+
+      //Complete ALL player's this quest, with scores for all.
+      for (var id in room.players) {
+        var otherPlayer = room.players[id];
+        if (!otherPlayer) {
+          continue;
+        }
+        if (!otherPlayer.quests) {
+          console.log(otherPlayer);
+          continue;
+        }
+        otherPlayer.score += 1000;
+        otherPlayer.clipSize = Math.floor(otherPlayer.clipSize * 2);
+        otherPlayer.clip = otherPlayer.clipSize;
+        otherPlayer.maxHealth = Math.floor(otherPlayer.maxHealth *1.6);
+        otherPlayer.health = otherPlayer.maxHealth;
+        //trigger next quests
+        for (var i = 0; i < quest.trigger.length; i++) {
+          for (var nextQ in otherPlayer.quests) {
+            if (otherPlayer.quests[nextQ].name == quest.trigger[i] && !otherPlayer.quests[nextQ].clear) {
+              otherPlayer.quests[nextQ].display = true;
+            }
+          }
+        }
+      }
+      io.sockets.to(rm).emit("message",
+        "Oh, no!");
+
+      rooms[rm].specialObjects.RCBBoss1 = RCBBossObj(272*GRID_SIZE, 122*GRID_SIZE);
+      rooms[rm].specialObjects.RCBBoss2 = RCBBossObj(307*GRID_SIZE, 128*GRID_SIZE);
+
+      rooms[rm].questData.RCBSpawn = true;
+
+    },
     trigger: []
+  },
+  {
+    name: "Struggle to survive", //TODO: change after demo classroom decided!
+    isMainQuest: true,
+    isHidden: false,
+    condition: "Kill the enemies in RCB",
+    description: "",
+    display: false,
+    currentTotal: 0,
+    checkCondition: function(rm){
+      return (!rooms[rm].specialObjects.RCBBoss1 && !rooms[rm].specialObjects.RCBBoss2);
+    },
+    clear: false,
+    progress: function(rm){
+      return "(Incomplete)";
+    },
+    progressText: "",
+    completeDescription: "Increased health and clipSize",
+    complete: function(rm) {
+      room = rooms[rm];
+      var qNum; //index of this quest
+      var player;
+
+      //giving values to qNum, player, and quest.
+      for (var id in room.players) {
+        //just choose one player and break
+        player = room.players[id];
+        if (!player || !player.quests) {
+          continue;
+        }
+        break;
+      }
+      for (var q in room.teamQuests) {
+        if (room.teamQuests[q].name == "Struggle to survive") {
+          qNum = q;
+        }
+      }
+      var quest = room.teamQuests[qNum];
+
+      //Complete ALL player's this quest, with scores for all.
+      for (var id in room.players) {
+        var otherPlayer = room.players[id];
+        if (!otherPlayer) {
+          continue;
+        }
+        if (!otherPlayer.quests) {
+          console.log(otherPlayer);
+          continue;
+        }
+        otherPlayer.score += 1000;
+        otherPlayer.clipSize = Math.floor(otherPlayer.clipSize * 1.5);
+        otherPlayer.clip = otherPlayer.clipSize;
+        otherPlayer.maxHealth = Math.floor(otherPlayer.maxHealth *1.3);
+        otherPlayer.health = otherPlayer.maxHealth;
+        //trigger next quests
+        //trigger next quests
+        for (var i = 0; i < quest.trigger.length; i++) {
+          for (var nextQ in otherPlayer.quests) {
+            if (otherPlayer.quests[nextQ].name == quest.trigger[i] && !otherPlayer.quests[nextQ].clear) {
+              otherPlayer.quests[nextQ].display = true;
+            }
+          }
+        }
+      }
+      io.sockets.to(rm).emit("message",
+        "That was close!");
+      //library mall open
+      var rcbZoneNum = 0;
+      for (var zoneNum in room.zones) {
+        if (room.zones[zoneNum].name == "South Western Hallway") {
+          rcbZoneNum = zoneNum;
+          break;
+        }
+      }
+
+      room.zones[rcbZoneNum].open = true;
+      io.sockets.to(rm).emit("zoneOpen", "quest complete!");
+
+
+      //spawing rotunda boss!
+    },
+    trigger: ["Find the Wine Room"]
   }];
 
 return room
@@ -1049,6 +1242,12 @@ if (rooms[rm].specialObjects.rotundaBoss) {
   // console.log("rotunda boss moving....");
   rooms[rm].specialObjects.rotundaBoss.behave(rm);
 }
+if (rooms[rm].specialObjects.RCBBoss1) {
+  rooms[rm].specialObjects.RCBBoss1.behave(rm);
+}
+if (rooms[rm].specialObjects.RCBBoss2) {
+  rooms[rm].specialObjects.RCBBoss2.behave(rm);
+}
 }
 
 function rotundaBossObj(spawnX, spawnY) {
@@ -1058,7 +1257,100 @@ return {
   vx: 50,
   vy: 50,
   size: 2,
-  speed: 1*140,
+  speed: 0.8*140,
+  health: 50,
+  maxHealth: 50,
+  behave: function(rm) {
+    rotundaBoss = rooms[rm].specialObjects.rotundaBoss;
+    if ( rooms[rm].players.numPlayers > 0 ) {
+    // if ( (players.numPlayers > 0) && (enemies.numEnemies > 0) ) {
+      var closestPlayer;
+      var closestPlayerDistance = Infinity;
+      for (var player in rooms[rm].players) {
+        var distX = rooms[rm].players[player].x - rotundaBoss.x;
+        var distY = rooms[rm].players[player].y - rotundaBoss.y;
+        var distance = Math.sqrt( distX * distX + distY * distY );
+        if (distance < closestPlayerDistance) {
+          closestPlayer = player;
+          closestPlayerDistance = distance;
+        }
+      }
+      if (rooms[rm].players[closestPlayer] == undefined) {
+        // console.log("players[closestPlayer] is undefined. Ignoring",
+        //   "moveEnemies() logic instead of letting program crash.",
+        //   "Please check the logic.");
+        return;
+      }
+      //Move to closest player
+      distX = rotundaBoss.x - rooms[rm].players[closestPlayer].x;
+      distY = rotundaBoss.y - rooms[rm].players[closestPlayer].y;
+
+      var attackTheta = Math.atan(distX / distY);
+
+      var sign = -1;
+      if (rotundaBoss.y < rooms[rm].players[closestPlayer].y) {
+        sign = 1;
+      }
+
+      if ( Math.abs(distX) < 30 && Math.abs(distY) < 30 ) {
+       // console.log("distX ", distX, "distY, ", distY);
+       //Deplete health
+       rooms[rm].players[closestPlayer].health -= 8/updatePerSecond;
+       //Kill player
+       if (rooms[rm].players[closestPlayer].health < 0) {
+         youveBeenTerminated(closestPlayer, rm);
+         // break;
+         if (rooms[rm] == undefined) {
+           return;
+         }
+
+       }
+
+        //Dont move any closer
+        sign = 0;
+      }
+
+      rotundaBoss.vx =  rotundaBoss.speed * Math.sin(attackTheta) * sign;
+      rotundaBoss.vy =  rotundaBoss.speed * Math.cos(attackTheta) * sign;
+      var originX = rotundaBoss.x;
+      var originY = rotundaBoss.y;
+      rotundaBoss.x += rotundaBoss.vx/updatePerSecond;
+      rotundaBoss.y += rotundaBoss.vy/updatePerSecond;
+     //  console.log("logging enemy coordinates", rooms[rm].enemies[id].x, rooms[rm].enemies[id].y);
+      if(hasCollision(rotundaBoss.x, rotundaBoss.y, rm)){
+        rotundaBoss.x = originX;
+        rotundaBoss.y = originY;
+      }
+
+
+      //handling bullet collision
+      for (var id in rooms[rm].projectiles) {
+        if (rooms[rm].projectiles[id]) {
+          if ( (Math.abs(rotundaBoss.x - rooms[rm].projectiles[id].x) < 30) &&
+              (Math.abs(rotundaBoss.y - rooms[rm].projectiles[id].y) < 30) ) {
+                rotundaBoss.health -= 1;
+                if (rotundaBoss.health < 0) {
+                  // console.log(rooms[rm].players[rooms[rm].projectiles[id].ownerID]);
+                  processKillScore(rooms[rm].players[rooms[rm].projectiles[id].ownerID],
+                    "player", "(this parameter is not used for enemy)", "boss");
+                  delete rooms[rm].specialObjects.rotundaBoss;
+                }
+          }
+        }
+      }
+  }
+}
+};
+}
+
+function RCBBossObj(spawnX, spawnY) {
+return {
+  x: spawnX,
+  y: spawnY,
+  vx: 50,
+  vy: 50,
+  size: 2,
+  speed: 0.8*140,
   health: 30,
   maxHealth: 30,
   behave: function(rm) {
@@ -1201,7 +1493,7 @@ function spawnEnemies(rm) {
 zonez = getZones(rm);
 
 //Gets the spawn locations of the occupied zones
-spawnZones = getspawnZones(zonez);
+spawnZones = getspawnZones(zonez, rm);
 console.log(spawnZones);
 
 for (id in spawnZones) {
@@ -1255,7 +1547,7 @@ return occupiedZones;
 }
 
 //Returns the coordinates of spawn locations
-function getspawnZones(zones) {
+function getspawnZones(zones, rm) {
 
 occupiedZones = []
 
@@ -1271,8 +1563,10 @@ for (id in zonez) {
     case "3":
        occupiedZones.push([3500,1400]);
        break;
-    case "4":
-       occupiedZones.push([2675,1260]);
+    case "4": //RCB
+       if (rooms[rm].questData.RCBSpawn) {
+         occupiedZones.push([2675,1260]);
+       }
        break;
     case "5":
        occupiedZones.push([4005,2400]);
