@@ -551,7 +551,8 @@ room.zones = {};
 room.specialObjects = {
   rotundaBoss: undefined,
   RCBBoss1: undefined,
-  RCBBoss2: undefined
+  RCBBoss2: undefined,
+  ASBBoss: undefined
 }
 
 room.questData = {
@@ -1399,6 +1400,99 @@ room.teamQuests = [
       for (var zoneNum in room.zones) {
         room.zones[zoneNum].open = true;
       }
+
+
+      io.sockets.to(rm).emit("message",
+        "Player.......");
+      io.sockets.to(rm).emit("message",
+        "You finally made it here.");
+      io.sockets.to(rm).emit("message",
+        "Your last goal is to defeat the enemy in ASB.");
+      io.sockets.to(rm).emit("message",
+        "Our own home.\nWhere we spend most of the time.\nWhere the random pop machine sits in.");
+
+      //400, 240.
+      rooms[rm].specialObjects.ASBBoss = ASBBossObj(400*GRID_SIZE, 240*GRID_SIZE);
+    },
+    trigger: ["Last Battle"]
+  },
+  {
+    name: "Last Battle",
+    isMainQuest: true,
+    isHidden: false,
+    condition: "Kill the Ultimate Boss",
+    description: "",
+    display: false,
+    currentTotal: 0,
+    checkCondition: function(rm){
+      return !rooms[rm].specialObjects.ASBBoss;
+    },
+    clear: false,
+    progress: function(rm){
+      return "(Incomplete)";
+    },
+    progressText: "",
+    completeDescription: "Game Clear",
+    complete: function(rm) {
+      room = rooms[rm];
+      var qNum; //index of this quest
+      var player;
+
+      //giving values to qNum, player, and quest.
+      for (var id in room.players) {
+        //just choose one player and break
+        player = room.players[id];
+        if (!player || !player.quests) {
+          continue;
+        }
+        break;
+      }
+      for (var q in room.teamQuests) {
+        if (room.teamQuests[q].name == "Last Battle") {
+          qNum = q;
+        }
+      }
+      var quest = room.teamQuests[qNum];
+
+      //Complete ALL player's this quest, with scores for all.
+      for (var id in room.players) {
+        var otherPlayer = room.players[id];
+        if (!otherPlayer) {
+          continue;
+        }
+        if (!otherPlayer.quests) {
+          console.log(otherPlayer);
+          continue;
+        }
+      otherPlayer.score += 200;
+        otherPlayer.clipSize = Math.floor(otherPlayer.clipSize * 1.5);
+        otherPlayer.clip = otherPlayer.clipSize;
+        otherPlayer.maxHealth = Math.floor(otherPlayer.maxHealth *1.3);
+        otherPlayer.health = otherPlayer.maxHealth;
+        //trigger next quests
+        //trigger next quests
+        for (var i = 0; i < quest.trigger.length; i++) {
+          for (var nextQ in otherPlayer.quests) {
+            if (otherPlayer.quests[nextQ].name == quest.trigger[i] && !otherPlayer.quests[nextQ].clear) {
+              otherPlayer.quests[nextQ].display = true;
+            }
+          }
+        }
+      }
+      io.sockets.to(rm).emit("message",
+        "That was close!");
+      //library mall open
+      var rcbZoneNum = 0;
+      for (var zoneNum in room.zones) {
+        if (room.zones[zoneNum].name == "South Western Hallway") {
+          rcbZoneNum = zoneNum;
+          break;
+        }
+      }
+
+
+      //Game clear!
+      gameClear(rm);
     },
     trigger: []
   }];
@@ -1406,6 +1500,9 @@ room.teamQuests = [
 return room
 }
 
+function gameClear(rm) {
+  io.sockets.to(rm).emit("game clear");
+}
 //Creates a new room
 function createRoom(serverName) {
 
@@ -1516,6 +1613,9 @@ if (rooms[rm].specialObjects.RCBBoss1) {
 }
 if (rooms[rm].specialObjects.RCBBoss2) {
   rooms[rm].specialObjects.RCBBoss2.behave(rm);
+}
+if (rooms[rm].specialObjects.ASBBoss) {
+  rooms[rm].specialObjects.ASBBoss.behave(rm);
 }
 }
 
@@ -1717,6 +1817,99 @@ return {
 };
 }
 
+function ASBBossObj(spawnX, spawnY) {
+return {
+  x: spawnX,
+  y: spawnY,
+  vx: 50,
+  vy: 50,
+  size: 2,
+  speed: 0.8*140,
+  health: 100,
+  maxHealth: 100,
+  behave: function(rm) {
+    asbBoss = rooms[rm].specialObjects.ASBBoss;
+    if ( rooms[rm].players.numPlayers > 0 ) {
+    // if ( (players.numPlayers > 0) && (enemies.numEnemies > 0) ) {
+      var closestPlayer;
+      var closestPlayerDistance = Infinity;
+      for (var player in rooms[rm].players) {
+        var distX = rooms[rm].players[player].x - asbBoss.x;
+        var distY = rooms[rm].players[player].y - asbBoss.y;
+        var distance = Math.sqrt( distX * distX + distY * distY );
+        if (distance < closestPlayerDistance) {
+          closestPlayer = player;
+          closestPlayerDistance = distance;
+        }
+      }
+      if (rooms[rm].players[closestPlayer] == undefined) {
+        // console.log("players[closestPlayer] is undefined. Ignoring",
+        //   "moveEnemies() logic instead of letting program crash.",
+        //   "Please check the logic.");
+        return;
+      }
+      //Move to closest player
+      distX = asbBoss.x - rooms[rm].players[closestPlayer].x;
+      distY = asbBoss.y - rooms[rm].players[closestPlayer].y;
+
+      var attackTheta = Math.atan(distX / distY);
+
+      var sign = -1;
+      if (asbBoss.y < rooms[rm].players[closestPlayer].y) {
+        sign = 1;
+      }
+
+      if ( Math.abs(distX) < 20 && Math.abs(distY) < 20 ) {
+       // console.log("distX ", distX, "distY, ", distY);
+       //Deplete health
+       rooms[rm].players[closestPlayer].health -= 8/updatePerSecond;
+       //Kill player
+       if (rooms[rm].players[closestPlayer].health < 0) {
+         youveBeenTerminated(closestPlayer, rm);
+         // break;
+         if (rooms[rm] == undefined) {
+           return;
+         }
+
+       }
+
+        //Dont move any closer
+        sign = 0;
+      }
+
+      asbBoss.vx =  asbBoss.speed * Math.sin(attackTheta) * sign;
+      asbBoss.vy =  asbBoss.speed * Math.cos(attackTheta) * sign;
+      var originX = asbBoss.x;
+      var originY = asbBoss.y;
+      asbBoss.x += asbBoss.vx/updatePerSecond;
+      asbBoss.y += asbBoss.vy/updatePerSecond;
+     //  console.log("logging enemy coordinates", rooms[rm].enemies[id].x, rooms[rm].enemies[id].y);
+      if(hasCollision(asbBoss.x, asbBoss.y, rm)){
+        asbBoss.x = originX;
+        asbBoss.y = originY;
+      }
+
+
+      //handling bullet collision
+      for (var id in rooms[rm].projectiles) {
+        if (rooms[rm].projectiles[id]) {
+          if ( (Math.abs(asbBoss.x - rooms[rm].projectiles[id].x) < 30) &&
+              (Math.abs(asbBoss.y - rooms[rm].projectiles[id].y) < 30) ) {
+                asbBoss.health -= 1;
+                if (asbBoss.health < 0) {
+                  // console.log(rooms[rm].players[rooms[rm].projectiles[id].ownerID]);
+                  processKillScore(rooms[rm].players[rooms[rm].projectiles[id].ownerID],
+                    "player", "(this parameter is not used for enemy)", "boss");
+                  delete rooms[rm].specialObjects.ASBBoss;
+                }
+          }
+        }
+      }
+  }
+}
+};
+}
+
 function runQuiz(rm) {
   var startTime = rooms[rm].questData.quizStartTime;
   if (startTime == -1) {
@@ -1745,7 +1938,9 @@ function runQuiz(rm) {
       return;
     }
     rooms[rm].questData.quizState = "q1";
-    io.sockets.to(rm).emit("quizMessage", "1. What does S.F.U. stand for?", 10);
+    choiceList = ["Stan Ford Univ.", "Simon Fraser University",
+      "Super Friendly University", "Special Fortification Unit", "Nothing"];
+    io.sockets.to(rm).emit("quizMessage", "1. What does S.F.U. stand for?", 10, choiceList);
   }
   else if (timeElapsed < 25000) {
     if (rooms[rm].questData.quizState == "a1") {
@@ -1758,8 +1953,9 @@ function runQuiz(rm) {
     if (rooms[rm].questData.quizState == "q2") {
       return;
     }
+    choiceList = ['1', '2', '3', '4', '5', '6'];
     rooms[rm].questData.quizState = "q2";
-    io.sockets.to(rm).emit("quizMessage", "Second question here.....", 10);
+    io.sockets.to(rm).emit("quizMessage", "Second question here.....", 10, choiceList);
   }
   else if (timeElapsed < 40000) {
     if (rooms[rm].questData.quizState == "a2") {
@@ -1772,9 +1968,10 @@ function runQuiz(rm) {
     if (rooms[rm].questData.quizState == "q3") {
       return;
     }
+    choiceList = ['A+', 'A', 'A-', 'B+', 'B', 'F'];
     rooms[rm].questData.quizState = "q3";
     io.sockets.to(rm).emit("quizMessage",
-      "3. What does the developers of this game deserve?", 10);
+      "3. What does the developers of this game deserve?", 10, choiceList);
   }
   else if (timeElapsed < 55000) {
     if (rooms[rm].questData.quizState == "a3") {

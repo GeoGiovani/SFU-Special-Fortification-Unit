@@ -44,6 +44,9 @@ var questDescription = "";
 var quizMessageOn = false;
 var quizMessage = "";
 var quizMessageOnTime;
+var quizChoice;
+
+var clearScreen = false;
 
 var socket = io();
 socket.on('message', function(data) {
@@ -237,6 +240,9 @@ window.addEventListener('mousemove', function (e) {
   var context = canvas.getContext('2d');
   socket.on('state', function(players, projectiles, enemies, zones,
     teamQuests, boss, specialObjects) {
+    if (clearScreen) {
+      return;
+    }
     //console.log("socket event state called");
     if (players[myId] == 0) {
       //Died
@@ -350,6 +356,16 @@ window.addEventListener('mousemove', function (e) {
         // rotundaBoss.health, rotundaBoss.maxHealth);
 
       showBossHealthBar(rotundaBoss.health, rotundaBoss.maxHealth, 1);
+    }
+
+    if (specialObjects.ASBBoss) {
+      asbBoss = specialObjects.ASBBoss;
+      context.strokeStyle = "black";
+      context.strokeText("F", asbBoss.x-middleX, asbBoss.y-middleY);
+      context.fillStyle = "red";
+      context.font = "bold 40px Arial";
+      context.fillText("F", asbBoss.x-middleX, asbBoss.y-middleY);
+      showBossHealthBar(asbBoss.health, asbBoss.maxHealth, 1);
     }
 
 
@@ -477,7 +493,11 @@ window.addEventListener('mousemove', function (e) {
       }
       else {
         displayQuiz(quizMessage);
+        if (quizChoice) {
+          displayQuizFloor(middleX, middleY, quizChoice);
+        }
       }
+
     }
 
     //zone Change show
@@ -862,16 +882,42 @@ function displayQuiz(message) {
   }
 
   context.strokeStyle = `rgb(255, 255, 255, ${strokeLevel})`;
-  context.strokeRect(150, 100, 400, 100);
+  context.strokeRect(100, 120, 600, 100);
 
   context.fillStyle = "black";
   context.beginPath();
-  context.rect(150, 100, 400, 100);
+  context.rect(100, 120, 600, 100);
   context.fill();
 
   context.fillStyle = "white";
-  context.font = "bold italic 30px Arial";
-  context.fillText(message, 170, 150);
+  context.font = "bold italic 22px Arial";
+  context.fillText(message, 120, 150);
+}
+function displayQuizFloor(middleX, middleY, choices) {
+  console.log(choices)
+  // context.fillText(choices[0], 254*GRID_SIZE - middleX, 150*GRID_SIZE - middleY);
+  showQuizFloorText(choices[0], 254, 220, middleX, middleY);
+  showQuizFloorText(choices[1], 279, 220, middleX, middleY);
+  showQuizFloorText(choices[2], 307, 220, middleX, middleY);
+  showQuizFloorText(choices[3], 254, 242, middleX, middleY);
+  showQuizFloorText(choices[4], 279, 242, middleX, middleY);
+  showQuizFloorText(choices[5], 309, 242, middleX, middleY);
+
+}
+
+function showQuizFloorText(message, x, y, middleX, middleY) {
+  if (!message) {
+    return;
+  }
+  console.log(message);
+  context.fillStyle = "black";
+  context.font = "20px Arial";
+
+  lines = message.split(" ");
+  for (var i = 0; i < lines.length; i++) {
+    console.log(lines[i]);
+    context.fillText(lines[i], x*GRID_SIZE - middleX, (y)*GRID_SIZE+20*i - middleY);
+  }
 }
 
 socket.on("zoneChange", function(num){
@@ -894,7 +940,7 @@ socket.on("zoneOpen", function(zoneNum) {
   console.log(zoneNum);
 });
 
-socket.on("quizMessage", function(message, time) {
+socket.on("quizMessage", function(message, time, choice) {
   // var quizMessageOn = false;
   // var quizMessage = "";
   // var quizMessageOnTime;
@@ -902,6 +948,25 @@ socket.on("quizMessage", function(message, time) {
   quizMessageOnTime = new Date();
   quizMessage = message;
   quizDeleteTime = time*1000 + quizMessageOnTime;
+  if (choice) {
+    quizChoice = choice;
+  }
+});
+
+socket.on("game clear", function() {
+  clearScreen = true;
+  context.clearRect(startX, startY, canvasW, canvasH);
+  context.beginPath();
+  context.fillStyle = "white";
+  context.rect(0, 0, canvasW, canvasH);
+  context.fill();
+
+  context.fillStyle = "white";
+  context.font = "80px Arial";
+  context.fillText("Congratulations!", canvasW/2-200, canvasH/2-50);
+  context.font = "40px Arial";
+  context.fillText("I'm too sleepy to make this screen.", canvasW/2-200, canvasH/2+100);
+
 });
 
 //=============================================================================
