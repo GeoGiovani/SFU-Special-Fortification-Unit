@@ -360,13 +360,13 @@ rooms[serverName].players[id] = {
   username: username,
   x: 284 * GRID_SIZE,
   y: 147 * GRID_SIZE,
-  maxHealth: 40,
-  health: 40,
+  maxHealth: 1000,
+  health: 1000,
   healthRecoverRate: 1,
   level: 1,
   damage: 5,
   speed: 3*50,
-  score: 0,
+  score: 1000,
   gun: "pistol",
   clip: 12,
   clipSize: 12,
@@ -404,17 +404,39 @@ rooms[serverName].players[id] = {
     name: "Newbie survivor",
     isMainQuest: false,
     isHidden: false,
-    condition: "Survive for 60 seconds",
+    condition: "Survive for 30 seconds",
     description: "Hey, you're stil alive!",
     display: true,
     checkCondition: function(player){
       var currentTime = new Date();
-      return (currentTime - player.questData.startTime > 60*1000);
+      return (currentTime - player.questData.startTime > 30*1000);
     },
     clear: false,
     progress: function(player){
       var currentTime = new Date();
-      return "("+Math.round((currentTime-player.questData.startTime)/1000)+"/"+60+")";
+      return "("+Math.round((currentTime-player.questData.startTime)/1000)+"/"+30+")";
+    },
+    progressText: "",
+    complete: function(player) {
+      player.score += 100;
+    },
+    trigger: ["What am I doing here?"]
+  },
+  {
+    name: "What am I doing here?",
+    isMainQuest: false,
+    isHidden: false,
+    condition: "Survive for 90 seconds",
+    description: "Hey, you're stil alive!",
+    display: false,
+    checkCondition: function(player){
+      var currentTime = new Date();
+      return (currentTime - player.questData.startTime > 90*1000);
+    },
+    clear: false,
+    progress: function(player){
+      var currentTime = new Date();
+      return "("+Math.round((currentTime-player.questData.startTime)/1000)+"/"+90+")";
     },
     progressText: "",
     complete: function(player) {
@@ -982,8 +1004,8 @@ room.teamQuests = [
         if (!player || !player.x) {
           continue;
         }
-        if (!(player.x > 302*GRID_SIZE && player.x < 77*GRID_SIZE
-          && player.y > 317*GRID_SIZE && player.y < 85*GRID_SIZE)) {
+        if (!(player.x > 302*GRID_SIZE && player.x < 317*GRID_SIZE
+          && player.y > 77*GRID_SIZE && player.y < 85*GRID_SIZE)) {
           isComplete = false;
         }
       }
@@ -1043,8 +1065,8 @@ room.teamQuests = [
       io.sockets.to(rm).emit("message",
         "Oh, no!");
 
-      rooms[rm].specialObjects.RCBBoss1 = RCBBossObj(272*GRID_SIZE, 122*GRID_SIZE);
-      rooms[rm].specialObjects.RCBBoss2 = RCBBossObj(307*GRID_SIZE, 128*GRID_SIZE);
+      rooms[rm].specialObjects.RCBBoss1 = RCBBossObj(272*GRID_SIZE, 122*GRID_SIZE, 1);
+      rooms[rm].specialObjects.RCBBoss2 = RCBBossObj(307*GRID_SIZE, 128*GRID_SIZE, 2);
 
       rooms[rm].questData.RCBSpawn = true;
 
@@ -1343,10 +1365,11 @@ return {
 };
 }
 
-function RCBBossObj(spawnX, spawnY) {
+function RCBBossObj(spawnX, spawnY, num) {
 return {
   x: spawnX,
   y: spawnY,
+  num: num,
   vx: 50,
   vy: 50,
   size: 2,
@@ -1354,14 +1377,19 @@ return {
   health: 30,
   maxHealth: 30,
   behave: function(rm) {
-    rotundaBoss = rooms[rm].specialObjects.rotundaBoss;
+    num = this.num;
+    rcbBoss = rooms[rm].specialObjects.RCBBoss1;
+    if (num == 2) {
+      rcbBoss = rooms[rm].specialObjects.RCBBoss2;
+    }
+
     if ( rooms[rm].players.numPlayers > 0 ) {
     // if ( (players.numPlayers > 0) && (enemies.numEnemies > 0) ) {
       var closestPlayer;
       var closestPlayerDistance = Infinity;
       for (var player in rooms[rm].players) {
-        var distX = rooms[rm].players[player].x - rotundaBoss.x;
-        var distY = rooms[rm].players[player].y - rotundaBoss.y;
+        var distX = rooms[rm].players[player].x - rcbBoss.x;
+        var distY = rooms[rm].players[player].y - rcbBoss.y;
         var distance = Math.sqrt( distX * distX + distY * distY );
         if (distance < closestPlayerDistance) {
           closestPlayer = player;
@@ -1375,13 +1403,13 @@ return {
         return;
       }
       //Move to closest player
-      distX = rotundaBoss.x - rooms[rm].players[closestPlayer].x;
-      distY = rotundaBoss.y - rooms[rm].players[closestPlayer].y;
+      distX = rcbBoss.x - rooms[rm].players[closestPlayer].x;
+      distY = rcbBoss.y - rooms[rm].players[closestPlayer].y;
 
       var attackTheta = Math.atan(distX / distY);
 
       var sign = -1;
-      if (rotundaBoss.y < rooms[rm].players[closestPlayer].y) {
+      if (rcbBoss.y < rooms[rm].players[closestPlayer].y) {
         sign = 1;
       }
 
@@ -1403,30 +1431,36 @@ return {
         sign = 0;
       }
 
-      rotundaBoss.vx =  rotundaBoss.speed * Math.sin(attackTheta) * sign;
-      rotundaBoss.vy =  rotundaBoss.speed * Math.cos(attackTheta) * sign;
-      var originX = rotundaBoss.x;
-      var originY = rotundaBoss.y;
-      rotundaBoss.x += rotundaBoss.vx/updatePerSecond;
-      rotundaBoss.y += rotundaBoss.vy/updatePerSecond;
+      rcbBoss.vx =  rcbBoss.speed * Math.sin(attackTheta) * sign;
+      rcbBoss.vy =  rcbBoss.speed * Math.cos(attackTheta) * sign;
+      var originX = rcbBoss.x;
+      var originY = rcbBoss.y;
+      rcbBoss.x += rcbBoss.vx/updatePerSecond;
+      rcbBoss.y += rcbBoss.vy/updatePerSecond;
      //  console.log("logging enemy coordinates", rooms[rm].enemies[id].x, rooms[rm].enemies[id].y);
-      if(hasCollision(rotundaBoss.x, rotundaBoss.y, rm)){
-        rotundaBoss.x = originX;
-        rotundaBoss.y = originY;
+      if(hasCollision(rcbBoss.x, rcbBoss.y, rm)){
+        rcbBoss.x = originX;
+        rcbBoss.y = originY;
       }
 
 
       //handling bullet collision
       for (var id in rooms[rm].projectiles) {
         if (rooms[rm].projectiles[id]) {
-          if ( (Math.abs(rotundaBoss.x - rooms[rm].projectiles[id].x) < 30) &&
-              (Math.abs(rotundaBoss.y - rooms[rm].projectiles[id].y) < 30) ) {
-                rotundaBoss.health -= 1;
-                if (rotundaBoss.health < 0) {
+          if ( (Math.abs(rcbBoss.x - rooms[rm].projectiles[id].x) < 30) &&
+              (Math.abs(rcbBoss.y - rooms[rm].projectiles[id].y) < 30) ) {
+                rcbBoss.health -= 1;
+                if (rcbBoss.health < 0) {
                   // console.log(rooms[rm].players[rooms[rm].projectiles[id].ownerID]);
                   processKillScore(rooms[rm].players[rooms[rm].projectiles[id].ownerID],
                     "player", "(this parameter is not used for enemy)", "boss");
-                  delete rooms[rm].specialObjects.rotundaBoss;
+                  if (num ==1) {
+                    delete rooms[rm].specialObjects.RCBBoss1;
+                  }
+                  else {
+                    delete rooms[rm].specialObjects.RCBBoss2;
+                  }
+
                 }
           }
         }

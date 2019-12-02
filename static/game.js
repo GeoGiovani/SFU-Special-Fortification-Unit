@@ -285,15 +285,6 @@ window.addEventListener('mousemove', function (e) {
       context.fill();
     }
 
-    if (specialObjects.rotundaBoss) {
-      rotundaBoss = specialObjects.rotundaBoss;
-      context.arc(rotundaBoss.x - middleX, rotundaBoss.y - middleY,
-        rotundaBoss.size*GRID_SIZE/2, 0, 2 * Math.PI);
-      context.fillStyle = 'black';
-      context.fill();
-      showHealthBarAbove(rotundaBoss.x - middleX, rotundaBoss.y - middleY,
-        rotundaBoss.health, rotundaBoss.maxHealth);
-    }
 
     // context.beginPath();
     // context.arc(boss.x - middleX, boss.y - middleY, GRID_SIZE/2 , 0, 2 * Math.PI);
@@ -345,6 +336,42 @@ window.addEventListener('mousemove', function (e) {
       context.fillText("RELOAD",  canvasW-70, canvasH-70);
     }
 
+    if (specialObjects.rotundaBoss) {
+      rotundaBoss = specialObjects.rotundaBoss;
+      context.arc(rotundaBoss.x - middleX, rotundaBoss.y - middleY,
+        rotundaBoss.size*GRID_SIZE/2, 0, 2 * Math.PI);
+      context.fillStyle = 'black';
+      context.fill();
+      // showHealthBarAbove(rotundaBoss.x - middleX, rotundaBoss.y - middleY,
+        // rotundaBoss.health, rotundaBoss.maxHealth);
+
+      showBossHealthBar(rotundaBoss.health, rotundaBoss.maxHealth, 1);
+    }
+
+
+    if (specialObjects.RCBBoss2) {
+      boss2 = specialObjects.RCBBoss2;
+      context.arc(boss2.x - middleX, boss2.y - middleY,
+        boss2.size*GRID_SIZE/2, 0, 2 * Math.PI);
+      context.fillStyle = 'black';
+      context.fill();
+      if (specialObjects.RCBBoss1) {
+        showBossHealthBar(boss2.health, boss2.maxHealth, 2);
+      }
+      else {
+        showBossHealthBar(boss2.health, boss2.maxHealth, 1);
+      }
+    }
+
+    if (specialObjects.RCBBoss1) {
+      boss1 = specialObjects.RCBBoss1;
+      context.arc(boss1.x - middleX, boss1.y - middleY,
+        boss1.size*GRID_SIZE/2, 0, 2 * Math.PI);
+      context.fillStyle = 'black';
+      context.fill();
+      showBossHealthBar(boss1.health, boss1.maxHealth, 1);
+    }
+
     var thisLoop = new Date();
     context.fillText(Math.round(1000 / (thisLoop - lastLoop)) + " FPS", canvasW-95, canvasH-10);
     lastLoop = thisLoop;
@@ -360,6 +387,8 @@ window.addEventListener('mousemove', function (e) {
     }
 
     showQuests(players[myId], teamQuests);
+
+
 
     // related to function 'showMessage'.
     if (messageOn && messageQueue.length >= 1) {
@@ -592,6 +621,7 @@ function showOtherPlayerData(player, playerIndex) {
 }
 function showQuests(player, teamQuests) {
   var line = 0;
+  context.lineWidth = 1;
   context.fillStyle = "#0AC";
   context.strokeStyle = "rgb(255, 255, 255, 0.5)";
   context.font = "16px Arial";
@@ -664,6 +694,33 @@ function showBulletBarAbove(x, y, clip, clipSize) {
   context.fill();
 }
 
+function showBossHealthBar(health, maxHealth, bossNum) {
+  context.lineWidth = 10;
+  strokeTime = new Date()%3000;
+  if (strokeTime < 1500) {
+    strokeLevel = 0.8*(strokeTime/1500);
+  }
+  else {
+    strokeLevel = 0.8*(3000-strokeTime)/1500;
+  }
+
+  context.strokeStyle = `rgb(255, 255, 255, ${strokeLevel})`;
+  context.strokeRect(150, 100+30*(bossNum-1), 400, 23);
+
+  context.fillStyle = "#BBB";
+  context.beginPath();
+  context.rect(150, 100+30*(bossNum-1), 400, 23);
+  context.fill();
+  context.fillStyle = "red";
+  context.beginPath();
+  context.rect(150, 100+30*(bossNum-1), (health/maxHealth)*400, 23);
+  context.fillStyle = "red";
+  context.fill();
+
+  context.fillStyle = "white";
+  context.font = "bold italic 18px Arial";
+  context.fillText("TARGET HP (" + Math.round(health) + "/" + maxHealth + ")", 155, 118+30*(bossNum-1));
+}
 
 function processMapDrawing(mapData){
   console.log(mapData);
