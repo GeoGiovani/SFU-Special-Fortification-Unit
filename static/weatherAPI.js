@@ -108,7 +108,7 @@ function getWeather(position,time) {
 
 function rain() {
   console.log('rain() called');
-  var canvas = document.getElementByID('rain1');
+  var canvas = document.getElementById('rain1');
 
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
