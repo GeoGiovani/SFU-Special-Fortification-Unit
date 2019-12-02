@@ -374,6 +374,7 @@ rooms[serverName].players[id] = {
   playerSocketId: id,
   questData: {
     bulletsTotal: 0,
+    killTotal: 0,
     minHealth: 20,
     startTime: new Date(),
     q1Over: false,
@@ -652,7 +653,7 @@ room.teamQuests = [
     name: "Progress to the Escape 1", //TODO: change after demo classroom decided!
     isMainQuest: true,
     isHidden: false,
-    condition: "Achieve total score 300",
+    condition: "Achieve total score 500",
     description: "",
     display: false,
     currentTotal: 0,
@@ -751,7 +752,7 @@ room.teamQuests = [
         totalScore += player.score;
       }
       this.totalScore = totalScore;
-      return (totalScore >= 500);
+      return (totalScore >= 800);
     },
     clear: false,
     progress: function(rm){
@@ -836,7 +837,7 @@ room.teamQuests = [
         totalScore += player.score;
       }
       this.totalScore = totalScore;
-      return (totalScore >= 1000);
+      return (totalScore >= 1500);
     },
     clear: false,
     progress: function(rm){
@@ -955,7 +956,7 @@ room.teamQuests = [
           console.log(otherPlayer);
           continue;
         }
-        otherPlayer.score += 1000;
+        otherPlayer.score += 200;
         otherPlayer.clipSize = otherPlayer.clipSize * 2;
         otherPlayer.clip = otherPlayer.clipSize;
         otherPlayer.maxHealth = otherPlayer.maxHealth *1.6;
@@ -990,7 +991,7 @@ room.teamQuests = [
     trigger: ["Find the Wine Room"]
   },
   {
-    name: "Find the Wine Room", //TODO: change after demo classroom decided!
+    name: "Find the Wine Room",
     isMainQuest: true,
     isHidden: false,
     condition: "Enter the small room on North East side of RCB",
@@ -1048,7 +1049,7 @@ room.teamQuests = [
           console.log(otherPlayer);
           continue;
         }
-        otherPlayer.score += 1000;
+      otherPlayer.score += 200;
         otherPlayer.clipSize = Math.floor(otherPlayer.clipSize * 2);
         otherPlayer.clip = otherPlayer.clipSize;
         otherPlayer.maxHealth = Math.floor(otherPlayer.maxHealth *1.6);
@@ -1071,10 +1072,10 @@ room.teamQuests = [
       rooms[rm].questData.RCBSpawn = true;
 
     },
-    trigger: []
+    trigger: ["Struggle to survive"]
   },
   {
-    name: "Struggle to survive", //TODO: change after demo classroom decided!
+    name: "Struggle to survive",
     isMainQuest: true,
     isHidden: false,
     condition: "Kill the enemies in RCB",
@@ -1121,7 +1122,7 @@ room.teamQuests = [
           console.log(otherPlayer);
           continue;
         }
-        otherPlayer.score += 1000;
+      otherPlayer.score += 200;
         otherPlayer.clipSize = Math.floor(otherPlayer.clipSize * 1.5);
         otherPlayer.clip = otherPlayer.clipSize;
         otherPlayer.maxHealth = Math.floor(otherPlayer.maxHealth *1.3);
@@ -1153,7 +1154,251 @@ room.teamQuests = [
 
       //spawing rotunda boss!
     },
-    trigger: ["Find the Wine Room"]
+    trigger: ["Checking around the SWH"]
+  },
+  {
+    name: "Checking around the SWH",
+    isMainQuest: true,
+    isHidden: false,
+    condition: "Kill 30 enemies",
+    description: "",
+    display: false,
+    startTotal: -1,
+    currentTotal: 0,
+    checkCondition: function(rm){
+      total = 0;
+      for (var id in rooms[rm].players) {
+        if (!rooms[rm].players[id].questData) {
+          continue;
+        }
+        total += rooms[rm].players[id].questData.killTotal;
+      }
+      if (this.startTotal == -1) {
+        this.startTotal = total;
+      }
+      this.currentTotal = total - this.startTotal;
+      return (this.currentTotal >= 10);
+    },
+    clear: false,
+    progress: function(rm){
+      return "("+this.currentTotal+"/"+10+")";
+    },
+    progressText: "",
+    completeDescription: "Software Center open",
+    complete: function(rm) {
+      room = rooms[rm];
+      var qNum; //index of this quest
+      var player;
+
+      //giving values to qNum, player, and quest.
+      for (var id in room.players) {
+        //just choose one player and break
+        player = room.players[id];
+        if (!player || !player.quests) {
+          continue;
+        }
+        break;
+      }
+      for (var q in room.teamQuests) {
+        if (room.teamQuests[q].name == "Checking around the SWH") {
+          qNum = q;
+        }
+      }
+      var quest = room.teamQuests[qNum];
+
+      //Complete ALL player's this quest, with scores for all.
+      for (var id in room.players) {
+        var otherPlayer = room.players[id];
+        if (!otherPlayer) {
+          continue;
+        }
+        if (!otherPlayer.quests) {
+          console.log(otherPlayer);
+          continue;
+        }
+      otherPlayer.score += 200;
+        otherPlayer.clipSize = Math.floor(otherPlayer.clipSize * 1.5);
+        otherPlayer.clip = otherPlayer.clipSize;
+        otherPlayer.maxHealth = Math.floor(otherPlayer.maxHealth *1.3);
+        otherPlayer.health = otherPlayer.maxHealth;
+        //trigger next quests
+        //trigger next quests
+        for (var i = 0; i < quest.trigger.length; i++) {
+          for (var nextQ in otherPlayer.quests) {
+            if (otherPlayer.quests[nextQ].name == quest.trigger[i] && !otherPlayer.quests[nextQ].clear) {
+              otherPlayer.quests[nextQ].display = true;
+            }
+          }
+        }
+      }
+      // io.sockets.to(rm).emit("message", "That was close!");
+      //library mall open
+      var scZoneNum = 0;
+      for (var zoneNum in room.zones) {
+        if (room.zones[zoneNum].name == "Software Center") {
+          scZoneNum = zoneNum;
+          break;
+        }
+      }
+
+      room.zones[scZoneNum].open = true;
+      io.sockets.to(rm).emit("zoneOpen", "quest complete!");
+
+
+      //spawing rotunda boss!
+    },
+    trigger: []
+  },
+  {
+    name: "Heading to the Software Center",
+    isMainQuest: true,
+    isHidden: false,
+    condition: "All players enter the Software Center",
+    description: "",
+    display: false,
+    startTotal: -1,
+    currentTotal: 0,
+    checkCondition: function(rm){
+      allInside = true;
+      for (var id in rooms[rm].players) {
+        if (!rooms[rm].players[id].questData) {
+          continue;
+        }
+        if (rooms[rm].players[id].zone != 6) {
+          allInside = true;
+        }
+      }
+      return allInside;
+    },
+    clear: false,
+    progress: function(rm){
+      return "(Incomplete)";
+    },
+    progressText: "",
+    completeDescription: "Ready for the Challenge?",
+    complete: function(rm) {
+      room = rooms[rm];
+      var qNum; //index of this quest
+      var player;
+
+      //giving values to qNum, player, and quest.
+      for (var id in room.players) {
+        //just choose one player and break
+        player = room.players[id];
+        if (!player || !player.quests) {
+          continue;
+        }
+        break;
+      }
+      for (var q in room.teamQuests) {
+        if (room.teamQuests[q].name == "Heading to the Software Center") {
+          qNum = q;
+        }
+      }
+      var quest = room.teamQuests[qNum];
+
+      //Complete ALL player's this quest, with scores for all.
+      for (var id in room.players) {
+        var otherPlayer = room.players[id];
+        if (!otherPlayer) {
+          continue;
+        }
+        if (!otherPlayer.quests) {
+          console.log(otherPlayer);
+          continue;
+        }
+      otherPlayer.score += 200;
+        //trigger next quests
+        //trigger next quests
+        for (var i = 0; i < quest.trigger.length; i++) {
+          for (var nextQ in otherPlayer.quests) {
+            if (otherPlayer.quests[nextQ].name == quest.trigger[i] && !otherPlayer.quests[nextQ].clear) {
+              otherPlayer.quests[nextQ].display = true;
+            }
+          }
+        }
+      }
+      // io.sockets.to(rm).emit("message", "That was close!");
+      //Close ALL other zones!
+      for (var zoneNum in room.zones) {
+        if (room.zones[zoneNum].name != "Software Center") {
+          room.zones[zoneNum].open = close;
+          break;
+        }
+      }
+    },
+    trigger: []
+  },
+
+  {
+    name: "Quiz? Now?? Seriously????",
+    isMainQuest: true,
+    isHidden: false,
+    condition: "Pass the quiz!",
+    description: "",
+    display: false,
+    currentTotal: 0,
+    checkCondition: function(rm){
+      return true;
+    },
+    clear: false,
+    progress: function(rm){
+      return "(Incomplete)";
+    },
+    progressText: "",
+    completeDescription: "Ready for the Challenge?",
+    complete: function(rm) {
+      room = rooms[rm];
+      var qNum; //index of this quest
+      var player;
+
+      //giving values to qNum, player, and quest.
+      for (var id in room.players) {
+        //just choose one player and break
+        player = room.players[id];
+        if (!player || !player.quests) {
+          continue;
+        }
+        break;
+      }
+      for (var q in room.teamQuests) {
+        if (room.teamQuests[q].name == "Heading to the Software Center") {
+          qNum = q;
+        }
+      }
+      var quest = room.teamQuests[qNum];
+
+      //Complete ALL player's this quest, with scores for all.
+      for (var id in room.players) {
+        var otherPlayer = room.players[id];
+        if (!otherPlayer) {
+          continue;
+        }
+        if (!otherPlayer.quests) {
+          console.log(otherPlayer);
+          continue;
+        }
+      otherPlayer.score += 200;
+        //trigger next quests
+        //trigger next quests
+        for (var i = 0; i < quest.trigger.length; i++) {
+          for (var nextQ in otherPlayer.quests) {
+            if (otherPlayer.quests[nextQ].name == quest.trigger[i] && !otherPlayer.quests[nextQ].clear) {
+              otherPlayer.quests[nextQ].display = true;
+            }
+          }
+        }
+      }
+      // io.sockets.to(rm).emit("message", "That was close!");
+      //Close ALL other zones!
+      for (var zoneNum in room.zones) {
+        if (room.zones[zoneNum].name != "Software Center") {
+          room.zones[zoneNum].open = close;
+          break;
+        }
+      }
+    },
+    trigger: ["Quiz? Now?? Seriously????"]
   }];
 
 return room
@@ -1902,12 +2147,18 @@ if (killerType == "player") {
   if (deadType == "player") {
     //Team kill!!
     killer.score -= 9999999;  //don't kill teammate lol
+    killer.questData.killTotal += 1;
+    console.log(killer.questData.killTotal);
   }
   else if (deadType == "enemy") {
     killer.score += 35;
+    killer.questData.killTotal += 1;
+    console.log(killer.questData.killTotal);
   }
   else if (deadType == "boss") {
     killer.score += 200;
+    killer.questData.killTotal += 1;
+    console.log(killer.questData.killTotal);
   }
 }
 

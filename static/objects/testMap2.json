@@ -2089,20 +2089,20 @@
         "memo": "zone locking thing. number should NEVER be 0!"
       },
       {
-        "x": 0,
-        "y": 0,
-        "width": 0,
-        "height": 0,
+        "x": 374,
+        "y": 202,
+        "width": 60,
+        "height": 70,
         "num": 5,
-        "name": "Totally Annihilated Software engineers out of Contol",
-        "description": "-CMPT 276: Intro. to Software Engineering",
+        "name": "Applied Stress Building",
+        "description": "Home of us all",
         "open": false,
         "memo": "zone locking thing. number should NEVER be 0!"
       },
       {
         "x": 242,
         "y": 206,
-        "width": 94,
+        "width": 90,
         "height": 64,
         "num": 6,
         "name": "Software Center",

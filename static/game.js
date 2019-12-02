@@ -28,7 +28,7 @@ var mapOn = true;
 
 // dead.
 var dead = false;
-var deadMessage = ["We're looking for Co-op!\n\nHailey | Fall 2020 | haa40@sfu.ca   resume ready :D\nWrite you names here let's get a job"]
+var deadMessage = ["Try again!"]
 
 //zoneChange function related.
 var zoneChangeOn = false;
