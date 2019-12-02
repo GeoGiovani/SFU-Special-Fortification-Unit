@@ -231,7 +231,8 @@ window.addEventListener('mousemove', function (e) {
 });
 
   var context = canvas.getContext('2d');
-  socket.on('state', function(players, projectiles, enemies, zones, teamQuests, boss) {
+  socket.on('state', function(players, projectiles, enemies, zones,
+    teamQuests, boss, specialObjects) {
     //console.log("socket event state called");
     if (players[myId] == 0) {
       //Died
@@ -278,9 +279,21 @@ window.addEventListener('mousemove', function (e) {
     var bossImg = document.getElementById("boss");
     // context.drawImage(bossImg, boss.x - middleX, boss.y - middleY, 100, 130);
     context.beginPath();
-    context.arc(boss.x - middleX, boss.y - middleY, 2*GRID_SIZE/2, 0, 2 * Math.PI);
-    context.fillStyle = 'red';
-    context.fill();
+    if (boss) {
+      context.arc(boss.x - middleX, boss.y - middleY, 2*GRID_SIZE/2, 0, 2 * Math.PI);
+      context.fillStyle = 'red';
+      context.fill();
+    }
+
+    if (specialObjects.rotundaBoss) {
+      rotundaBoss = specialObjects.rotundaBoss;
+      context.arc(rotundaBoss.x - middleX, rotundaBoss.y - middleY,
+        rotundaBoss.size*GRID_SIZE/2, 0, 2 * Math.PI);
+      context.fillStyle = 'black';
+      context.fill();
+      showHealthBarAbove(rotundaBoss.x - middleX, rotundaBoss.y - middleY,
+        rotundaBoss.health, rotundaBoss.maxHealth);
+    }
 
     // context.beginPath();
     // context.arc(boss.x - middleX, boss.y - middleY, GRID_SIZE/2 , 0, 2 * Math.PI);
