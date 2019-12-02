@@ -934,7 +934,7 @@ room.teamQuests = [
 
         room.zones[rcbZoneNum].open = true;
         io.sockets.to(rm).emit("zoneOpen", "quest complete!");
-      }
+
 
       //spawing rotunda boss!
     },
