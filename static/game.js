@@ -359,6 +359,8 @@ window.addEventListener('mousemove', function (e) {
     }
 
     if (specialObjects.ASBBoss) {
+
+
       asbBoss = specialObjects.ASBBoss;
       context.strokeStyle = "black";
       context.strokeText("F", asbBoss.x-middleX, asbBoss.y-middleY);
@@ -487,6 +489,9 @@ window.addEventListener('mousemove', function (e) {
     }
 
     if (quizMessageOn) {
+      if (specialObjects.ASBBoss) {
+        quizMessageOn = false;
+      }
       thisTime = new Date();
       if (thisTime > quizDeleteTime) {
         quizMessageOn = false;
@@ -961,7 +966,7 @@ socket.on("game clear", function() {
   context.rect(0, 0, canvasW, canvasH);
   context.fill();
 
-  context.fillStyle = "white";
+  context.fillStyle = "black";
   context.font = "80px Arial";
   context.fillText("Congratulations!", canvasW/2-200, canvasH/2-50);
   context.font = "40px Arial";
