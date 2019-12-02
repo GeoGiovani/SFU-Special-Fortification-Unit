@@ -12,17 +12,18 @@ console.log(`Server ${servername}!`);
 var messageOn = true;
 var messageQueue = ["Welcome to S.F.U.! \nPress B to continue."
   , "S.F.U. stands for Special Fortification Unit."
-  , "What? You mean, S.F.U. is Simon Fraser University?"
-  , "Well, who cares about that Simon Fraser guy who \ndestroyed aboriginal culture?"
+  , "What? You thought S.F.U. as in Simon Fraser University?"
+  , "Well, you are right except its a game version of your time here at the University, sorry I meant Unit! *wink* *wink*"
+  , "Let's dive into the instructions"
   , "Press W/A/S/D to move, B to see next message."
   , "Press M to turn on/off the map."
+  , "And we have a cool weather feature on top right."
+  , "Don't forget to turn on/off the music at the bottom of the canvas."
   , "Move mouse and click to shoot."
   , "And survive."
-  , "What? You mean, we didn't talk about this kind of story \nin the meetings?"
-  , "I know, I just wanted to put this in. -Hailey"
-  , "If you are bored, you can go kill the enemies."
-  , "And we have a cool weather feature on top right."
-  , "Don't forget to turn on the music."
+  , "Its you, your laptop and your water bottle against the whole world!"
+  , "Prove that you can get through this by defeating your worst nightmares"
+  , "Hint: Try getting through to ASB before you fail."
   , "Good luck, have fun!"];
 var mapOn = true;
 
