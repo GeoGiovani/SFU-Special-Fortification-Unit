@@ -41,6 +41,10 @@ var questName = "";
 var questCondition = "";
 var questDescription = "";
 
+var quizMessageOn = false;
+var quizMessage = "";
+var quizMessageOnTime;
+
 var socket = io();
 socket.on('message', function(data) {
   showMessage(data);
@@ -466,6 +470,16 @@ window.addEventListener('mousemove', function (e) {
 
     }
 
+    if (quizMessageOn) {
+      thisTime = new Date();
+      if (thisTime > quizDeleteTime) {
+        quizMessageOn = false;
+      }
+      else {
+        displayQuiz(quizMessage);
+      }
+    }
+
     //zone Change show
     if (zoneChangeOn) {
       var zoneElapse = new Date();
@@ -837,6 +851,29 @@ function showDeadScreen() {
   }
 }
 
+function displayQuiz(message) {
+  context.lineWidth = 10;
+  strokeTime = new Date()%3000;
+  if (strokeTime < 1500) {
+    strokeLevel = 0.8*(strokeTime/1500);
+  }
+  else {
+    strokeLevel = 0.8*(3000-strokeTime)/1500;
+  }
+
+  context.strokeStyle = `rgb(255, 255, 255, ${strokeLevel})`;
+  context.strokeRect(150, 100, 400, 100);
+
+  context.fillStyle = "black";
+  context.beginPath();
+  context.rect(150, 100, 400, 100);
+  context.fill();
+
+  context.fillStyle = "white";
+  context.font = "bold italic 30px Arial";
+  context.fillText(message, 170, 150);
+}
+
 socket.on("zoneChange", function(num){
   //zone changed!
   zoneChangeOn = true;
@@ -855,6 +892,16 @@ socket.on("questOver", function(qName, qCondition, qDescription) {
 
 socket.on("zoneOpen", function(zoneNum) {
   console.log(zoneNum);
+});
+
+socket.on("quizMessage", function(message, time) {
+  // var quizMessageOn = false;
+  // var quizMessage = "";
+  // var quizMessageOnTime;
+  quizMessageOn = true;
+  quizMessageOnTime = new Date();
+  quizMessage = message;
+  quizDeleteTime = time*1000 + quizMessageOnTime;
 });
 
 //=============================================================================

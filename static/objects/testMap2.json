@@ -2142,6 +2142,17 @@
         "description": "Gimme ideas.......-Hailey",
         "open": false,
         "memo": "zone locking thing. number should NEVER be 0!"
+      },
+      {
+        "x": 314,
+        "y": 205,
+        "width": 58,
+        "height": 80,
+        "num": 10,
+        "name": "Software Center K.....what's K",
+        "description": "software centerrr",
+        "open": false,
+        "memo": "zone locking thing. number should NEVER be 0!"
       }
     ],
     "player": [

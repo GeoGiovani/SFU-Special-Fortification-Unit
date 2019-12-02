@@ -365,8 +365,8 @@ rooms[serverName].players[id] = {
   healthRecoverRate: 1,
   level: 1,
   damage: 5,
-  speed: 3*50,
-  score: 0,
+  speed: 3*50*3,
+  score: 1000,
   gun: "pistol",
   clip: 12,
   clipSize: 12,
@@ -555,7 +555,10 @@ room.specialObjects = {
 }
 
 room.questData = {
-  RCBSpawn: false
+  RCBSpawn: false,
+  quizState: "",
+  quizStartTime: -1,
+  quizComplete: false
 }
 
 room.teamQuests = [
@@ -1247,7 +1250,7 @@ room.teamQuests = [
 
       //spawing rotunda boss!
     },
-    trigger: []
+    trigger: ["Heading to the Software Center"]
   },
   {
     name: "Heading to the Software Center",
@@ -1265,7 +1268,7 @@ room.teamQuests = [
           continue;
         }
         if (rooms[rm].players[id].zone != 6) {
-          allInside = true;
+          allInside = false;
         }
       }
       return allInside;
@@ -1322,12 +1325,13 @@ room.teamQuests = [
       //Close ALL other zones!
       for (var zoneNum in room.zones) {
         if (room.zones[zoneNum].name != "Software Center") {
-          room.zones[zoneNum].open = close;
-          break;
+          room.zones[zoneNum].open = false;
         }
       }
+
+      runQuiz(rm);
     },
-    trigger: []
+    trigger: ["Quiz? Now?? Seriously????"]
   },
 
   {
@@ -1339,14 +1343,15 @@ room.teamQuests = [
     display: false,
     currentTotal: 0,
     checkCondition: function(rm){
-      return true;
+      runQuiz(rm);
+      return rooms[rm].questData.quizComplete;
     },
     clear: false,
     progress: function(rm){
       return "(Incomplete)";
     },
     progressText: "",
-    completeDescription: "Ready for the Challenge?",
+    completeDescription: "Open - ASB",
     complete: function(rm) {
       room = rooms[rm];
       var qNum; //index of this quest
@@ -1362,7 +1367,7 @@ room.teamQuests = [
         break;
       }
       for (var q in room.teamQuests) {
-        if (room.teamQuests[q].name == "Heading to the Software Center") {
+        if (room.teamQuests[q].name == "Quiz? Now?? Seriously????") {
           qNum = q;
         }
       }
@@ -1392,13 +1397,10 @@ room.teamQuests = [
       // io.sockets.to(rm).emit("message", "That was close!");
       //Close ALL other zones!
       for (var zoneNum in room.zones) {
-        if (room.zones[zoneNum].name != "Software Center") {
-          room.zones[zoneNum].open = close;
-          break;
-        }
+        room.zones[zoneNum].open = true;
       }
     },
-    trigger: ["Quiz? Now?? Seriously????"]
+    trigger: []
   }];
 
 return room
@@ -1715,6 +1717,85 @@ return {
 };
 }
 
+function runQuiz(rm) {
+  var startTime = rooms[rm].questData.quizStartTime;
+  if (startTime == -1) {
+    rooms[rm].questData.quizStartTime = new Date();
+    rooms[rm].questData.quizState = "Welcome!"
+    io.sockets.to(rm).emit("quizMessage", "Welcome!", 2);
+    return;
+  }
+  var timeElapsed = new Date() - startTime;
+  if (timeElapsed > 0 && timeElapsed < 5000) {
+    if (rooms[rm].questData.quizState == "1") {
+      return;
+    }
+    rooms[rm].questData.quizState = "1";
+    io.sockets.to(rm).emit("quizMessage", "This is a surprise quiz!", 5);
+  }
+  else if (timeElapsed < 10000) {
+    if (rooms[rm].questData.quizState == "2") {
+      return;
+    }
+    rooms[rm].questData.quizState = "2";
+    io.sockets.to(rm).emit("quizMessage", "Move to the correct answer! Are you ready?", 5);
+  }
+  else if (timeElapsed < 20000) {
+    if (rooms[rm].questData.quizState == "q1") {
+      return;
+    }
+    rooms[rm].questData.quizState = "q1";
+    io.sockets.to(rm).emit("quizMessage", "1. What does S.F.U. stand for?", 10);
+  }
+  else if (timeElapsed < 25000) {
+    if (rooms[rm].questData.quizState == "a1") {
+      return;
+    }
+    rooms[rm].questData.quizState = "a1";
+    io.sockets.to(rm).emit("quizMessage", "It's Special Fortification Unit!", 5);
+  }
+  else if (timeElapsed < 35000) {
+    if (rooms[rm].questData.quizState == "q2") {
+      return;
+    }
+    rooms[rm].questData.quizState = "q2";
+    io.sockets.to(rm).emit("quizMessage", "Second question here.....", 10);
+  }
+  else if (timeElapsed < 40000) {
+    if (rooms[rm].questData.quizState == "a2") {
+      return;
+    }
+    rooms[rm].questData.quizState = "a2";
+    io.sockets.to(rm).emit("quizMessage", "And answer here!", 5);
+  }
+  else if (timeElapsed < 50000) {
+    if (rooms[rm].questData.quizState == "q3") {
+      return;
+    }
+    rooms[rm].questData.quizState = "q3";
+    io.sockets.to(rm).emit("quizMessage",
+      "3. What does the developers of this game deserve?", 10);
+  }
+  else if (timeElapsed < 55000) {
+    if (rooms[rm].questData.quizState == "a3") {
+      return;
+    }
+    rooms[rm].questData.quizState = "a3";
+    io.sockets.to(rm).emit("quizMessage", "A+! You know it!", 5);
+  }
+  else if (timeElapsed < 60000) {
+    if (rooms[rm].questData.quizState == "last") {
+      return;
+    }
+    rooms[rm].questData.quizState = "last";
+    io.sockets.to(rm).emit("quizMessage", "Congratulations! You passed the quiz.", 5);
+  }
+  else {
+    rooms[rm].questData.quizComplete = true;
+  }
+
+}
+
 //Generates a projectile on shoot input
 function generateProjectile(id, data, rm) {
 //Don't shoot if the room doesnt exist
@@ -1850,8 +1931,10 @@ for (id in zonez) {
     case "5":
        occupiedZones.push([4005,2400]);
        break;
-    case "6":
-       occupiedZones.push([3130,2320]);
+    case "6": //Science Center
+      if (rooms[rm].questData.quizComplete) {
+        occupiedZones.push([3130,2320]);
+      }
        break;
     case "7":
        occupiedZones.push([1955,2045]);
