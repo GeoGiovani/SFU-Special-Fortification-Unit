@@ -365,7 +365,7 @@ rooms[serverName].players[id] = {
   healthRecoverRate: 1,
   level: 1,
   damage: 5,
-  speed: 3*50,
+  speed: 3*50*12,
   score: 1000,
   gun: "pistol",
   clip: 12,
@@ -544,7 +544,7 @@ room.mapData; // 2d array of the map
 
 // when was the last object spawned
 room.lastSpawn = -1;
-room.spawnRate = 0;
+room.spawnRate = 1500;
 
 room.zones = {};
 
