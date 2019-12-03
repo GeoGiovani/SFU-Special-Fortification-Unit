@@ -6,6 +6,16 @@ body{
 #wrapper{
   text-align: justify;
 }
+#particles{
+  width: 800px; /*original = 800 x 600*/
+  height: 600px;
+  pointer-events: none;
+  margin: 0 auto;
+  float: left;
+  z-index: 2;
+  position: absolute;
+}
+
 
 #canvas{
     /* padding-right: 0;
@@ -15,9 +25,23 @@ body{
     display: block;
     width: 800px; */
     background-color: white;
+    width: 800px; /*original = 800 x 600*/
+    height: 600px;
+    border: 5px solid black;
     /*background-image: url(../image/darkbackground.jpg);*/
 }
 
+#canvas:active {
+  animation: shake 0.05s;
+  animation-iteration-count: 1;
+}
+
+@keyframes shake {
+  10% { transform: translate(-0.1px, -0.2px) rotate(-0.197deg); }
+  40% { transform: translate(0.5px, -0.5px) rotate(0.21deg); }
+  50% { transform: translate(-0.1px, 0.2px) rotate(-0.123deg); }
+  100% { transform: translate(0.5px, -0.5px) rotate(-0.851deg); }
+}
 .weather_animation{
   /* visibility:hidden; */
   position:absolute;
