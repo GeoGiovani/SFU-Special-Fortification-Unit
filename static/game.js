@@ -13,7 +13,7 @@ var messageOn = true;
 var messageQueue = ["Welcome to S.F.U.! \nPress B to continue."
   , "S.F.U. stands for Special Fortification Unit. \nPress B to continue."
   , "What? You thought S.F.U. as in Simon Fraser University? \nPress B to continue."
-  , "Well, you are right except its a game version of your time here at the University, sorry I meant Unit! *wink* *wink* \nPress B to continue."
+  , "Well, you are right except its a game version of your time here \nat the University, sorry I meant Unit! *wink* *wink* \nPress B to continue."
   , "Let's dive into the instructions \nPress B to continue."
   , "Press W/A/S/D to move, B to see next message. \nPress B to continue."
   , "Press M to turn on/off the map. \nPress B to continue."
@@ -22,7 +22,7 @@ var messageQueue = ["Welcome to S.F.U.! \nPress B to continue."
   , "Move mouse and click to shoot. \nPress B to continue."
   , "And survive. \nPress B to continue."
   , "Its you, your laptop and your water bottle against the whole world! \nPress B to continue."
-  , "Prove that you can get through this by defeating your worst nightmares \nPress B to continue."
+  , "Prove that you can get through this by defeating your worst \nnightmares \nPress B to continue."
   , "Hint: Try getting through to ASB before you fail. \nPress B to continue."
   , "Good luck, have fun! \nPress B to continue."];
 var mapOn = true;

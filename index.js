@@ -633,11 +633,9 @@ room.teamQuests = [
       io.sockets.to(rm).emit("message",
         "Welcome, player.");
       io.sockets.to(rm).emit("message",
-        "I am Avocado,\nOwner of S.F.U.");
+        "This is S.F.U. A place for survival.");
       io.sockets.to(rm).emit("message",
-        "What story should I write here? \nGimme ideas @channel");
-      io.sockets.to(rm).emit("message",
-        "Anyway! Go to Rotunda. I will open up the space for you.");
+        "Please go to Rotunda. I will open up the space for you.");
       //construction mall open
       var constructionMallZoneNum = 0;
       for (var zoneNum in room.zones) {
@@ -1627,8 +1625,8 @@ return {
   vy: 50,
   size: 2,
   speed: 0.8*140,
-  health: 50,
-  maxHealth: 50,
+  health: 100,
+  maxHealth: 100,
   behave: function(rm) {
     rotundaBoss = rooms[rm].specialObjects.rotundaBoss;
     if ( rooms[rm].players.numPlayers > 0 ) {
@@ -1721,8 +1719,8 @@ return {
   vy: 50,
   size: 2,
   speed: 0.8*140,
-  health: 30,
-  maxHealth: 30,
+  health: 100,
+  maxHealth: 100,
   behave: function(rm) {
     num = this.num;
     rcbBoss = rooms[rm].specialObjects.RCBBoss1;
@@ -1825,8 +1823,8 @@ return {
   vy: 50,
   size: 2,
   speed: 0.8*140,
-  health: 100,
-  maxHealth: 100,
+  health: 500,
+  maxHealth: 500,
   behave: function(rm) {
     asbBoss = rooms[rm].specialObjects.ASBBoss;
     if ( rooms[rm].players.numPlayers > 0 ) {
@@ -1955,14 +1953,14 @@ function runQuiz(rm) {
     }
     choiceList = ['1', '2', '3', '4', '5', '6'];
     rooms[rm].questData.quizState = "q2";
-    io.sockets.to(rm).emit("quizMessage", "Second question here.....", 10, choiceList);
+    io.sockets.to(rm).emit("quizMessage", "What's your favorite number?", 10, choiceList);
   }
   else if (timeElapsed < 40000) {
     if (rooms[rm].questData.quizState == "a2") {
       return;
     }
     rooms[rm].questData.quizState = "a2";
-    io.sockets.to(rm).emit("quizMessage", "And answer here!", 5);
+    io.sockets.to(rm).emit("quizMessage", "You're correct! Yay!", 5);
   }
   else if (timeElapsed < 50000) {
     if (rooms[rm].questData.quizState == "q3") {
