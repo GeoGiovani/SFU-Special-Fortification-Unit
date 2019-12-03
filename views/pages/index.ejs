@@ -9,15 +9,6 @@
     <link rel="stylesheet" href="stylesheets/index.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src = "/static/weatherAPI.js" defer></script>
-    <style>
-      #canvas {
-        width: 800px; /*original = 800 x 600*/
-        height: 600px;
-        border: 5px solid black;
-        /* margin-left: auto; */
-        /* margin-right: auto; */
-      }
-    </style>
     <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
@@ -42,12 +33,19 @@
       </form>
 
       <audio controls autoplay loop>
-        <source src="../static/audio/Attack on Titan S3 OST - ətˈæk 0N tάɪtn ＜WMId＞.mp3" type="audio/mpeg" />
+        <source src="../static/audio/Attack on Titan S3 OST - ətˈæk 0N tάɪtn ＜WMId＞.mp3" type="audio/mp3" />
       </audio id="volume">
     </div>
+    <!-- <a><img src="image/zoombie.png" id="boss" alt="wheredIGo??"></a> -->
+    <img src="image/wall.png" id="wall" alt="noWall" hidden>
+    <img src="image/gradeF.png" id="boss" alt="RIP" hidden>
+    <img src="image/gradeD.png" id="enemy" alt="failed" hidden>
+    <img src="image/book.gif" id="player" alt="me" hidden>
 
-    <a><img src="image/zoombie.png" id="boss" alt="wheredIGo??"></a>
 
+    <div id="particles"></div>
   </body>
   <script src="/static/game.js"></script>
+  <script src="/static/particles API/particles.js"></script>
+  <script src="/static/displayParticle.js"></script>
 </html>
