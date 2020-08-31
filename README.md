@@ -1,14 +1,22 @@
-# SFU-CMPT276
-### Group Members:
-Fazal Dad Warraich - 301319108 <br />
-Georgios Giovanis - 301254694 <br />
-Hyeyoung Ahn - 301383815 <br />
-Khanh Long Tran - 301354571 <br />
-Quoc tuong Tran - 301297287
+# S.F.U. Special Fortification Unit
 
-Iteration 1 instructions:
+## Description
+S.F.U. Special Fortification Unit is a survival game built using Node.JS, 
+Socket.IO, PostgreSQL, HTML, and CSS. My group members and I developed this game
+using an Agile software development approach. This was created as a project 
+for CMPT276 - Introduction to Software Engineering.  
+  
+Note: To see the work that I alone contributed to this project, please click the
+following link:  
+https://github.com/GeoGiovani/Schoolwork-Portfolio/tree/master/CMPT276%20Game%20-%20NodeJS
 
-    To access administration account:
-        username: ADMIN301254694
-        password: 301254694
+## Project Demo
+https://sfunit.herokuapp.com
+
+## Group Members:
+George Giovanis  
+Fazal Dad Warraich  
+Hyeyoung Ahn  
+Khanh Long Tran  
+Quoc tuong Tran  
         
